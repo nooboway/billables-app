@@ -1,0 +1,6 @@
+{
+  "name": "Billables",
+  "description": "An exact replica of the high-fidelity invoice maker and business details organizer featuring custom templates, invoice creation, product/service management, dashboard stats, live activity simulation logs, and thorough settings customization.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

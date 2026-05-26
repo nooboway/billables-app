@@ -1,0 +1,1508 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import React, { useState, useEffect } from 'react';
+import { 
+  Settings, 
+  HelpCircle, 
+  LayoutDashboard, 
+  FileText, 
+  Database, 
+  PieChart, 
+  Plus, 
+  Search, 
+  CheckCircle, 
+  User, 
+  Calendar, 
+  TrendingUp, 
+  DollarSign, 
+  Inbox, 
+  X, 
+  CheckCircle2, 
+  Eye, 
+  ArrowRight,
+  ShieldAlert,
+  BellRing
+} from 'lucide-react';
+
+import { 
+  BusinessDetails, 
+  BankAccount, 
+  VatSettings, 
+  TemplateSettings, 
+  Invoice, 
+  Product, 
+  Service, 
+  Expense, 
+  InvoiceItem, 
+  Notification 
+} from './types';
+
+import {
+  INITIAL_BUSINESS_DETAILS,
+  INITIAL_BANK_ACCOUNT,
+  INITIAL_VAT_SETTINGS,
+  INITIAL_TEMPLATE_SETTINGS,
+  INITIAL_INVOICES,
+  INITIAL_PRODUCTS,
+  INITIAL_SERVICES,
+  INITIAL_EXPENSES
+} from './initialData';
+
+import InvoicePreview from './components/InvoicePreview';
+import LiveNotifications from './components/LiveNotifications';
+import ReportsDashboard from './components/ReportsDashboard';
+import ServicesProductsManager from './components/ServicesProductsManager';
+import ExpensesTracker from './components/ExpensesTracker';
+import SettingsDrawer from './components/SettingsDrawer';
+
+export default function App() {
+  // Navigation: 'overview' | 'documents' | 'catalogs' | 'reports' | 'expenses'
+  const [activeScreen, setActiveScreen] = useState<'overview' | 'documents' | 'catalogs' | 'reports' | 'expenses'>('overview');
+  
+  // Document level tab for documents list
+  const [docTab, setDocTab] = useState<'invoices' | 'estimates'>('invoices');
+
+  // Core business & preferences states
+  const [businessDetails, setBusinessDetails] = useState<BusinessDetails>(() => {
+    const saved = localStorage.getItem('sylens_business');
+    return saved ? JSON.parse(saved) : INITIAL_BUSINESS_DETAILS;
+  });
+
+  const [bankAccount, setBankAccount] = useState<BankAccount>(() => {
+    const saved = localStorage.getItem('sylens_bank');
+    return saved ? JSON.parse(saved) : INITIAL_BANK_ACCOUNT;
+  });
+
+  const [vatSettings, setVatSettings] = useState<VatSettings>(() => {
+    const saved = localStorage.getItem('sylens_vat');
+    return saved ? JSON.parse(saved) : INITIAL_VAT_SETTINGS;
+  });
+
+  const [templateSettings, setTemplateSettings] = useState<TemplateSettings>(() => {
+    const saved = localStorage.getItem('sylens_template');
+    return saved ? JSON.parse(saved) : INITIAL_TEMPLATE_SETTINGS;
+  });
+
+  // Business items states
+  const [invoices, setInvoices] = useState<Invoice[]>(() => {
+    const saved = localStorage.getItem('sylens_invoices');
+    return saved ? JSON.parse(saved) : INITIAL_INVOICES;
+  });
+
+  const [products, setProducts] = useState<Product[]>(() => {
+    const saved = localStorage.getItem('sylens_products');
+    return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
+  });
+
+  const [services, setServices] = useState<Service[]>(() => {
+    const saved = localStorage.getItem('sylens_services');
+    return saved ? JSON.parse(saved) : INITIAL_SERVICES;
+  });
+
+  const [expenses, setExpenses] = useState<Expense[]>(() => {
+    const saved = localStorage.getItem('sylens_expenses');
+    return saved ? JSON.parse(saved) : INITIAL_EXPENSES;
+  });
+
+  const [notifications, setNotifications] = useState<Notification[]>(() => {
+    const saved = localStorage.getItem('sylens_notifications');
+    return saved ? JSON.parse(saved) : [
+      {
+        id: 'init-notif',
+        title: 'Billing Terminal Activated',
+        message: 'SYLENS LIMITED invoicing workspace synchronized. Real-time logging ready.',
+        timestamp: '08:09 AM',
+        type: 'success',
+        read: false
+      }
+    ];
+  });
+
+  // Active overlay dialog states
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isCreatorOpen, setIsCreatorOpen] = useState(false);
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
+  const [detailTab, setDetailTab] = useState<'summary' | 'preview' | 'history'>('summary');
+
+  // Search filter query
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Persist edits inside client-side local persistence automatically
+  useEffect(() => {
+    localStorage.setItem('sylens_business', JSON.stringify(businessDetails));
+  }, [businessDetails]);
+
+  useEffect(() => {
+    localStorage.setItem('sylens_bank', JSON.stringify(bankAccount));
+  }, [bankAccount]);
+
+  useEffect(() => {
+    localStorage.setItem('sylens_vat', JSON.stringify(vatSettings));
+  }, [vatSettings]);
+
+  useEffect(() => {
+    localStorage.setItem('sylens_template', JSON.stringify(templateSettings));
+  }, [templateSettings]);
+
+  useEffect(() => {
+    localStorage.setItem('sylens_invoices', JSON.stringify(invoices));
+  }, [invoices]);
+
+  useEffect(() => {
+    localStorage.setItem('sylens_products', JSON.stringify(products));
+  }, [products]);
+
+  useEffect(() => {
+    localStorage.setItem('sylens_services', JSON.stringify(services));
+  }, [services]);
+
+  useEffect(() => {
+    localStorage.setItem('sylens_expenses', JSON.stringify(expenses));
+  }, [expenses]);
+
+  useEffect(() => {
+    localStorage.setItem('sylens_notifications', JSON.stringify(notifications));
+  }, [notifications]);
+
+  // Automated Overdue Check on Workspace Load
+  useEffect(() => {
+    const todayStr = '2026-05-26'; // Match current metadata local date
+    let updatedNeeded = false;
+    const nextInvoices = invoices.map(inv => {
+      if (inv.status === 'Unpaid' && inv.dueDate < todayStr) {
+        updatedNeeded = true;
+        // Seed immediate warning alert
+        setTimeout(() => {
+          handleAddNotification({
+            id: `notif-overdue-${inv.id}-${Date.now()}`,
+            title: 'Invoice Overdue Alert',
+            message: `Invoice #${inv.id} for ${inv.clientName} has exceeded due date (${inv.dueDate}).`,
+            type: 'alert',
+            timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+            read: false
+          });
+        }, 120);
+        return {
+          ...inv,
+          status: 'Overdue' as const,
+          history: [
+            ...inv.history,
+            { event: 'Auto-detected Overdue by System', timestamp: new Date().toISOString() }
+          ]
+        };
+      }
+      return inv;
+    });
+
+    if (updatedNeeded) {
+      setInvoices(nextInvoices);
+    }
+  }, []);
+
+  // Handle Notifications stream
+  const handleAddNotification = (newNotif: Notification) => {
+    setNotifications(prev => [newNotif, ...prev].slice(0, 50));
+  };
+
+  const handleClearNotifications = () => {
+    setNotifications([]);
+  };
+
+  // INVOICE CREATION HANDLERS
+  const [editingInvoiceId, setEditingInvoiceId] = useState<string | null>(null);
+  const [newClientName, setNewClientName] = useState('');
+  const [newClientEmail, setNewClientEmail] = useState('');
+  const [newClientStreet, setNewClientStreet] = useState('');
+  const [newClientCity, setNewClientCity] = useState('');
+  const [invoiceIdInput, setInvoiceIdInput] = useState('');
+  const [newOrderNo, setNewOrderNo] = useState('');
+  const [newShipping, setNewShipping] = useState(2320);
+  const [newVatRate, setNewVatRate] = useState(vatSettings.applyToInvoices ? vatSettings.rate1 : 0);
+  const [newIssueDate, setNewIssueDate] = useState(new Date().toISOString().split('T')[0]);
+  const [newDueDate, setNewDueDate] = useState(new Date(Date.now() + templateSettings.dueDateDays * 86400000).toISOString().split('T')[0]);
+  const [selectedTemplate, setSelectedTemplate] = useState<'Stripe' | 'Classic' | 'Serif' | 'Modern' | 'Simple'>('Stripe');
+  const [selectedItemsList, setSelectedItemsList] = useState<Array<{ id: string; qty: number; desc: string; price: number; unit: string }>>([]);
+  const [isAddingCustomRow, setIsAddingCustomRow] = useState(false);
+  const [customRowDesc, setCustomRowDesc] = useState('');
+  const [customRowPrice, setCustomRowPrice] = useState(0);
+
+  const resetCreatorStates = () => {
+    setEditingInvoiceId(null);
+    setNewClientName('');
+    setNewClientEmail('');
+    setNewClientStreet('');
+    setNewClientCity('');
+    setInvoiceIdInput('');
+    setNewOrderNo('');
+    setNewShipping(2320);
+    setNewVatRate(vatSettings.applyToInvoices ? vatSettings.rate1 : 0);
+    setSelectedTemplate('Stripe');
+    setNewIssueDate(new Date().toISOString().split('T')[0]);
+    setNewDueDate(new Date(Date.now() + templateSettings.dueDateDays * 86400000).toISOString().split('T')[0]);
+    setSelectedItemsList([]);
+  };
+
+  const handleOpenEditDoc = (inv: Invoice) => {
+    setEditingInvoiceId(inv.id);
+    setInvoiceIdInput(inv.id);
+    setNewClientName(inv.clientName);
+    setNewClientEmail(inv.clientEmail ?? '');
+    setNewClientStreet(inv.clientStreet ?? '');
+    setNewClientCity(inv.clientCity ?? '');
+    setNewOrderNo(inv.orderNo ?? '');
+    setNewShipping(inv.shippingFee);
+    setNewVatRate(inv.vatRate);
+    setSelectedTemplate(inv.templateType || 'Stripe');
+    setNewIssueDate(inv.issueDate);
+    setNewDueDate(inv.dueDate);
+    setSelectedItemsList(inv.items.map(it => ({
+      id: it.id,
+      qty: it.qty,
+      desc: it.description,
+      price: it.price,
+      unit: it.unit || 'Unit'
+    })));
+    setIsCreatorOpen(true);
+  };
+
+  const handleInsertPredefinedItem = (itemId: string, type: 'product' | 'service') => {
+    if (type === 'product') {
+      const prod = products.find(p => p.id === itemId);
+      if (prod) {
+        setSelectedItemsList(prev => [
+          ...prev, 
+          { id: prod.id, qty: 1, desc: `${prod.name}\n${prod.description}`, price: prod.price, unit: prod.unit }
+        ]);
+      }
+    } else {
+      const serv = services.find(s => s.id === itemId);
+      if (serv) {
+        setSelectedItemsList(prev => [
+          ...prev, 
+          { id: serv.id, qty: 1, desc: `${serv.name}\n${serv.description}`, price: serv.price, unit: serv.unit }
+        ]);
+      }
+    }
+  };
+
+  const handleAddCustomRow = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customRowDesc) return;
+    setSelectedItemsList(prev => [
+      ...prev,
+      { id: `custom-${Date.now()}`, qty: 1, desc: customRowDesc, price: customRowPrice, unit: 'Unit' }
+    ]);
+    setCustomRowDesc('');
+    setCustomRowPrice(0);
+    setIsAddingCustomRow(false);
+  };
+
+  const handeSubmitNewInvoice = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newClientName || selectedItemsList.length === 0) {
+      alert("Please specify a billed client and check at least one line item!");
+      return;
+    }
+
+    const compiledItems: InvoiceItem[] = selectedItemsList.map(it => ({
+      id: it.id,
+      description: it.desc,
+      qty: it.qty,
+      unit: it.unit,
+      price: it.price,
+      discount: 0,
+      amount: it.qty * it.price,
+    }));
+
+    const finalId = invoiceIdInput || Math.floor(600 + Math.random() * 400).toString();
+
+    if (editingInvoiceId) {
+      setInvoices(prev => prev.map(inv => {
+        if (inv.id === editingInvoiceId) {
+          return {
+            ...inv,
+            id: finalId,
+            clientName: newClientName,
+            clientEmail: newClientEmail,
+            clientStreet: newClientStreet,
+            clientCity: newClientCity,
+            issueDate: newIssueDate,
+            dueDate: newDueDate,
+            orderNo: newOrderNo || inv.orderNo,
+            items: compiledItems,
+            shippingFee: newShipping,
+            vatRate: newVatRate,
+            templateType: selectedTemplate,
+            history: [
+              ...inv.history,
+              { event: 'Modified', timestamp: new Date().toISOString() }
+            ]
+          };
+        }
+        return inv;
+      }));
+
+      // Raise notification
+      handleAddNotification({
+        id: `notif-updated-${Date.now()}`,
+        title: 'Invoice Updated',
+        message: `Invoice #${finalId} for ${newClientName} has been successfully updated.`,
+        type: 'info',
+        timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        read: false
+      });
+
+      // Clear selection details to trigger fresh summary update
+      setSelectedInvoiceId(finalId);
+    } else {
+      const newInvoice: Invoice = {
+        id: finalId,
+        clientName: newClientName,
+        clientEmail: newClientEmail,
+        clientCountry: businessDetails.country,
+        clientStreet: newClientStreet,
+        clientCity: newClientCity,
+        issueDate: newIssueDate,
+        dueDate: newDueDate,
+        paymentMethod: templateSettings.paymentMethod,
+        orderNo: newOrderNo || `O-${Math.floor(100000 + Math.random() * 900000)}`,
+        items: compiledItems,
+        shippingFee: newShipping,
+        vatRate: newVatRate,
+        status: 'Unpaid',
+        templateType: selectedTemplate,
+        skuPhotoUrl: selectedItemsList.some(i => i.desc.startsWith('Detox Tea')) ? products[0]?.imageUrl : undefined,
+        notes: `An advance payment of total due is requested by settlement deadlines. Thank you.`,
+        createdTime: new Date().toISOString(),
+        history: [
+          { event: 'Created', timestamp: new Date().toISOString() },
+          { event: 'Sent', timestamp: new Date().toISOString() },
+        ]
+      };
+
+      setInvoices(prev => [newInvoice, ...prev]);
+
+      // Live Simulator event trigger
+      handleAddNotification({
+        id: `notif-created-${Date.now()}`,
+        title: 'Invoice Created',
+        message: `Invoice #${newInvoice.id} generated for client ${newInvoice.clientName}`,
+        type: 'success',
+        timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        read: false
+      });
+    }
+
+    setIsCreatorOpen(false);
+    resetCreatorStates();
+  };
+
+  // OVERVIEW STATS AUDITOR
+  const getOverviewStats = () => {
+    let overdueCount = 0;
+    let overdueVal = 0;
+
+    let unpaidCount = 0;
+    let unpaidVal = 0;
+
+    let paidCount = 0;
+    let paidVal = 0;
+
+    invoices.forEach(inv => {
+      const itemsSum = inv.items.reduce((s, i) => s + i.amount, 0);
+      const total = itemsSum + inv.shippingFee + (itemsSum * inv.vatRate / 100);
+
+      if (inv.status === 'Paid') {
+        paidCount++;
+        paidVal += total;
+      } else if (inv.status === 'Unpaid') {
+        unpaidCount++;
+        unpaidVal += total;
+      } else if (inv.status === 'Overdue') {
+        overdueCount++;
+        overdueVal += total;
+      }
+    });
+
+    return {
+      overdueCount, overdueVal,
+      unpaidCount, unpaidVal,
+      paidCount, paidVal
+    };
+  };
+
+  const { overdueCount, overdueVal, unpaidCount, unpaidVal, paidCount, paidVal } = getOverviewStats();
+
+  // Selected invoice helper
+  const selectedInvoice = invoices.find(i => i.id === selectedInvoiceId);
+
+  // Filtered documents
+  const filteredInvoices = invoices.filter(inv => {
+    const q = searchQuery.toLowerCase();
+    return inv.clientName.toLowerCase().includes(q) || inv.id.includes(q);
+  });
+
+  const handleAddPaymentToInvoice = (invId: string) => {
+    setInvoices(prev => prev.map(inv => {
+      if (inv.id === invId) {
+        return {
+          ...inv,
+          status: 'Paid',
+          history: [
+            ...inv.history,
+            { event: 'Paid', timestamp: new Date().toISOString() }
+          ]
+        };
+      }
+      return inv;
+    }));
+
+    handleAddNotification({
+      id: `notif-pay-${Date.now()}`,
+      title: 'Payment Confirmed',
+      message: `Invoice #${invId} paid in full. Ledger update processed.`,
+      type: 'success',
+      timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      read: false
+    });
+  };
+
+  const handleDeleteInvoice = (invId: string) => {
+    if (confirm(`Confirm permanent deletion of Invoice #${invId}?`)) {
+      setInvoices(prev => prev.filter(i => i.id !== invId));
+      setSelectedInvoiceId(null);
+
+      // Trigger deletion notification alert
+      handleAddNotification({
+        id: `notif-deleted-${Date.now()}`,
+        title: 'Invoice Deleted',
+        message: `Invoice #${invId} has been deleted from the database ledger.`,
+        type: 'warning',
+        timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        read: false
+      });
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col relative font-sans" id="sylens-application-root">
+      
+      {/* Trial Expiry Banner Row in crisp Declotr brand Orange */}
+      <div className="bg-[#E54A13] px-4 py-2 text-center text-xs font-semibold text-white select-none flex items-center justify-center gap-2 shadow-inner border-b border-orange-700" id="trial-alert-bar">
+        <span>⚡ Your corporate trial workspace has 5 days left. Add secure payment methods now to prevent downtime.</span>
+        <button 
+          onClick={() => alert("Simulation Action: Redirecting to global stripe subscription billings portal...")}
+          className="bg-white text-[#E54A13] hover:bg-orange-50 px-2.5 py-0.5 rounded text-[10px] uppercase font-extrabold tracking-wider font-mono transition-all border-0 cursor-pointer"
+        >
+          Activate
+        </button>
+      </div>
+
+      {/* Main Top Header Navigation Toolbar */}
+      <header className="p-4 bg-white border-b border-b-slate-200 flex justify-between items-center" id="main-navigation-toolbar">
+        <div className="flex items-center gap-4">
+          {/* App Logo style of web.declotr.com */}
+          <div className="flex items-center gap-0.5 cursor-pointer pr-4 border-r border-slate-200" onClick={() => setActiveScreen('overview')}>
+            <span className="text-2xl font-black tracking-tighter text-slate-950 lowercase font-sans">billables</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-[#E54A13] self-end mb-1.5"></span>
+          </div>
+
+          {/* Company Selector */}
+          <div className="flex flex-col">
+            <div className="flex items-center gap-1 cursor-pointer" onClick={() => setIsSettingsOpen(true)}>
+              <span className="text-xs font-extrabold tracking-wide uppercase text-slate-800 hover:text-[#E54A13] transition-colors">
+                {businessDetails.name || 'SYLENS LIMITED'}
+              </span>
+              <span className="text-[10px] text-slate-400">▼</span>
+            </div>
+            <span className="text-[8.5px] font-mono text-[#E54A13] font-extrabold uppercase select-none tracking-widest">Workspace Terminal</span>
+          </div>
+        </div>
+
+        {/* Global Toolbar Tabs with Elegant Highlights */}
+        <nav className="hidden md:flex gap-1 bg-slate-100 p-1 rounded-lg border border-slate-200 text-xs shadow-inner">
+          <button
+            onClick={() => { setActiveScreen('overview'); setSelectedInvoiceId(null); }}
+            className={`px-3.5 py-1.5 rounded-md font-bold uppercase transition-all text-[10px] tracking-wider cursor-pointer ${
+              activeScreen === 'overview' ? 'bg-white text-[#E54A13] shadow-sm' : 'text-slate-600 hover:text-slate-950'
+            }`}
+          >
+            Overview
+          </button>
+          <button
+            onClick={() => { setActiveScreen('documents'); setSelectedInvoiceId(null); }}
+            className={`px-3.5 py-1.5 rounded-md font-bold uppercase transition-all text-[10px] tracking-wider cursor-pointer ${
+              activeScreen === 'documents' ? 'bg-white text-[#E54A13] shadow-sm' : 'text-slate-600 hover:text-slate-950'
+            }`}
+          >
+            Documents
+          </button>
+          <button
+            onClick={() => { setActiveScreen('catalogs'); setSelectedInvoiceId(null); }}
+            className={`px-3.5 py-1.5 rounded-md font-bold uppercase transition-all text-[10px] tracking-wider cursor-pointer ${
+              activeScreen === 'catalogs' ? 'bg-white text-[#E54A13] shadow-sm' : 'text-slate-600 hover:text-slate-950'
+            }`}
+          >
+            Product Library
+          </button>
+          <button
+            onClick={() => { setActiveScreen('reports'); setSelectedInvoiceId(null); }}
+            className={`px-3.5 py-1.5 rounded-md font-bold uppercase transition-all text-[10px] tracking-wider cursor-pointer ${
+              activeScreen === 'reports' ? 'bg-white text-[#E54A13] shadow-sm' : 'text-slate-600 hover:text-slate-950'
+            }`}
+          >
+            Analytics Reports
+          </button>
+        </nav>
+
+        {/* Audit link & Preferences */}
+        <div className="flex items-center gap-4 text-xs font-mono">
+          <button 
+            onClick={() => setIsSettingsOpen(true)}
+            className="p-1.5 bg-slate-100 border border-slate-200 rounded-lg hover:border-[#E54A13] hover:text-[#E54A13] text-slate-500 transition-all cursor-pointer"
+            title="Open Workspace Settings"
+            id="settings-trigger-button"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
+          <button 
+            onClick={() => alert("Simulation Action: Loading integrated user handbook manual...")}
+            className="text-slate-600 hover:text-slate-950 flex items-center gap-1 uppercase text-[10px] border-none bg-transparent cursor-pointer font-bold tracking-wider"
+          >
+            <HelpCircle className="w-3.5 h-3.5 text-[#E54A13]" />
+            Help
+          </button>
+        </div>
+      </header>
+
+      {/* Main Container Work Area */}
+      <main className="flex-1 max-w-7xl mx-auto w-full p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        {/* LEFT COLUMN: Main Screen View Swap (8 cols out of 12) */}
+        <section className="lg:col-span-8 space-y-6" id="left-workspace-column">
+          
+          {/* SCREEN 1: OVERVIEW DASHBOARD */}
+          {activeScreen === 'overview' && !selectedInvoiceId && (
+            <div className="space-y-6 animate-slide-up">
+              {/* Heading Tab block */}
+              <div className="flex justify-between items-center bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div>
+                  <h2 className="text-sm font-extrabold uppercase text-slate-900 tracking-tight">Financial Summary</h2>
+                  <p className="text-[11px] text-slate-500 font-mono mt-0.5">Workspace performance dashboard for real-time auditable ledger entries.</p>
+                </div>
+                <button 
+                  onClick={() => setActiveScreen('reports')}
+                  className="px-3.5 py-1.5 bg-white border border-slate-200 hover:border-[#E54A13] text-[#E54A13] hover:bg-orange-50/50 flex items-center gap-1.5 font-mono uppercase text-[10px] font-bold rounded-lg transition-all cursor-pointer shadow-sm"
+                >
+                  <PieChart className="w-3.5 h-3.5 text-[#E54A13]" />
+                  Detailed Reports
+                </button>
+              </div>
+
+              {/* Grid cards displaying requested summary data */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="overview-financial-cards-grid">
+                
+                {/* CARD 1: TOTAL AMOUNT PAID */}
+                <div className="bg-white border border-slate-200 hover:border-emerald-500/50 rounded-2xl p-5 flex flex-col justify-between h-32 hover:scale-[1.01] transition-all duration-300 shadow-sm">
+                  <div className="flex justify-between items-start">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Amount Paid</span>
+                    <span className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold flex items-center justify-center font-mono text-[9.5px]">
+                      {paidCount}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-black text-emerald-600 font-mono tracking-tight">
+                      {templateSettings.currencySymbol}{paidVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </h3>
+                    <p className="text-[9.5px] text-slate-400 font-mono uppercase mt-1">Settled & Confirmed Ledger Balance</p>
+                  </div>
+                </div>
+
+                {/* CARD 2: TOTAL AMOUNT DUE */}
+                <div className="bg-white border border-slate-200 hover:border-[#E54A13]/50 rounded-2xl p-5 flex flex-col justify-between h-32 hover:scale-[1.01] transition-all duration-300 shadow-sm">
+                  <div className="flex justify-between items-start">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Amount Due</span>
+                    <span className="w-5 h-5 rounded-full bg-rose-50 text-rose-600 border border-rose-100 font-bold flex items-center justify-center font-mono text-[9.5px]">
+                      {overdueCount + unpaidCount}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-black text-rose-500 font-mono tracking-tight">
+                      {templateSettings.currencySymbol}{(unpaidVal + overdueVal).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </h3>
+                    <p className="text-[9.5px] text-rose-400 font-mono uppercase mt-1 text-rose-500/80">Pending Bank Transfer Receivables</p>
+                  </div>
+                </div>
+
+                {/* CARD 3: OUTSTANDING INVOICES */}
+                <div className="bg-white border border-slate-200 hover:border-[#E54A13]/50 rounded-2xl p-5 flex flex-col justify-between h-32 hover:scale-[1.01] transition-all duration-300 shadow-sm">
+                  <div className="flex justify-between items-start">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Outstanding Bills</span>
+                    <span className="text-[9.5px] text-[#E54A13] font-mono font-black uppercase">Active Ledger</span>
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-black text-slate-900 font-mono tracking-tight">
+                      {unpaidCount + overdueCount} <span className="text-xs text-slate-400 font-sans font-normal">invoices</span>
+                    </h3>
+                    <div className="flex gap-2.5 mt-1 font-mono text-[9.5px]">
+                      <span className="text-rose-500">{overdueCount} Overdue</span>
+                      <span className="text-slate-400">•</span>
+                      <span className="text-[#E54A13]">{unpaidCount} Pending</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Collections efficiency progress block */}
+              {(() => {
+                const totalInvoiced = paidVal + unpaidVal + overdueVal;
+                const efficiencyRatio = totalInvoiced > 0 ? (paidVal / totalInvoiced) * 100 : 0;
+                return (
+                  <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
+                    <div className="flex justify-between items-end mb-2">
+                      <div className="space-y-0.5">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Capital Recovery Performance</span>
+                        <p className="text-xs font-semibold text-slate-700">Payment Collection Efficiency Rate</p>
+                      </div>
+                      <span className="text-xs font-mono font-black text-[#E54A13] bg-orange-50 px-2 py-0.5 rounded border border-orange-200">{efficiencyRatio.toFixed(1)}%</span>
+                    </div>
+                    <div className="w-full bg-slate-100 rounded-full h-3 border border-slate-200 p-0.5 overflow-hidden">
+                      <div 
+                        className="bg-[#E54A13] rounded-full h-full transition-all duration-1000 origin-left"
+                        style={{ width: `${efficiencyRatio}%` }}
+                      />
+                    </div>
+                    <div className="flex justify-between font-mono text-[9px] text-slate-500 mt-2">
+                      <span>Total Value Invoiced: {templateSettings.currencySymbol}{totalInvoiced.toLocaleString('en-US', { maximumFractionDigits: 0 })}</span>
+                      <span>Target: 100% Recovery</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* DOCUMENTS LIST QUICK-VIEW MODULE */}
+              <div className="bg-white border border-slate-200 p-5 rounded-2xl space-y-4 shadow-sm">
+                <div className="flex justify-between items-center flex-wrap gap-2.5">
+                  <div className="flex items-center gap-2">
+                    <span className="font-extrabold text-slate-900 text-sm tracking-tight">RECENT INVOICES LIST</span>
+                    <span className="text-[10px] py-0.5 px-2 bg-orange-50 border border-orange-100 text-[#E54A13] rounded-full font-mono font-bold uppercase">{filteredInvoices.length} entries</span>
+                  </div>
+                  <div className="relative max-w-xs w-full">
+                    <input 
+                      type="text" 
+                      placeholder="Search client/invoice id..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] rounded px-3.5 py-1.5 pl-8 text-xs text-slate-800 outline-none transition-all placeholder-slate-400"
+                    />
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                  </div>
+                </div>
+
+                <div className="divide-y divide-slate-100 select-none">
+                  {filteredInvoices.length === 0 ? (
+                    <div className="text-center py-12 text-slate-400 font-mono text-xs">
+                      No invoices found matching query.
+                    </div>
+                  ) : (
+                    filteredInvoices.map((inv) => {
+                      const itemsSum = inv.items.reduce((s, it) => s + it.amount, 0);
+                      const totalVal = itemsSum + inv.shippingFee + (itemsSum * inv.vatRate / 100);
+                      return (
+                        <div 
+                          key={inv.id}
+                          onClick={() => { setSelectedInvoiceId(inv.id); setDetailTab('summary'); }}
+                          className="py-3.5 flex justify-between items-center hover:bg-slate-50 px-3 rounded-lg transition-all cursor-pointer group text-xs font-mono"
+                        >
+                          <div className="flex items-center gap-3.5">
+                            <div className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center font-black text-slate-600 uppercase font-sans text-xs">
+                              {inv.clientName.slice(0, 2)}
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <p className="font-bold text-slate-900 text-sm font-sans">{inv.clientName}</p>
+                                <span className="text-[9px] text-slate-400 font-mono">#{inv.id}</span>
+                              </div>
+                              <div className="flex items-center gap-2.5 mt-1 font-mono text-[10px] text-slate-500">
+                                <span className={`px-1.5 py-0.2 rounded border text-[8.5px] font-bold uppercase ${
+                                  inv.status === 'Paid' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' :
+                                  inv.status === 'Overdue' ? 'bg-rose-50 border-rose-100 text-rose-600' : 'bg-orange-50 border-orange-100 text-[#E54A13]'
+                                }`}>
+                                  {inv.status}
+                                </span>
+                                <span>Due: {inv.dueDate}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-slate-900 text-sm font-mono tracking-tight">
+                              {templateSettings.currencySymbol}{totalVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                            </p>
+                            <span className="text-[9px] font-bold text-slate-400 tracking-wide uppercase">
+                              {inv.items.length} line items
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* SCREEN 2: ALL DOCUMENTS DIRECT PANEL */}
+          {activeScreen === 'documents' && !selectedInvoiceId && (
+            <div className="space-y-5 animate-slide-up">
+              <div className="flex justify-between items-center bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div>
+                  <h2 className="text-sm font-extrabold uppercase text-slate-900 tracking-tight">Documents Management</h2>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Filter, search and export invoices, estimates and ledgers.</p>
+                </div>
+                <button
+                  onClick={() => setIsCreatorOpen(true)}
+                  className="px-4 py-2 bg-[#E54A13] hover:bg-orange-700 font-bold uppercase tracking-wider text-white rounded-lg flex items-center gap-1.5 cursor-pointer text-xs shadow-sm transition-all"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  New Invoice
+                </button>
+              </div>
+
+              {/* Invoices or Estimates Tabs */}
+              <div className="flex space-x-1 bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
+                <button
+                  onClick={() => setDocTab('invoices')}
+                  className={`flex-1 py-2 text-xs font-bold uppercase rounded-lg transition-all cursor-pointer ${
+                    docTab === 'invoices' ? 'bg-white text-[#E54A13] shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  Invoices ({invoices.length})
+                </button>
+                <button
+                  onClick={() => {
+                    setDocTab('estimates');
+                    alert("Estimates folder is currently empty. Switch back to 'Invoices' or click '+ Create' to generated estimates!");
+                  }}
+                  className={`flex-1 py-2 text-xs font-bold uppercase rounded-lg transition-all cursor-pointer ${
+                    docTab === 'estimates' ? 'bg-white text-[#E54A13] shadow-sm' : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  Estimates (0)
+                </button>
+              </div>
+
+              {/* Rendering simple lists */}
+              <div className="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
+                <div className="relative mb-4">
+                  <input 
+                    type="text" 
+                    placeholder="Search documents by code, customer or mail ledger..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] rounded px-4.5 py-2 pl-9 text-xs text-slate-800 outline-none"
+                  />
+                  <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+                </div>
+
+                <div className="divide-y divide-slate-100 text-xs font-mono select-none">
+                  {invoices.map(inv => {
+                    const totalVal = inv.items.reduce((s,i) => s + i.amount, 0) + inv.shippingFee;
+                    return (
+                      <div 
+                        key={inv.id}
+                        onClick={() => { setSelectedInvoiceId(inv.id); setDetailTab('summary'); }}
+                        className="py-3.5 flex justify-between items-center hover:bg-slate-50 px-3 rounded-lg transition-all cursor-pointer"
+                      >
+                        <div className="flex items-center gap-3.5">
+                          <span className={`w-2.5 h-2.5 rounded-full ${inv.status === 'Paid' ? 'bg-emerald-500' : inv.status === 'Overdue' ? 'bg-rose-500' : 'bg-[#E54A13]'}`} />
+                          <div>
+                            <p className="font-bold text-slate-900 font-sans text-sm">{inv.clientName}</p>
+                            <p className="text-[10px] text-slate-400 mt-1">ID: #{inv.id} • Date: {inv.issueDate}</p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-slate-900 font-mono text-sm">{templateSettings.currencySymbol}{totalVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+                          <span className={`px-1.5 py-0.2 rounded border text-[8.5px] font-bold uppercase mt-1 inline-block ${
+                            inv.status === 'Paid' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' :
+                            inv.status === 'Overdue' ? 'bg-rose-50 border-rose-100 text-rose-600' : 'bg-orange-50 border-orange-100 text-[#E54A13]'
+                          }`}>{inv.status}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SCREEN 3: CATALOG LIBRARY */}
+          {activeScreen === 'catalogs' && (
+            <div className="space-y-4 animate-slide-up">
+              <ServicesProductsManager 
+                products={products}
+                onAddProduct={(p) => setProducts(prev => [...prev, p])}
+                onRemoveProduct={(id) => setProducts(prev => prev.filter(p => p.id !== id))}
+                services={services}
+                onAddService={(s) => setServices(prev => [...prev, s])}
+                onRemoveService={(id) => setServices(prev => prev.filter(s => s.id !== id))}
+                templateSettings={templateSettings}
+              />
+            </div>
+          )}
+
+          {/* SCREEN 4: REPORTS DASHBOARD */}
+          {activeScreen === 'reports' && (
+            <div className="space-y-4 animate-slide-up">
+              <ReportsDashboard 
+                invoices={invoices}
+                products={products}
+                services={services}
+                expenses={expenses}
+                templateSettings={templateSettings}
+                onSelectInvoice={(id) => { setSelectedInvoiceId(id); setDetailTab('preview'); }}
+              />
+            </div>
+          )}
+
+          {/* SCREEN 5: EXPENSES LEDGER */}
+          {activeScreen === 'expenses' && (
+            <div className="space-y-4 animate-slide-up">
+              <ExpensesTracker 
+                expenses={expenses}
+                onAddExpense={(e) => setExpenses(prev => [e, ...prev])}
+                onRemoveExpense={(id) => setExpenses(prev => prev.filter(e => e.id !== id))}
+                templateSettings={templateSettings}
+              />
+            </div>
+          )}
+
+          {/* DETAIL INSPECTOR SCREEN (If selectedInvoiceId is active!) */}
+          {selectedInvoiceId && selectedInvoice && (
+            <div className="space-y-5 animate-slide-up bg-white p-5 rounded-2xl border border-slate-200 shadow-sm" id="invoice-inspector-pane">
+              <div className="flex justify-between items-center pb-3 border-b border-slate-200">
+                <button 
+                  onClick={() => setSelectedInvoiceId(null)}
+                  className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 hover:text-slate-900 hover:bg-slate-50 rounded-lg text-xs font-bold font-mono transition-all cursor-pointer shadow-sm"
+                >
+                  ← Back to Workspace
+                </button>
+                <div className="text-right">
+                  <span className="text-[10px] text-slate-450 text-slate-500 font-mono tracking-wider uppercase font-bold block">Active Invoice reference</span>
+                  <span className="text-xs font-extrabold text-[#E54A13] font-mono">Invoice #{selectedInvoice.id}</span>
+                </div>
+              </div>
+
+              {/* Inspector Tabs (Summary, Preview, History) */}
+              <div className="flex bg-slate-100 p-1 rounded-xl border border-slate-200 shadow-inner">
+                {(['summary', 'preview', 'history'] as const).map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setDetailTab(tab)}
+                    className={`flex-1 py-1.5 text-xs font-bold uppercase rounded-lg transition-all cursor-pointer ${
+                      detailTab === tab ? 'bg-white text-[#E54A13] shadow-sm' : 'text-slate-500 hover:text-slate-850'
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </div>
+
+              {/* TAB 1: SUMMARY DETAILS */}
+              {detailTab === 'summary' && (
+                <div className="p-5 bg-slate-50 rounded-2xl space-y-4 font-mono text-xs border border-slate-100 shadow-inner select-none">
+                  <div className="space-y-1">
+                    <span className="text-slate-400 uppercase text-[9px] font-bold">Client customer details</span>
+                    <p className="text-sm font-bold text-slate-900 font-sans">{selectedInvoice.clientName}</p>
+                    <p className="text-[11px] text-slate-500 font-mono">{selectedInvoice.clientEmail}</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 py-3 border-y border-y-slate-200/80">
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase block font-bold">Issue Date</span>
+                      <span className="text-slate-800 font-bold font-sans">{selectedInvoice.issueDate}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase block font-bold">Due Date</span>
+                      <span className="text-slate-800 font-bold font-sans">{selectedInvoice.dueDate}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase block font-bold">Shipping fee</span>
+                      <span className="text-slate-800 font-bold font-sans">₦{selectedInvoice.shippingFee.toLocaleString()}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase block font-bold">Status</span>
+                      <span className={`font-bold uppercase text-[10px] ${
+                        selectedInvoice.status === 'Paid' ? 'text-emerald-600' : 'text-[#E54A13]'
+                      }`}>
+                        {selectedInvoice.status}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5 pt-1">
+                    <span className="text-slate-400 uppercase text-[9px] font-bold">Items list billed</span>
+                    <div className="space-y-1.5">
+                      {selectedInvoice.items.map(it => (
+                        <div key={it.id} className="p-2.5 bg-white rounded-lg border border-slate-200/60 flex justify-between items-center text-[11px]">
+                          <span className="text-slate-700 font-sans font-medium">{it.description.split('\n')[0]} (x{it.qty})</span>
+                          <span className="font-bold text-slate-900">₦{it.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Actions buttons */}
+                  <div className="space-y-2 pt-4 border-t border-slate-200">
+                    <div className="flex gap-2.5">
+                      <button
+                        onClick={() => alert("Simulation Action: Client invoice mail confirmation resent successfully!")}
+                        className="flex-1 py-2 bg-white border border-slate-200 text-slate-750 text-slate-700 hover:text-slate-900 hover:bg-slate-50 font-bold rounded-lg font-mono uppercase tracking-wider text-[10px] transition-all cursor-pointer shadow-sm"
+                      >
+                        Resend Confirm Mail
+                      </button>
+                      {selectedInvoice.status !== 'Paid' && (
+                        <button
+                          onClick={() => handleAddPaymentToInvoice(selectedInvoice.id)}
+                          className="flex-1 py-2 bg-[#E54A13] text-white hover:bg-orange-700 font-bold rounded-lg font-mono uppercase tracking-wider text-[10px] transition-all cursor-pointer shadow-sm border-0"
+                        >
+                          Confirm payment
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex gap-2.5">
+                      <button
+                        onClick={() => handleOpenEditDoc(selectedInvoice)}
+                        className="flex-1 py-2 bg-white border border-slate-200 text-slate-755 text-slate-705 text-slate-700 hover:text-[#E54A13] hover:border-[#E54A13] font-bold rounded-lg font-mono uppercase tracking-wider text-[10px] transition-all cursor-pointer shadow-sm"
+                      >
+                        Edit Parameters
+                      </button>
+                      <button
+                        onClick={() => handleDeleteInvoice(selectedInvoice.id)}
+                        className="flex-1 py-2 bg-rose-50 border border-rose-100 hover:bg-rose-100 text-rose-600 hover:text-rose-700 font-bold rounded-lg font-mono uppercase tracking-wider text-[10px] transition-all cursor-pointer"
+                      >
+                        Delete Invoice
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2: RENDERED PDF PREVIEW (Exact look representing reference screenshots!) */}
+              {detailTab === 'preview' && (
+                <div className="p-1 overflow-x-auto">
+                  <InvoicePreview 
+                    invoice={selectedInvoice}
+                    businessDetails={businessDetails}
+                    bankAccount={bankAccount}
+                    templateSettings={templateSettings}
+                  />
+                  <div className="mt-4 p-5 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between text-xs font-mono shadow-inner">
+                    <div className="flex gap-2.5 items-center">
+                      <ShieldAlert className="w-5 h-5 text-[#E54A13]" />
+                      <div className="select-none">
+                        <p className="text-slate-800 font-bold">Fidelity Verification Complete</p>
+                        <p className="text-[10px] text-slate-550 text-slate-550 leading-normal mt-0.5">Vector fonts, handwriting path signatures and background patterns are correctly mapped.</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => alert("Simulation Action: Initializing standalone system print view...")}
+                      className="px-3.5 py-1.5 bg-white text-slate-700 border border-slate-200 hover:border-[#E54A13] hover:text-[#E54A13] hover:bg-orange-50/50 rounded uppercase font-bold text-[10.5px] cursor-pointer shadow-sm transition-all"
+                    >
+                      Print/Export PDF
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: TIMELINE HISTORY LOGS */}
+              {detailTab === 'history' && (
+                <div className="p-5 bg-slate-50 rounded-2xl space-y-4 font-mono text-xs border border-slate-200 shadow-inner">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-sans">Log Event Timeline</span>
+                  <div className="relative border-l border-slate-300 pl-4 space-y-5 ml-1 pt-1 pb-1 select-none">
+                    {selectedInvoice.history.map((h, i) => (
+                      <div key={i} className="relative">
+                        <span className="absolute -left-[20.5px] top-1 w-3 h-3 rounded-full bg-emerald-500 border-2 border-slate-50 outline outline-slate-300 outline-1" />
+                        <div>
+                          <p className="font-bold text-slate-800">{h.event}</p>
+                          <p className="text-[10.5px] text-slate-500 mt-0.5">
+                            {new Date(h.timestamp).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} at{' '}
+                            {new Date(h.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+            </div>
+          )}
+
+        </section>
+
+        {/* RIGHT COLUMN: Interactive Notifications Stream & Direct Actions Drawer (4 cols) */}
+        <section className="lg:col-span-4 space-y-6" id="right-workspace-column">
+          
+          {/* Quick Shortcuts Control Box */}
+          <div className="bg-white border border-slate-200 p-5 rounded-2xl space-y-4 shadow-sm">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 font-sans">Workspace Shortcut Controls</h3>
+            
+            <div className="grid grid-cols-2 gap-2.5">
+              <button
+                onClick={() => setIsCreatorOpen(true)}
+                className="py-2.5 px-3 bg-[#E54A13] hover:bg-orange-700 font-bold uppercase text-[10px] rounded-lg text-white flex flex-col items-center justify-center gap-1.5 transition-all text-center border-0 cursor-pointer shadow-sm"
+              >
+                <Plus className="w-4 h-4 text-white" />
+                <span>Issue Invoice</span>
+              </button>
+              <button
+                onClick={() => setIsSettingsOpen(true)}
+                className="py-2.5 px-3 bg-white border border-slate-200 hover:border-[#E54A13] hover:text-[#E54A13] hover:bg-orange-50/20 text-slate-600 rounded-lg flex flex-col items-center justify-center gap-1.5 transition-all text-center cursor-pointer shadow-sm"
+              >
+                <Settings className="w-4 h-4 text-[#E54A13]" />
+                <span>Preferences</span>
+              </button>
+            </div>
+
+            <div className="pt-2 border-t border-slate-200 grid grid-cols-2 gap-2 text-[10px] text-slate-500 uppercase font-mono tracking-wider font-bold">
+              <button 
+                onClick={() => setActiveScreen('catalogs')}
+                className={`py-1 rounded text-center border bg-transparent hover:text-[#E54A13] hover:border-[#E54A13] transition-all cursor-pointer ${activeScreen === 'catalogs' ? 'text-[#E54A13] border-[#E54A13]' : 'border-slate-200 text-slate-600'}`}
+              >
+                Predefine SKU
+              </button>
+              <button 
+                onClick={() => setActiveScreen('expenses')}
+                className={`py-1 rounded text-center border bg-transparent hover:text-[#E54A13] hover:border-[#E54A13] transition-all cursor-pointer ${activeScreen === 'expenses' ? 'text-[#E54A13] border-[#E54A13]' : 'border-slate-200 text-slate-600'}`}
+              >
+                Expenses Ledger
+              </button>
+            </div>
+          </div>
+
+          {/* REAL-TIME CLIENT LOG STREAM */}
+          <LiveNotifications 
+            notifications={notifications}
+            onAddNotification={handleAddNotification}
+            onClearNotifications={handleClearNotifications}
+          />
+
+          {/* Business identity overview banner */}
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 text-xs font-mono space-y-1.5 select-none text-slate-500 leading-normal shadow-sm">
+            <div className="flex justify-between font-bold text-slate-800 text-[10px] uppercase font-sans mb-1.5">
+              <span>Account Credentials</span>
+              <span className="text-[#E54A13] font-bold">Connected</span>
+            </div>
+            <p className="truncate text-slate-600">Client ID: Private Relay Account W44ZRHJSVB</p>
+            <p className="text-slate-600">Moniepoint Ledger: Registered</p>
+            <p className="text-slate-600">VAT registration: 123456789</p>
+          </div>
+
+        </section>
+
+      </main>
+
+      {/* FOOTER METRICS ROW */}
+      <footer className="bg-slate-950 border-t border-slate-850/60 p-4 mt-auto text-center text-[10.5px] font-mono text-slate-500">
+        <p>© 2026 SYLENS LIMITED. All systems nominal. Secure invoicing workspace.</p>
+      </footer>
+
+      {/* SLIDE-OUT INVOICE CREATOR MODAL WINDOW */}
+      {isCreatorOpen && (
+        <div className="fixed inset-0 z-50 flex justify-center items-center bg-slate-900/60 backdrop-blur-sm p-4" id="invoice-creator-overlay">
+          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-2xl h-full max-h-[92vh] flex flex-col overflow-hidden text-xs shadow-2xl">
+            
+            {/* Header toolbar */}
+            <div className="p-4 border-b border-slate-200 bg-white flex justify-between items-center shrink-0">
+              <h3 className="text-sm font-extrabold uppercase text-slate-950 flex items-center gap-2">
+                <Plus className="w-4 h-4 text-[#E54A13]" />
+                {editingInvoiceId ? `Modify Ledger Entry #${editingInvoiceId}` : 'Initialize New Commercial Bill'}
+              </h3>
+              <button 
+                onClick={() => { setIsCreatorOpen(false); resetCreatorStates(); }}
+                className="p-1 rounded-lg bg-slate-100 hover:bg-orange-50 text-slate-500 hover:text-[#E54A13] transition-all border-0 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Forms body container */}
+            <form onSubmit={handeSubmitNewInvoice} className="flex-1 overflow-y-auto p-5 space-y-5">
+              
+              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <span className="text-slate-500 block uppercase text-[10px] font-bold">Invoice Ref ID</span>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. 622 (Auto if empty)"
+                    value={invoiceIdInput}
+                    onChange={(e) => setInvoiceIdInput(e.target.value)}
+                    className="w-full bg-white border border-slate-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl px-2.5 py-1.5 text-xs text-slate-800 shadow-sm"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <span className="text-slate-500 block uppercase text-[10px] font-bold">Reference Order No</span>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. oozz27"
+                    value={newOrderNo}
+                    onChange={(e) => setNewOrderNo(e.target.value)}
+                    className="w-full bg-white border border-slate-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl px-2.5 py-1.5 text-xs text-slate-800 shadow-sm"
+                  />
+                </div>
+              </div>
+
+              {/* Client customer fields */}
+              <div className="space-y-3.5">
+                <span className="font-bold text-slate-800 uppercase tracking-widest text-[10px] font-sans block">Client customer coordinates</span>
+                <div className="space-y-1">
+                  <span className="text-slate-500">Billed Name / Entity</span>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. Pilot Abubakar"
+                    value={newClientName}
+                    onChange={(e) => setNewClientName(e.target.value)}
+                    className="w-full bg-white border border-slate-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl px-2.5 py-2 text-xs font-sans text-slate-800 shadow-sm"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <span className="text-slate-500">Contact Email Address</span>
+                    <input 
+                      type="email" 
+                      placeholder="e.g. pilot@example.com"
+                      value={newClientEmail}
+                      onChange={(e) => setNewClientEmail(e.target.value)}
+                      className="w-full bg-white border border-slate-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl px-2.5 py-2 text-xs font-sans text-slate-800 shadow-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <span className="text-slate-500">City Location</span>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Abuja"
+                      value={newClientCity}
+                      onChange={(e) => setNewClientCity(e.target.value)}
+                      className="w-full bg-white border border-slate-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl px-2.5 py-2 text-xs font-sans text-slate-800 shadow-sm"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-slate-500">Street / Area Address Description</span>
+                  <input 
+                    type="text" 
+                    placeholder="e.g. Asokoro Extension"
+                    value={newClientStreet}
+                    onChange={(e) => setNewClientStreet(e.target.value)}
+                    className="w-full bg-white border border-slate-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl px-2.5 py-2 text-xs font-sans text-slate-800 shadow-sm"
+                  />
+                </div>
+              </div>
+
+              {/* Items configuration lists */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-baseline flex-wrap">
+                  <span className="font-bold text-slate-800 uppercase tracking-widest text-[10px] font-sans block">Document Line Items</span>
+                  <span className="text-[10px] text-slate-500 font-sans">Add predefined item from selectors or define custom row</span>
+                </div>
+
+                {/* Predefined selection pill bars */}
+                <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
+                  <span className="text-[9px] text-slate-500 uppercase tracking-wider block font-sans font-bold">Predefined Catalog Items (Instantly Insert)</span>
+                  <div className="flex flex-wrap gap-2">
+                    {products.map(p => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => handleInsertPredefinedItem(p.id, 'product')}
+                        className="px-2.5 py-1 bg-white border border-slate-200 text-slate-700 rounded-lg hover:border-[#E54A13] hover:text-[#E54A13] hover:bg-orange-50/20 transition-all text-[11px] select-none text-left cursor-pointer font-sans shadow-sm font-semibold"
+                      >
+                        + Product: {p.name}
+                      </button>
+                    ))}
+                    {services.map(s => (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => handleInsertPredefinedItem(s.id, 'service')}
+                        className="px-2.5 py-1 bg-white border border-slate-200 text-slate-700 rounded-lg hover:border-[#E54A13] hover:text-[#E54A13] hover:bg-orange-50/20 transition-all text-[11px] select-none text-left cursor-pointer font-sans shadow-sm font-semibold"
+                      >
+                        + Service: {s.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Custom row dynamic adder */}
+                {isAddingCustomRow ? (
+                  <div className="p-4 bg-slate-50 rounded-2xl space-y-2.5 animate-slide-up text-[11px] border border-slate-200">
+                    <span className="font-bold uppercase text-[9px] text-slate-700 font-sans">Add Custom Row</span>
+                    <div className="space-y-1 bg-white p-3 rounded-xl border border-slate-200/80">
+                      <span className="font-bold">Description</span>
+                      <textarea 
+                        value={customRowDesc}
+                        onChange={(e) => setCustomRowDesc(e.target.value)}
+                        placeholder="Define item details..."
+                        className="w-full h-12 bg-white border border-slate-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl px-2.5 py-1.5 text-slate-800"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <span className="font-bold text-slate-550 text-slate-500">Price (₦)</span>
+                        <input 
+                          type="number" 
+                          value={customRowPrice || ''}
+                          onChange={(e) => setCustomRowPrice(parseFloat(e.target.value) || 0)}
+                          className="w-full bg-white border border-slate-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl p-1.5 text-slate-800"
+                        />
+                      </div>
+                      <div className="flex items-end justify-end">
+                        <button
+                          type="button"
+                          onClick={handleAddCustomRow}
+                          className="px-3.5 py-1.5 bg-[#E54A13] hover:bg-orange-700 text-white font-bold uppercase rounded-lg border-0 cursor-pointer shadow-sm"
+                        >
+                          Insert Inline
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setIsAddingCustomRow(true)}
+                    className="w-full py-2.5 bg-white border border-slate-200 border-dashed hover:border-[#E54A13] hover:text-[#E54A13] rounded-2xl text-slate-550 text-[11px] uppercase font-bold cursor-pointer transition-all shadow-sm"
+                  >
+                    + Define Arbitrary Item Row
+                  </button>
+                )}
+
+                {/* Grid list of selected items in the build */}
+                <div className="space-y-1.5">
+                  <span className="text-[10px] text-slate-550 font-bold uppercase">Selected items list ({selectedItemsList.length})</span>
+                  {selectedItemsList.length === 0 ? (
+                    <div className="text-center p-6 bg-slate-50 rounded-2xl border border-slate-200 text-slate-400 italic font-sans">
+                      No items added yet. Click preset items or specify a custom row above to proceed.
+                    </div>
+                  ) : (
+                    selectedItemsList.map((it, idx) => (
+                      <div key={it.id} className="p-3 bg-white border border-slate-200 rounded-2xl flex items-center justify-between shadow-sm">
+                        <div>
+                          <p className="font-bold text-slate-800 font-sans">{it.desc.split('\n')[0]}</p>
+                          <p className="text-[10px] text-slate-500 font-sans mt-0.5">Price: ₦{it.price.toLocaleString()} • Qty: {it.qty}</p>
+                        </div>
+                        <div className="flex gap-2.5 items-center">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedItemsList(prev => prev.map((item, i) => i === idx ? { ...item, qty: Math.max(1, item.qty - 1) } : item));
+                            }}
+                            className="w-6 h-6 bg-slate-100 border border-slate-200 hover:border-[#E54A13] rounded-full text-slate-500 hover:text-[#E54A13] flex items-center justify-center font-bold cursor-pointer font-sans"
+                          >
+                            -
+                          </button>
+                          <span className="font-bold text-slate-800 font-sans">{it.qty}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedItemsList(prev => prev.map((item, i) => i === idx ? { ...item, qty: item.qty + 1 } : item));
+                            }}
+                            className="w-6 h-6 bg-slate-100 border border-slate-200 hover:border-[#E54A13] rounded-full text-slate-500 hover:text-[#E54A13] flex items-center justify-center font-bold cursor-pointer font-sans"
+                          >
+                            +
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedItemsList(prev => prev.filter((_, i) => i !== idx));
+                            }}
+                            className="p-1 text-[#E54A13] hover:text-rose-700 font-bold ml-1.5 cursor-pointer"
+                            title="Remove item"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Shipping settings */}
+              <div className="grid grid-cols-2 gap-4 pt-2">
+                <div className="space-y-1">
+                  <span className="text-slate-500 block uppercase text-[10px] font-bold">Shipping Cargo Fee (₦)</span>
+                  <input 
+                    type="number" 
+                    value={newShipping || ''}
+                    onChange={(e) => setNewShipping(parseFloat(e.target.value) || 0)}
+                    className="w-full bg-white border border-slate-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl px-2.5 py-1.5 text-xs text-slate-800 shadow-sm font-sans"
+                    placeholder="2320"
+                    min="0"
+                  />
+                </div>
+                <div className="flex items-end justify-end text-right font-bold text-slate-700 text-sm py-2">
+                  <div className="w-full text-right leading-none">
+                    <span className="text-[10px] text-slate-500 uppercase block font-sans mb-1 font-bold">Interactive Subtotal</span>
+                    <span className="font-sans text-[#E54A13] text-lg font-extrabold block">
+                      ₦{(
+                        selectedItemsList.reduce((sum, item) => sum + item.qty * item.price, 0) + newShipping
+                      ).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Additional parameters: Dates & Tax */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
+                <div className="space-y-1">
+                  <span className="text-slate-500 block uppercase text-[10px] font-bold">Issue Date</span>
+                  <input 
+                    type="date" 
+                    value={newIssueDate}
+                    onChange={(e) => setNewIssueDate(e.target.value)}
+                    className="w-full bg-white border border-slate-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl px-2.5 py-1.5 text-xs text-slate-800 shadow-sm font-sans"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <span className="text-slate-500 block uppercase text-[10px] font-bold">Due Date</span>
+                  <input 
+                    type="date" 
+                    value={newDueDate}
+                    onChange={(e) => setNewDueDate(e.target.value)}
+                    className="w-full bg-white border border-slate-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl px-2.5 py-1.5 text-xs text-slate-800 shadow-sm font-sans"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <span className="text-slate-500 block uppercase text-[10px] font-bold">VAT Rate (%)</span>
+                  <input 
+                    type="number" 
+                    value={newVatRate}
+                    onChange={(e) => setNewVatRate(parseFloat(e.target.value) || 0)}
+                    className="w-full bg-white border border-slate-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl px-2.5 py-1.5 text-xs text-slate-800 shadow-sm font-sans"
+                    min="0"
+                    max="100"
+                  />
+                </div>
+              </div>
+
+              {/* TEMPLATE CHOOSER SHOWN WHEN DETAILS ARE IMPUTED */}
+              {newClientName && selectedItemsList.length > 0 && (
+                <div className="space-y-3 p-4 bg-slate-150 p-4 bg-slate-50 rounded-2xl border border-dashed border-[#E54A13]/40 animate-slide-up animate-slide-up">
+                  <div className="flex justify-between items-center">
+                    <span className="font-extrabold text-slate-800 uppercase tracking-widest text-[9.5px] block font-sans">Select Invoice Style Template (5 Varieties)</span>
+                    <span className="text-[10px] text-[#E54A13] font-sans font-extrabold uppercase">{selectedTemplate} Active</span>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                    {[
+                      { type: 'Stripe', label: 'Stripe style', desc: 'Sleek premium brand layout' },
+                      { type: 'Classic', label: 'Classic style', desc: 'Standard ledger borders layout' },
+                      { type: 'Serif', label: 'Serif style', desc: 'Editorial serif typography' },
+                      { type: 'Modern', label: 'Modern style', desc: 'Digital glowing tech design' },
+                      { type: 'Simple', label: 'Simple style', desc: 'Ultra-clean workspace focus' },
+                    ].map((tpl) => (
+                      <button
+                        key={tpl.type}
+                        type="button"
+                        onClick={() => setSelectedTemplate(tpl.type as any)}
+                        className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between h-20 outline-none ${
+                          selectedTemplate === tpl.type 
+                            ? 'bg-orange-50/80 border-[#E54A13] text-[#E54A13] shadow-md'
+                            : 'bg-white border-slate-200 text-slate-500 hover:border-[#E54A13] hover:text-[#E54A13] hover:bg-orange-50/10'
+                        }`}
+                      >
+                        <span className="font-black text-[10px] block leading-none font-sans">{tpl.label}</span>
+                        <span className="text-[8.5px] text-slate-400 font-sans leading-tight block mt-1">{tpl.desc}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Action buttons */}
+              <div className="pt-4 flex gap-3 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => { setIsCreatorOpen(false); resetCreatorStates(); }}
+                  className="flex-1 py-1 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl uppercase font-bold text-xs cursor-pointer border-0 shadow-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2.5 bg-[#E54A13] hover:bg-orange-700 text-white font-extrabold rounded-xl uppercase tracking-wider text-xs flex justify-center items-center gap-1.5 cursor-pointer shadow-md transition-all border-0"
+                >
+                  {editingInvoiceId ? 'Update & Record Invoice' : 'Save & Issue Document'}
+                </button>
+              </div>
+
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* GLOBAL SETTINGS SIDE-PANEL OVERLAY */}
+      <SettingsDrawer 
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        businessDetails={businessDetails}
+        onUpdateBusinessDetails={(det) => {
+          setBusinessDetails(det);
+          // Trigger mock log
+          handleAddNotification({
+            id: `notif-biz-${Date.now()}`,
+            title: 'Business Details Updated',
+            message: 'Registrations modified. Brand logo is refreshed.',
+            type: 'info',
+            timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+            read: false
+          });
+        }}
+        bankAccount={bankAccount}
+        onUpdateBankAccount={(bank) => {
+          setBankAccount(bank);
+          handleAddNotification({
+            id: `notif-bank-${Date.now()}`,
+            title: 'Payment Terms Updated',
+            message: `Custom Moniepoint ledger ${bank.accountNumber} assigned for payments routing.`,
+            type: 'info',
+            timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+            read: false
+          });
+        }}
+        vatSettings={vatSettings}
+        onUpdateVatSettings={(vat) => {
+          setVatSettings(vat);
+          handleAddNotification({
+            id: `notif-vat-${Date.now()}`,
+            title: 'VAT Rates Saved',
+            message: `Tax configuration initialized with global rate: ${vat.rate1}%.`,
+            type: 'info',
+            timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+            read: false
+          });
+        }}
+        templateSettings={templateSettings}
+        onUpdateTemplateSettings={(temp) => {
+          setTemplateSettings(temp);
+          handleAddNotification({
+            id: `notif-temp-${Date.now()}`,
+            title: 'Layout Saved',
+            message: `Templates modified to '${temp.templateType}' style format.`,
+            type: 'info',
+            timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+            read: false
+          });
+        }}
+      />
+
+    </div>
+  );
+}
