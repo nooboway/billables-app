@@ -419,14 +419,44 @@ export default function SettingsDrawer({
                 />
               </div>
 
+              {/* Paystack — first-class, rendered as a CTA on invoices */}
+              <div className="space-y-1.5 p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
+                <div className="flex items-center justify-between">
+                  <label className="text-emerald-300 font-semibold flex items-center gap-1.5">
+                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    Paystack Payment Link
+                  </label>
+                  {localBank.paystackLink && (
+                    <a
+                      href={localBank.paystackLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] uppercase font-bold tracking-wider text-emerald-400 hover:text-emerald-300"
+                    >
+                      Test link ↗
+                    </a>
+                  )}
+                </div>
+                <input
+                  type="url"
+                  value={localBank.paystackLink || ''}
+                  onChange={(e) => setLocalBank({ ...localBank, paystackLink: e.target.value })}
+                  className="w-full bg-stone-950 border border-stone-800 focus:border-emerald-500 rounded px-3 py-2 text-stone-200 outline-none font-mono"
+                  placeholder="https://paystack.com/pay/your-page"
+                />
+                <p className="text-[10px] text-stone-500 leading-snug">
+                  Shows as a "Pay with Paystack" button on every invoice for this workspace.
+                </p>
+              </div>
+
               <div className="space-y-1.5">
-                <label className="text-stone-400 font-semibold">Payment Link (e.g., Paystack)</label>
-                <input 
-                  type="url" 
+                <label className="text-stone-400 font-semibold">Other Payment Link (Stripe, PayPal, etc.)</label>
+                <input
+                  type="url"
                   value={localBank.paymentLink || ''}
                   onChange={(e) => setLocalBank({ ...localBank, paymentLink: e.target.value })}
                   className="w-full bg-stone-950 border border-stone-800 focus:border-emerald-500 rounded px-3 py-2 text-stone-200 outline-none font-mono"
-                  placeholder="https://paystack.com/pay/..."
+                  placeholder="https://..."
                 />
               </div>
 

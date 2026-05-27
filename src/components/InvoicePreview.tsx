@@ -35,7 +35,34 @@ export default function InvoicePreview({
   const activeTemplate = invoice.templateType || 'Stripe';
   const colorAccent = templateSettings.color || '#4f46e5';
 
-  const qrValue = bankAccount.paymentLink || `Bank: ${bankAccount.bankName}\nAccount: ${bankAccount.accountNumber}\nName: ${bankAccount.accountHolder}`;
+  // QR prefers Paystack (most actionable for buyer), then any generic
+  // payment link, then a plain-text bank-transfer fallback.
+  const qrValue = bankAccount.paystackLink
+    || bankAccount.paymentLink
+    || `Bank: ${bankAccount.bankName}\nAccount: ${bankAccount.accountNumber}\nName: ${bankAccount.accountHolder}`;
+
+  // Reusable Paystack CTA — appears in every template's footer when
+  // the workspace has a paystackLink configured.
+  const PaystackCTA = () => bankAccount.paystackLink ? (
+    <a
+      href={bankAccount.paystackLink}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-colors no-underline"
+      style={{
+        background: '#0BA4DB',
+        color: '#fff',
+        boxShadow: '0 1px 2px rgba(0,0,0,0.08)',
+      }}
+    >
+      <span style={{
+        display: 'inline-block', width: 14, height: 14, borderRadius: 3,
+        background: '#fff', color: '#0BA4DB',
+        fontSize: 9, fontWeight: 900, textAlign: 'center', lineHeight: '14px',
+      }}>P</span>
+      Pay with Paystack
+    </a>
+  ) : null;
 
   if (activeTemplate === 'Classic') {
     return (
@@ -154,6 +181,12 @@ export default function InvoicePreview({
             </div>
           </div>
 
+          {bankAccount.paystackLink && (
+            <div className="mt-6 pt-4 border-t border-stone-200 flex items-center justify-between">
+              <span className="text-[10px] text-stone-500 uppercase tracking-wider font-bold">Pay this invoice</span>
+              <PaystackCTA />
+            </div>
+          )}
           <div className="mt-6 pt-4 border-t border-stone-250 flex items-center justify-between text-[9px] text-stone-500 font-mono">
             <div>
               {bankAccount.bankName} Account: {bankAccount.accountNumber} • Holder: {bankAccount.accountHolder}
@@ -290,6 +323,12 @@ export default function InvoicePreview({
             </div>
           </div>
 
+          {bankAccount.paystackLink && (
+            <div className="mt-6 pt-4 border-t border-amber-900/10 flex items-center justify-between">
+              <span className="text-[10px] text-amber-800/70 uppercase tracking-wider font-bold font-serif">Pay this invoice</span>
+              <PaystackCTA />
+            </div>
+          )}
           <div className="mt-8 pt-4 border-t border-amber-900/10 flex items-center justify-between text-[10px] text-amber-800/60 font-serif">
             <div>
               Direct Routing Bank: {bankAccount.bankName} • Account Holder: {bankAccount.accountHolder} • Account Number: {bankAccount.accountNumber}
@@ -431,6 +470,12 @@ export default function InvoicePreview({
             </div>
           </div>
 
+          {bankAccount.paystackLink && (
+            <div className="mt-6 pt-4 border-t border-stone-800 flex items-center justify-between">
+              <span className="text-[10px] text-[#E54A13] uppercase tracking-widest font-bold">Pay this invoice</span>
+              <PaystackCTA />
+            </div>
+          )}
           <div className="mt-6 pt-4 border-t border-stone-850 flex items-center justify-between text-[9.5px] text-stone-500">
             <div>
               PAYMENT_BRIDGE: {bankAccount.bankName} // ROUTING_HEX: #{bankAccount.accountNumber} // OWNER: {bankAccount.accountHolder}
@@ -548,6 +593,12 @@ export default function InvoicePreview({
             </div>
           </div>
 
+          {bankAccount.paystackLink && (
+            <div className="mt-6 pt-4 border-t border-stone-200 flex items-center justify-between">
+              <span className="text-[10px] text-stone-500 uppercase tracking-wider font-bold">Pay this invoice</span>
+              <PaystackCTA />
+            </div>
+          )}
           <div className="mt-6 pt-4 border-t border-stone-100 flex items-center justify-between text-[9px] text-stone-400">
             <div>
               Bank transfer to: {bankAccount.bankName} / Account Number: {bankAccount.accountNumber} (Holder: {bankAccount.accountHolder})

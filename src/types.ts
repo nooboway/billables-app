@@ -36,7 +36,11 @@ export interface BankAccount {
   iban: string;
   bicSwift: string;
   bankAddress: string;
+  /** Generic payment link (Stripe, PayPal, custom checkout). */
   paymentLink?: string;
+  /** Paystack-specific link. Rendered as a dedicated CTA button on
+   *  invoices, distinct from the generic paymentLink. */
+  paystackLink?: string;
 }
 
 export interface VatSettings {
