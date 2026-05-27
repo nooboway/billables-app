@@ -101,7 +101,14 @@ const AnimatedCounter = ({ value, prefix = '', fractionDigits = 2 }: { value: nu
     return () => cancelAnimationFrame(frameId);
   }, [value]);
 
-  return <>{prefix}{currentValue.toLocaleString('en-US', { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits })}</>;
+  // tabular-nums + Inter so digits don't jiggle as the counter animates
+  // and the figure reads as a professional financial number rather
+  // than as terminal/code output.
+  return (
+    <span style={{ fontFamily: 'var(--font)', fontVariantNumeric: 'tabular-nums', fontFeatureSettings: '"tnum"' }}>
+      {prefix}{currentValue.toLocaleString('en-US', { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits })}
+    </span>
+  );
 };
 
 type Screen = 'landing' | 'overview' | 'documents' | 'catalogs' | 'reports' | 'expenses';
@@ -840,7 +847,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     </span>
                   </div>
                   <div>
-                    <h3 className="text-2xl font-black text-emerald-600 font-mono tracking-tight animate-pulse-dot" style={{ animationIterationCount: 1 }}>
+                    <h3 className="text-2xl font-black text-emerald-600 tracking-tight tabular-nums animate-pulse-dot" style={{ animationIterationCount: 1 }}>
                       <AnimatedCounter prefix={templateSettings.currencySymbol} value={paidVal} />
                     </h3>
                     <p className="text-[9.5px] text-stone-400 font-mono uppercase mt-1">Settled & Confirmed Ledger Balance</p>
@@ -862,7 +869,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     </span>
                   </div>
                   <div>
-                    <h3 className="text-2xl font-black text-[#E54A13] font-mono tracking-tight">
+                    <h3 className="text-2xl font-black text-[#E54A13] tracking-tight tabular-nums">
                       <AnimatedCounter prefix={templateSettings.currencySymbol} value={unpaidVal + overdueVal} />
                     </h3>
                     <p className="text-[9.5px] text-[#E54A13]/80 font-mono uppercase mt-1">Pending Bank Transfer Receivables</p>
@@ -882,7 +889,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     <span className="text-[9.5px] text-[#E54A13] font-mono font-black uppercase">Active Ledger</span>
                   </div>
                   <div>
-                    <h3 className="text-2xl font-black text-stone-900 font-mono tracking-tight">
+                    <h3 className="text-2xl font-black text-stone-900 tracking-tight tabular-nums">
                       <AnimatedCounter value={unpaidCount + overdueCount} fractionDigits={0} /> <span className="text-xs text-stone-400 font-sans font-normal">invoices</span>
                     </h3>
                     <div className="flex gap-2.5 mt-1 font-mono text-[9.5px]">
@@ -954,7 +961,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                         <div 
                           key={inv.id}
                           onClick={() => { setSelectedInvoiceId(inv.id); setDetailTab('summary'); }}
-                          className="py-3.5 flex justify-between items-center hover:bg-stone-50 px-3 rounded-lg transition-all cursor-pointer group text-xs font-mono"
+                          className="py-3.5 flex justify-between items-center hover:bg-stone-50 px-3 rounded-lg transition-all cursor-pointer group text-xs"
                         >
                           <div className="flex items-center gap-3.5">
                             <div className="w-9 h-9 rounded-full bg-stone-100 border border-stone-200 flex items-center justify-center font-black text-stone-600 uppercase font-sans text-xs">
@@ -977,7 +984,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="font-bold text-stone-900 text-sm font-mono tracking-tight">
+                            <p className="font-bold text-stone-900 text-sm tracking-tight tabular-nums">
                               {templateSettings.currencySymbol}{totalVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                             </p>
                             <span className="text-[9px] font-bold text-stone-400 tracking-wide uppercase">
@@ -1055,7 +1062,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                   <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-3" />
                 </div>
 
-                <div className="divide-y divide-stone-100 text-xs font-mono select-none">
+                <div className="divide-y divide-stone-100 text-xs select-none">
                   {invoices.map(inv => {
                     const totalVal = inv.items.reduce((s,i) => s + i.amount, 0) + inv.shippingFee;
                     return (
@@ -1072,7 +1079,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-bold text-stone-900 font-mono text-sm">{templateSettings.currencySymbol}{totalVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+                          <p className="font-bold text-stone-900 text-sm tabular-nums">{templateSettings.currencySymbol}{totalVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
                           <span className={`px-1.5 py-0.2 rounded border text-[8.5px] font-bold uppercase mt-1 inline-block ${
                             inv.status === 'Paid' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' :
                             inv.status === 'Overdue' ? 'bg-rose-50 border-rose-100 text-rose-600' : 'bg-orange-50 border-orange-100 text-[#E54A13]'
@@ -1249,7 +1256,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
 
               {/* TAB 1: SUMMARY DETAILS */}
               {detailTab === 'summary' && (
-                <div className="p-5 bg-stone-50 rounded-2xl space-y-4 font-mono text-xs border border-stone-100 shadow-inner select-none">
+                <div className="p-5 bg-stone-50 rounded-2xl space-y-4 text-xs border border-stone-100 shadow-inner select-none">
                   <div className="space-y-1">
                     <span className="text-stone-400 uppercase text-[9px] font-bold">Client customer details</span>
                     <p className="text-sm font-bold text-stone-900 font-sans">{selectedInvoice.clientName}</p>
@@ -1380,7 +1387,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
 
               {/* TAB 3: TIMELINE HISTORY LOGS */}
               {detailTab === 'history' && (
-                <div className="p-5 bg-stone-50 rounded-2xl space-y-4 font-mono text-xs border border-stone-200 shadow-inner">
+                <div className="p-5 bg-stone-50 rounded-2xl space-y-4 text-xs border border-stone-200 shadow-inner">
                   <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest font-sans">Log Event Timeline</span>
                   <div className="relative border-l border-stone-300 pl-4 space-y-5 ml-1 pt-1 pb-1 select-none">
                     {selectedInvoice.history.map((h, i) => (
