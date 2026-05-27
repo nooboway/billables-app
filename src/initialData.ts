@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { BusinessDetails, BankAccount, VatSettings, TemplateSettings, Invoice, Product, Service, Expense } from './types';
+import { BusinessDetails, BankAccount, VatSettings, TemplateSettings, Invoice, Product, Service, Expense, Workspace } from './types';
 
 // Let's create highly polished inline SVG data URLs for high-fidelity rendering without external dependencies
 export const DEFAULT_LOGO_SVG = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
@@ -191,6 +191,23 @@ export const INITIAL_SERVICES: Service[] = [
     discount: 5,
     durationMinutes: 60,
   }
+];
+
+/** Seed workspace used on a brand-new install (no existing data). The
+ *  migration in lib/persistence.ts builds a workspace from the user's
+ *  existing flat keys when those are present, so this is only consulted
+ *  the very first time the app runs in a fresh browser. */
+export const SEED_WORKSPACE_ID = 'ws_1';
+
+export const INITIAL_WORKSPACES: Workspace[] = [
+  {
+    id: SEED_WORKSPACE_ID,
+    businessDetails: INITIAL_BUSINESS_DETAILS,
+    bankAccount: INITIAL_BANK_ACCOUNT,
+    vatSettings: INITIAL_VAT_SETTINGS,
+    templateSettings: INITIAL_TEMPLATE_SETTINGS,
+    createdAt: new Date().toISOString(),
+  },
 ];
 
 export const INITIAL_EXPENSES: Expense[] = [

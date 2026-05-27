@@ -59,6 +59,7 @@ import {
 } from './initialData';
 
 import { useLocalStorage } from './lib/persistence';
+import { useWorkspaces, useScopedLocalStorage, useWorkspaceIdentity } from './lib/workspaces';
 import { useNavigate } from './Root';
 
 import InvoicePreview from './components/InvoicePreview';
@@ -135,21 +136,30 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
   // Document level tab for documents list
   const [docTab, setDocTab] = useState<'invoices' | 'estimates'>('invoices');
 
-  // Core business & preferences — persisted to localStorage under the
-  // billables_* namespace (legacy sylens_* keys are migrated on first
-  // mount by lib/persistence.ts).
-  const [businessDetails, setBusinessDetails] = useLocalStorage<BusinessDetails>('business', INITIAL_BUSINESS_DETAILS);
-  const [bankAccount, setBankAccount]         = useLocalStorage<BankAccount>('bank', INITIAL_BANK_ACCOUNT);
-  const [vatSettings, setVatSettings]         = useLocalStorage<VatSettings>('vat', INITIAL_VAT_SETTINGS);
-  const [templateSettings, setTemplateSettings] = useLocalStorage<TemplateSettings>('template', INITIAL_TEMPLATE_SETTINGS);
+  // Workspaces (multi-business). Each workspace owns its own identity
+  // and its own scoped pool of invoices/products/services/expenses/
+  // notifications. Switching workspace re-mounts the App subtree (see
+  // Root.tsx keying) so the scoped hooks re-read from the new keys.
+  const { active: activeWorkspace, activeId, workspaces, setActiveId,
+          addWorkspace, renameWorkspace, removeWorkspace,
+          updateWorkspace } = useWorkspaces();
 
-  // Business items
-  const [invoices, setInvoices]   = useLocalStorage<Invoice[]>('invoices', INITIAL_INVOICES);
-  const [products, setProducts]   = useLocalStorage<Product[]>('products', INITIAL_PRODUCTS);
-  const [services, setServices]   = useLocalStorage<Service[]>('services', INITIAL_SERVICES);
-  const [expenses, setExpenses]   = useLocalStorage<Expense[]>('expenses', INITIAL_EXPENSES);
+  // Identity comes off the active workspace; setters mutate the
+  // workspace record rather than separate flat keys.
+  const businessDetails = activeWorkspace.businessDetails ?? INITIAL_BUSINESS_DETAILS;
+  const bankAccount     = activeWorkspace.bankAccount     ?? INITIAL_BANK_ACCOUNT;
+  const vatSettings     = activeWorkspace.vatSettings     ?? INITIAL_VAT_SETTINGS;
+  const templateSettings= activeWorkspace.templateSettings?? INITIAL_TEMPLATE_SETTINGS;
+  const { setBusinessDetails, setBankAccount, setVatSettings, setTemplateSettings } =
+    useWorkspaceIdentity(activeWorkspace, updateWorkspace);
 
-  const [notifications, setNotifications] = useLocalStorage<Notification[]>('notifications', [
+  // Per-workspace entity pools.
+  const [invoices, setInvoices]   = useScopedLocalStorage<Invoice[]>('invoices', activeId, INITIAL_INVOICES);
+  const [products, setProducts]   = useScopedLocalStorage<Product[]>('products', activeId, INITIAL_PRODUCTS);
+  const [services, setServices]   = useScopedLocalStorage<Service[]>('services', activeId, INITIAL_SERVICES);
+  const [expenses, setExpenses]   = useScopedLocalStorage<Expense[]>('expenses', activeId, INITIAL_EXPENSES);
+
+  const [notifications, setNotifications] = useScopedLocalStorage<Notification[]>('notifications', activeId, [
     {
       id: 'init-notif',
       title: 'Workspace Activated',

@@ -26,12 +26,14 @@ const LEGACY_KEY_MAP: Record<string, string> = {
   sylens_notifications:  KEY_PREFIX + 'notifications',
 };
 
-const MIGRATION_FLAG = KEY_PREFIX + 'migrated_v1';
+const MIGRATION_FLAG_V1 = KEY_PREFIX + 'migrated_v1';
+const MIGRATION_FLAG_V2 = KEY_PREFIX + 'migrated_v2';
 
-function runMigrationOnce(): void {
+/** v1: rename `sylens_*` → `billables_*`. Idempotent via flag. */
+function runMigrationV1(): void {
   if (typeof window === 'undefined') return;
   try {
-    if (localStorage.getItem(MIGRATION_FLAG)) return;
+    if (localStorage.getItem(MIGRATION_FLAG_V1)) return;
     for (const [oldKey, newKey] of Object.entries(LEGACY_KEY_MAP)) {
       const existing = localStorage.getItem(oldKey);
       if (existing !== null && localStorage.getItem(newKey) === null) {
@@ -39,13 +41,69 @@ function runMigrationOnce(): void {
       }
       localStorage.removeItem(oldKey);
     }
-    localStorage.setItem(MIGRATION_FLAG, '1');
+    localStorage.setItem(MIGRATION_FLAG_V1, '1');
   } catch {
     // Private mode / quota exceeded — silently bail. Reads & writes
     // below all fall back to defaults if storage is unavailable.
   }
 }
-runMigrationOnce();
+
+/**
+ * v2: introduce workspaces.
+ *
+ * Pre-v2 the app had a single business identity at `billables_business`
+ * (+ bank/vat/template) and flat entity pools at `billables_invoices`,
+ * `billables_products`, etc.
+ *
+ * Post-v2 each workspace owns its own identity AND its own scoped
+ * entity pools at `billables_invoices_<wsId>`, etc. The migration
+ * wraps the existing flat data into workspace `ws_1` and copies the
+ * entity arrays into the scoped keys. The flat keys are LEFT IN PLACE
+ * for one release as a safety net — a future cleanup commit will
+ * remove them.
+ */
+const SCOPED_ENTITY_KEYS = ['invoices', 'products', 'services', 'expenses', 'notifications'] as const;
+const SEED_WS_ID = 'ws_1';
+
+function runMigrationV2(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    if (localStorage.getItem(MIGRATION_FLAG_V2)) return;
+    if (localStorage.getItem(KEY_PREFIX + 'workspaces')) {
+      localStorage.setItem(MIGRATION_FLAG_V2, '1');
+      return;
+    }
+
+    const readRaw = (n: string) => localStorage.getItem(KEY_PREFIX + n);
+
+    const workspace = {
+      id: SEED_WS_ID,
+      businessDetails:  readRaw('business') ? JSON.parse(readRaw('business')!)  : null,
+      bankAccount:      readRaw('bank')     ? JSON.parse(readRaw('bank')!)      : null,
+      vatSettings:      readRaw('vat')      ? JSON.parse(readRaw('vat')!)       : null,
+      templateSettings: readRaw('template') ? JSON.parse(readRaw('template')!)  : null,
+      createdAt: new Date().toISOString(),
+    };
+
+    localStorage.setItem(KEY_PREFIX + 'workspaces', JSON.stringify([workspace]));
+    localStorage.setItem(KEY_PREFIX + 'active_workspace', SEED_WS_ID);
+
+    for (const key of SCOPED_ENTITY_KEYS) {
+      const flat = readRaw(key);
+      const scoped = readRaw(`${key}_${SEED_WS_ID}`);
+      if (flat !== null && scoped === null) {
+        localStorage.setItem(KEY_PREFIX + `${key}_${SEED_WS_ID}`, flat);
+      }
+    }
+
+    localStorage.setItem(MIGRATION_FLAG_V2, '1');
+  } catch {
+    // ignore
+  }
+}
+
+runMigrationV1();
+runMigrationV2();
 
 /** Namespaced key builder for direct localStorage reads/writes. */
 export const k = (name: string): string => KEY_PREFIX + name;

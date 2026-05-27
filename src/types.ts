@@ -138,3 +138,22 @@ export interface Notification {
   type: 'info' | 'success' | 'warning' | 'alert';
   read: boolean;
 }
+
+/**
+ * A Workspace is one business. Each workspace owns its own identity
+ * (business + bank + VAT + invoice template) and has an independent
+ * pool of invoices, products, services, expenses, and notifications.
+ *
+ * Storage strategy: each per-entity localStorage key is suffixed with
+ * the workspace id (e.g. `billables_invoices_ws_1`). Switching the
+ * active workspace just changes which key we read, so the existing
+ * useLocalStorage hook can stay unchanged.
+ */
+export interface Workspace {
+  id: string;                       // e.g. "ws_1", "ws_<short>"
+  businessDetails: BusinessDetails;
+  bankAccount: BankAccount;
+  vatSettings: VatSettings;
+  templateSettings: TemplateSettings;
+  createdAt: string;                // ISO timestamp
+}
