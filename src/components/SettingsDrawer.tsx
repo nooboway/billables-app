@@ -6,6 +6,7 @@
 import React, { useState } from 'react';
 import { X, Save, Building, CreditCard, Percent, Palette, Globe, Shield, UserCheck, AlertCircle } from 'lucide-react';
 import { BusinessDetails, BankAccount, VatSettings, TemplateSettings } from '../types';
+import { ACCENTS } from '../lib/accent';
 
 interface SettingsDrawerProps {
   isOpen: boolean;
@@ -66,15 +67,10 @@ export default function SettingsDrawer({
     setActiveSection('menu');
   };
 
-  // Color options for layout presets
-  const ACCENT_COLORS = [
-    { name: 'Teal Green', value: '#22c55e' },
-    { name: 'Royal Blue', value: '#2563eb' },
-    { name: 'Moniepoint Blue', value: '#0284c7' },
-    { name: 'Steel Slate', value: '#475569' },
-    { name: 'Neon Purple', value: '#a855f7' },
-    { name: 'Rose Red', value: '#e11d48' },
-  ];
+  // Curated 4-preset accent palette. Each preset re-skins the entire
+  // UI (every var(--primary) consumer) the moment it's selected.
+  // Custom hex picker below still works for off-palette brands.
+  const ACCENT_COLORS = ACCENTS.map(a => ({ name: a.name, value: a.color }));
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end" id="settings-drawer-backdrop">
@@ -566,24 +562,31 @@ export default function SettingsDrawer({
           {activeSection === 'template' && (
             <form onSubmit={handleSaveTemplate} className="space-y-4 animate-slide-up font-mono">
               <div className="space-y-2">
-                <label className="text-stone-400 font-semibold uppercase tracking-wider text-[10px] font-display">Accent Branding Colour Color</label>
-                <div className="grid grid-cols-6 gap-2">
-                  {ACCENT_COLORS.map((color) => (
-                    <button
-                      key={color.value}
-                      type="button"
-                      onClick={() => setLocalTemplate({ ...localTemplate, color: color.value })}
-                      className={`h-10 rounded-lg border-2 flex items-center justify-center transition-all cursor-pointer ${
-                        localTemplate.color === color.value ? 'border-amber-400 scale-105' : 'border-transparent hover:scale-[1.02]'
-                      }`}
-                      style={{ backgroundColor: color.value }}
-                      title={color.name}
-                    >
-                      {localTemplate.color === color.value && (
-                        <span className="w-2 h-2 rounded-full bg-white outline outline-black outline-2" />
-                      )}
-                    </button>
-                  ))}
+                <label className="text-stone-400 font-semibold uppercase tracking-wider text-[10px] font-display">Workspace accent</label>
+                <p className="text-[10.5px] text-stone-500 leading-snug">Re-skins this workspace instantly. Each business can have its own brand color.</p>
+                <div className="grid grid-cols-4 gap-2 pt-1">
+                  {ACCENT_COLORS.map((color) => {
+                    const isActive = localTemplate.color?.toLowerCase() === color.value.toLowerCase();
+                    return (
+                      <button
+                        key={color.value}
+                        type="button"
+                        onClick={() => setLocalTemplate({ ...localTemplate, color: color.value })}
+                        className={`p-2.5 rounded-lg border-2 flex flex-col items-center gap-1.5 transition-all cursor-pointer ${
+                          isActive ? 'border-white/40 bg-white/5' : 'border-stone-800 hover:border-stone-700'
+                        }`}
+                        title={color.name}
+                      >
+                        <span
+                          className="w-8 h-8 rounded-full shadow-inner"
+                          style={{ backgroundColor: color.value, boxShadow: isActive ? `0 0 0 2px ${color.value}55` : undefined }}
+                        />
+                        <span className={`text-[9.5px] font-bold uppercase tracking-wider ${isActive ? 'text-white' : 'text-stone-500'}`}>
+                          {color.name}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
                 {/* Manual color picker input */}
                 <div className="flex gap-2.5 items-center mt-2 bg-stone-950 p-2.5 rounded border border-stone-800 font-sans text-xs">

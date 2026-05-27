@@ -60,6 +60,7 @@ import {
 
 import { useLocalStorage } from './lib/persistence';
 import { useWorkspaces, useScopedLocalStorage, useWorkspaceIdentity } from './lib/workspaces';
+import { applyAccent } from './lib/accent';
 import { useNavigate } from './Root';
 import WorkspaceSwitcher from './components/WorkspaceSwitcher';
 
@@ -183,6 +184,13 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
   const [isCreatorOpen, setIsCreatorOpen] = useState(false);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(initialInvoiceId);
   const [detailTab, setDetailTab] = useState<'summary' | 'preview' | 'history'>('summary');
+
+  // Apply the active workspace's accent color to the document root so
+  // every var(--primary) reference re-skins instantly when the user
+  // switches workspace or picks a different brand color in Settings.
+  useEffect(() => {
+    applyAccent(templateSettings.color);
+  }, [templateSettings.color]);
 
   // URL sync — whenever the active screen or selected invoice changes,
   // mirror it into the URL bar so deep links + browser back/forward work
