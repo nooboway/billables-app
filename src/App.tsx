@@ -5,6 +5,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 import { 
   Settings, 
   HelpCircle, 
@@ -133,6 +135,9 @@ export default function App() {
 
   // Inspector client status filter
   const [inspectorStatusFilter, setInspectorStatusFilter] = useState<'All' | 'Paid' | 'Unpaid' | 'Overdue'>('All');
+
+  // PDF Export loading state
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   // Search filter query
   const [searchQuery, setSearchQuery] = useState('');
@@ -535,6 +540,89 @@ export default function App() {
     }
   };
 
+  const handleDownloadPDF = async () => {
+    if (!selectedInvoice) return;
+    setIsGeneratingPDF(true);
+
+    handleAddNotification({
+      id: `notif-pdf-start-${Date.now()}`,
+      title: 'Assembling Export',
+      message: `Packaging document visuals of Invoice #${selectedInvoice.id} clientside...`,
+      type: 'info',
+      timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      read: false
+    });
+
+    const element = document.getElementById('invoice-capture-area');
+    if (!element) {
+      alert('Preview capture target container was not found in the DOM.');
+      setIsGeneratingPDF(false);
+      return;
+    }
+
+    try {
+      // Small delay for asset stability and nice UX
+      await new Promise(r => setTimeout(r, 450));
+
+      const canvas = await html2canvas(element, {
+        scale: 2, // High resolution crisp DPI multiplier
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        backgroundColor: '#ffffff', // Clean white paper background
+        scrollX: 0,
+        scrollY: -window.scrollY
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: 'a4',
+        compress: true
+      });
+
+      const imgWidth = 210; // Width of A4 in mm
+      const pageHeight = 297; // Height of A4 in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight, undefined, 'FAST');
+        heightLeft -= pageHeight;
+      }
+
+      pdf.save(`invoice-${selectedInvoice.id}.pdf`);
+
+      handleAddNotification({
+        id: `notif-pdf-success-${Date.now()}`,
+        title: 'Document Saved',
+        message: `High-fidelity PDF of Invoice #${selectedInvoice.id} compiled and saved.`,
+        type: 'success',
+        timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        read: false
+      });
+    } catch (err: any) {
+      console.error(err);
+      handleAddNotification({
+        id: `notif-pdf-fail-${Date.now()}`,
+        title: 'PDF Save Failed',
+        message: err?.message || 'Error occurred during rendering steps.',
+        type: 'warning',
+        timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+        read: false
+      });
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
   if (activeScreen === 'landing') {
     return <MarketingHero onEnterApp={() => setActiveScreen('overview')} />;
   }
@@ -666,7 +754,13 @@ export default function App() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5" id="overview-financial-cards-grid">
                 
                 {/* CARD 1: TOTAL AMOUNT PAID */}
-                <div className="bg-white border border-stone-200 rounded-2xl p-6 flex flex-col justify-between h-36 feature-card shadow-sm cursor-pointer hover-lift hover-glow transition-all duration-300">
+                <motion.div
+                  initial={{ opacity: 0, y: 22 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-15px" }}
+                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: 0.08 }}
+                  className="bg-white border border-stone-200 rounded-2xl p-6 flex flex-col justify-between h-36 feature-card shadow-sm cursor-pointer hover-lift hover-glow transition-all duration-300"
+                >
                   <div className="flex justify-between items-start">
                     <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Total Amount Paid</span>
                     <span className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold flex items-center justify-center font-mono text-[9.5px]">
@@ -679,10 +773,16 @@ export default function App() {
                     </h3>
                     <p className="text-[9.5px] text-stone-400 font-mono uppercase mt-1">Settled & Confirmed Ledger Balance</p>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* CARD 2: TOTAL AMOUNT DUE */}
-                <div className="bg-white border border-stone-200 rounded-2xl p-6 flex flex-col justify-between h-36 feature-card shadow-sm cursor-pointer hover-lift hover-glow transition-all duration-300">
+                <motion.div
+                  initial={{ opacity: 0, y: 22 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-15px" }}
+                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: 0.16 }}
+                  className="bg-white border border-stone-200 rounded-2xl p-6 flex flex-col justify-between h-36 feature-card shadow-sm cursor-pointer hover-lift hover-glow transition-all duration-300"
+                >
                   <div className="flex justify-between items-start">
                     <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Total Amount Due</span>
                     <span className="w-5 h-5 rounded-full bg-rose-50 text-rose-600 border border-rose-100 font-bold flex items-center justify-center font-mono text-[9.5px]">
@@ -695,10 +795,16 @@ export default function App() {
                     </h3>
                     <p className="text-[9.5px] text-[#E54A13]/80 font-mono uppercase mt-1">Pending Bank Transfer Receivables</p>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* CARD 3: OUTSTANDING INVOICES */}
-                <div className="bg-white border border-stone-200 rounded-2xl p-6 flex flex-col justify-between h-36 feature-card shadow-sm cursor-pointer hover-lift hover-glow transition-all duration-300">
+                <motion.div
+                  initial={{ opacity: 0, y: 22 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-15px" }}
+                  transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: 0.24 }}
+                  className="bg-white border border-stone-200 rounded-2xl p-6 flex flex-col justify-between h-36 feature-card shadow-sm cursor-pointer hover-lift hover-glow transition-all duration-300"
+                >
                   <div className="flex justify-between items-start">
                     <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Outstanding Bills</span>
                     <span className="text-[9.5px] text-[#E54A13] font-mono font-black uppercase">Active Ledger</span>
@@ -713,7 +819,7 @@ export default function App() {
                       <span className="text-[#E54A13] font-bold">{unpaidCount} Pending</span>
                     </div>
                   </div>
-                </div>
+                </motion.div>
 
               </div>
 
@@ -1168,26 +1274,33 @@ export default function App() {
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.2, ease: 'easeOut' }}
                   >
-                    <InvoicePreview 
-                      invoice={selectedInvoice}
-                      businessDetails={businessDetails}
-                      bankAccount={bankAccount}
-                      templateSettings={templateSettings}
-                    />
+                    <div id="invoice-capture-area" className="w-full">
+                      <InvoicePreview 
+                        invoice={selectedInvoice}
+                        businessDetails={businessDetails}
+                        bankAccount={bankAccount}
+                        templateSettings={templateSettings}
+                      />
+                    </div>
                   </motion.div>
                   <div className="mt-4 p-5 bg-stone-50 border border-stone-200 rounded-2xl flex items-center justify-between text-xs font-mono shadow-inner">
                     <div className="flex gap-2.5 items-center">
                       <ShieldAlert className="w-5 h-5 text-[#E54A13]" />
                       <div className="select-none">
                         <p className="text-stone-800 font-bold">Fidelity Verification Complete</p>
-                        <p className="text-[10px] text-stone-550 text-stone-550 leading-normal mt-0.5">Vector fonts, handwriting path signatures and background patterns are correctly mapped.</p>
+                        <p className="text-[10px] text-stone-550 leading-normal mt-0.5">Vector fonts, handwriting path signatures and background patterns are correctly mapped.</p>
                       </div>
                     </div>
                     <button
-                      onClick={() => alert("Simulation Action: Initializing standalone system print view...")}
-                      className="px-3.5 py-1.5 bg-white text-stone-700 border border-stone-200 hover:border-[#E54A13] hover:text-[#E54A13] hover:bg-orange-50/50 rounded uppercase font-bold text-[10.5px] cursor-pointer shadow-sm transition-all"
+                      onClick={handleDownloadPDF}
+                      disabled={isGeneratingPDF}
+                      className={`px-3.5 py-1.5 rounded uppercase font-bold text-[10.5px] cursor-pointer shadow-sm transition-all border ${
+                        isGeneratingPDF
+                          ? 'bg-orange-100 border-orange-300 text-orange-700 cursor-wait animate-pulse'
+                          : 'bg-white text-stone-700 border-stone-200 hover:border-[#E54A13] hover:text-[#E54A13] hover:bg-orange-50/50'
+                      }`}
                     >
-                      Print/Export PDF
+                      {isGeneratingPDF ? 'Generating...' : 'Download as PDF'}
                     </button>
                   </div>
                 </div>
