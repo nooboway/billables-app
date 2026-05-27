@@ -275,6 +275,10 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
   const [isAddingCustomRow, setIsAddingCustomRow] = useState(false);
   const [customRowDesc, setCustomRowDesc] = useState('');
   const [customRowPrice, setCustomRowPrice] = useState(0);
+  // Edit ⇄ Preview toggle inside the creator modal. Lets the user
+  // see a live render of the in-progress invoice in any of the 5
+  // templates before committing to save.
+  const [creatorMode, setCreatorMode] = useState<'edit' | 'preview'>('edit');
 
   const resetCreatorStates = () => {
     setEditingInvoiceId(null);
@@ -1480,25 +1484,143 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
       </footer>
 
       {/* SLIDE-OUT INVOICE CREATOR MODAL WINDOW */}
-      {isCreatorOpen && (
+      {isCreatorOpen && (() => {
+        // Build a draft Invoice from the current form state so the
+        // Preview tab can render a live <InvoicePreview> using exactly
+        // what the user will save.
+        const draftInvoice: Invoice = {
+          id: invoiceIdInput || editingInvoiceId || 'DRAFT',
+          clientName: newClientName || 'New client',
+          clientEmail: newClientEmail,
+          clientCountry: businessDetails.country || '',
+          clientStreet: newClientStreet,
+          clientCity: newClientCity,
+          issueDate: newIssueDate,
+          dueDate: newDueDate,
+          paymentMethod: templateSettings.paymentMethod,
+          orderNo: newOrderNo,
+          items: selectedItemsList.map((it) => ({
+            id: it.id,
+            description: it.desc,
+            qty: it.qty,
+            unit: it.unit,
+            price: it.price,
+            discount: 0,
+            amount: it.price * it.qty,
+          })),
+          shippingFee: newShipping,
+          vatRate: newVatRate,
+          status: 'Draft',
+          templateType: selectedTemplate,
+          createdTime: new Date().toISOString(),
+          history: [],
+        };
+        const canPreview = newClientName.trim().length > 0 && selectedItemsList.length > 0;
+        const isPreviewing = creatorMode === 'preview' && canPreview;
+
+        return (
         <div className="fixed inset-0 z-50 flex justify-center items-center bg-stone-900/60 backdrop-blur-sm p-4" id="invoice-creator-overlay">
-          <div className="bg-white border border-stone-200 rounded-2xl w-full max-w-2xl h-full max-h-[92vh] flex flex-col overflow-hidden text-xs shadow-2xl">
-            
-            {/* Header toolbar */}
-            <div className="p-4 border-b border-stone-200 bg-white flex justify-between items-center shrink-0">
-              <h3 className="text-sm font-extrabold uppercase text-stone-950 flex items-center gap-2">
-                <Plus className="w-4 h-4 text-[#E54A13]" />
-                {editingInvoiceId ? `Modify Ledger Entry #${editingInvoiceId}` : 'Initialize New Commercial Bill'}
+          <div className={`bg-white border border-stone-200 rounded-2xl w-full h-full max-h-[92vh] flex flex-col overflow-hidden text-xs shadow-2xl transition-[max-width] duration-200 ${isPreviewing ? 'max-w-5xl' : 'max-w-2xl'}`}>
+
+            {/* Header toolbar — title + Edit/Preview tabs + close */}
+            <div className="p-4 border-b border-stone-200 bg-white flex justify-between items-center gap-4 shrink-0">
+              <h3 className="text-sm font-extrabold uppercase text-stone-950 flex items-center gap-2 min-w-0">
+                <Plus className="w-4 h-4 text-[#E54A13] shrink-0" />
+                <span className="truncate">
+                  {editingInvoiceId ? `Edit invoice #${editingInvoiceId}` : 'New invoice'}
+                </span>
               </h3>
-              <button 
-                onClick={() => { setIsCreatorOpen(false); resetCreatorStates(); }}
-                className="p-1 rounded-lg bg-stone-100 hover:bg-orange-50 text-stone-500 hover:text-[#E54A13] transition-all border-0 cursor-pointer"
+
+              {/* Mode tabs */}
+              <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-lg border border-stone-200 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setCreatorMode('edit')}
+                  className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider cursor-pointer transition-all ${
+                    creatorMode === 'edit'
+                      ? 'bg-white text-[#E54A13] shadow-sm'
+                      : 'text-stone-500 hover:text-stone-900'
+                  }`}
+                >
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  disabled={!canPreview}
+                  title={canPreview ? '' : 'Add a client name and at least one item to preview'}
+                  onClick={() => canPreview && setCreatorMode('preview')}
+                  className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all ${
+                    !canPreview
+                      ? 'text-stone-300 cursor-not-allowed'
+                      : creatorMode === 'preview'
+                        ? 'bg-white text-[#E54A13] shadow-sm cursor-pointer'
+                        : 'text-stone-500 hover:text-stone-900 cursor-pointer'
+                  }`}
+                >
+                  Preview
+                </button>
+              </div>
+
+              <button
+                onClick={() => { setIsCreatorOpen(false); resetCreatorStates(); setCreatorMode('edit'); }}
+                className="p-1 rounded-lg bg-stone-100 hover:bg-orange-50 text-stone-500 hover:text-[#E54A13] transition-all border-0 cursor-pointer shrink-0"
+                title="Close"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Forms body container */}
+            {/* PREVIEW MODE — renders a live InvoicePreview of the draft */}
+            {isPreviewing && (
+              <div className="flex-1 overflow-y-auto p-6 bg-stone-100">
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-stone-500">
+                    Live preview · {selectedTemplate} template
+                  </span>
+                  <div className="flex gap-1 bg-white p-1 rounded-lg border border-stone-200 shadow-sm">
+                    {(['Stripe','Classic','Serif','Modern','Simple'] as const).map(t => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setSelectedTemplate(t)}
+                        className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider cursor-pointer transition-all ${
+                          selectedTemplate === t
+                            ? 'bg-[#E54A13] text-white'
+                            : 'text-stone-500 hover:text-[#E54A13]'
+                        }`}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <InvoicePreview
+                  invoice={draftInvoice}
+                  businessDetails={businessDetails}
+                  bankAccount={bankAccount}
+                  templateSettings={{ ...templateSettings, templateType: selectedTemplate }}
+                />
+                <div className="pt-5 flex gap-3 sticky bottom-0">
+                  <button
+                    type="button"
+                    onClick={() => setCreatorMode('edit')}
+                    className="flex-1 py-2.5 bg-white border border-stone-200 hover:border-[#E54A13] text-stone-700 hover:text-[#E54A13] rounded-xl uppercase font-bold text-xs cursor-pointer shadow-sm transition-all"
+                  >
+                    ← Back to edit
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => handleSubmitNewInvoice(e as any)}
+                    className="flex-1 py-2.5 bg-[#E54A13] hover:bg-orange-700 text-white font-extrabold rounded-xl uppercase tracking-wider text-xs cursor-pointer shadow-md transition-all border-0"
+                  >
+                    {editingInvoiceId ? 'Update invoice' : 'Save & issue invoice'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* EDIT MODE — original form body */}
+            {!isPreviewing && (
             <form onSubmit={handleSubmitNewInvoice} className="flex-1 overflow-y-auto p-5 space-y-5">
               
               <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200 grid grid-cols-2 gap-4">
@@ -1811,9 +1933,11 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
               </div>
 
             </form>
+            )}
           </div>
         </div>
-      )}
+        );
+      })()}
 
       {/* GLOBAL SETTINGS SIDE-PANEL OVERLAY */}
       <SettingsDrawer 
