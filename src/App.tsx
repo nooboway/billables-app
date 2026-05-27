@@ -61,6 +61,7 @@ import {
 import { useLocalStorage } from './lib/persistence';
 import { useWorkspaces, useScopedLocalStorage, useWorkspaceIdentity } from './lib/workspaces';
 import { useNavigate } from './Root';
+import WorkspaceSwitcher from './components/WorkspaceSwitcher';
 
 import InvoicePreview from './components/InvoicePreview';
 import LiveNotifications from './components/LiveNotifications';
@@ -711,20 +712,19 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
         <div className="flex items-center gap-4">
           {/* App Logo style of web.declotr.com */}
           <div className="flex items-center gap-0.5 cursor-pointer pr-4 border-r border-stone-200" onClick={() => setActiveScreen('overview')}>
-            <span className="text-2xl font-black tracking-tighter text-stone-950 lowercase font-sans">billables</span>
+            <span className="text-2xl font-black tracking-tighter text-stone-950 lowercase font-sans">billable</span>
             <span className="w-2.5 h-2.5 rounded-full bg-[#E54A13] self-end mb-1.5"></span>
           </div>
 
-          {/* Company Selector */}
-          <div className="flex flex-col">
-            <div className="flex items-center gap-1 cursor-pointer" onClick={() => setIsSettingsOpen(true)}>
-              <span className="text-xs font-extrabold tracking-wide uppercase text-stone-800 hover:text-[#E54A13] transition-colors">
-                {businessDetails.name || 'Your Workspace'}
-              </span>
-              <span className="text-[10px] text-stone-400">▼</span>
-            </div>
-            <span className="text-[8.5px] font-mono text-[#E54A13] font-extrabold uppercase select-none tracking-widest">Workspace Terminal</span>
-          </div>
+          {/* Multi-business switcher */}
+          <WorkspaceSwitcher
+            workspaces={workspaces}
+            activeId={activeId}
+            setActiveId={setActiveId}
+            addWorkspace={addWorkspace}
+            renameWorkspace={renameWorkspace}
+            removeWorkspace={removeWorkspace}
+          />
         </div>
 
         {/* Global Toolbar Tabs with Elegant Highlights */}

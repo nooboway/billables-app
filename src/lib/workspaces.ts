@@ -98,6 +98,13 @@ export function useWorkspaces() {
       const fallback = workspaces.find(w => w.id !== id);
       if (fallback) setActiveId(fallback.id);
     }
+    // Wipe the deleted workspace's scoped entity pools so they don't
+    // sit orphaned in localStorage forever.
+    try {
+      for (const name of ['invoices', 'products', 'services', 'expenses', 'notifications']) {
+        localStorage.removeItem(`billables_${name}_${id}`);
+      }
+    } catch { /* ignore */ }
   }, [setWorkspaces, setActiveId, activeId, workspaces]);
 
   return {
