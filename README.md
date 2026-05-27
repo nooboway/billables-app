@@ -1,6 +1,6 @@
-# Billables
+# Billable
 
-High-fidelity invoicing and business workspace for small operators.
+**By Sylens.** High-fidelity multi-business invoicing and operations workspace.
 React + Vite + TypeScript + Tailwind v4, styled with the
 [Declotr Design System](https://declotr.com).
 

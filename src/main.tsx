@@ -1,6 +1,6 @@
 import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
-import App from './App.tsx';
+import Root from './Root';
 import './index.css';
 
 // Initialize theme from localStorage
@@ -12,6 +12,6 @@ if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') 
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    <Root />
   </StrictMode>,
 );

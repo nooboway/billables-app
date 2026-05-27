@@ -59,6 +59,7 @@ import {
 } from './initialData';
 
 import { useLocalStorage } from './lib/persistence';
+import { useNavigate } from './Root';
 
 import InvoicePreview from './components/InvoicePreview';
 import LiveNotifications from './components/LiveNotifications';
@@ -101,9 +102,16 @@ const AnimatedCounter = ({ value, prefix = '', fractionDigits = 2 }: { value: nu
   return <>{prefix}{currentValue.toLocaleString('en-US', { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits })}</>;
 };
 
-export default function App() {
+type Screen = 'landing' | 'overview' | 'documents' | 'catalogs' | 'reports' | 'expenses';
+
+interface AppProps {
+  initialScreen?: Screen;
+  initialInvoiceId?: string | null;
+}
+
+export default function App({ initialScreen = 'landing', initialInvoiceId = null }: AppProps = {}) {
   // Navigation: 'landing' | 'overview' | 'documents' | 'catalogs' | 'reports' | 'expenses'
-  const [activeScreen, setActiveScreen] = useState<'landing' | 'overview' | 'documents' | 'catalogs' | 'reports' | 'expenses'>('landing');
+  const [activeScreen, setActiveScreen] = useState<Screen>(initialScreen);
   
   const [isDarkTheme, setIsDarkTheme] = useState(() => {
     if (typeof document !== 'undefined') {
@@ -155,8 +163,24 @@ export default function App() {
   // Active overlay dialog states
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isCreatorOpen, setIsCreatorOpen] = useState(false);
-  const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(initialInvoiceId);
   const [detailTab, setDetailTab] = useState<'summary' | 'preview' | 'history'>('summary');
+
+  // URL sync — whenever the active screen or selected invoice changes,
+  // mirror it into the URL bar so deep links + browser back/forward work
+  // and the user can share a link to any view. Skipped while sitting on
+  // the landing page (/) so MarketingHero's enter-app CTA stays in
+  // control of the initial transition.
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (activeScreen === 'landing') return;
+    const target = selectedInvoiceId
+      ? `/invoice/${selectedInvoiceId}`
+      : `/${activeScreen}`;
+    if (window.location.pathname !== target) {
+      navigate(target);
+    }
+  }, [activeScreen, selectedInvoiceId, navigate]);
 
   // Inspector client status filter
   const [inspectorStatusFilter, setInspectorStatusFilter] = useState<'All' | 'Paid' | 'Unpaid' | 'Overdue'>('All');
@@ -1435,7 +1459,7 @@ export default function App() {
 
       {/* FOOTER METRICS ROW */}
       <footer className="bg-stone-950 border-t border-stone-850/60 p-4 mt-auto text-center text-[10.5px] font-mono text-stone-500">
-        <p>© {new Date().getFullYear()} {businessDetails.name || 'Billables'} · All systems nominal · Secure invoicing workspace</p>
+        <p>© {new Date().getFullYear()} {businessDetails.name || 'Your workspace'} · <span style={{ color: 'var(--primary)' }}>Billable</span> by Sylens · All systems nominal</p>
       </footer>
 
       {/* SLIDE-OUT INVOICE CREATOR MODAL WINDOW */}

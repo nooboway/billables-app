@@ -122,11 +122,11 @@ export default function SettingsDrawer({
               {/* Sylvia Banner group */}
               <div className="bg-stone-950 p-4 border border-stone-800 rounded-xl flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-black font-display text-sm">
-                  SL
+                  {(businessDetails.name || 'B').slice(0, 2).toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="font-bold text-stone-200">SYLENS LIMITED</h3>
-                  <p className="text-[10px] text-stone-500 mt-0.5">Trial Active • 5 days left</p>
+                  <h3 className="font-bold text-stone-200">{businessDetails.name || 'Your workspace'}</h3>
+                  <p className="text-[10px] text-stone-500 mt-0.5">Billable by Sylens</p>
                 </div>
               </div>
 
