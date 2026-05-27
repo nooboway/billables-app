@@ -707,17 +707,6 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
   return (
     <div className="min-h-screen bg-stone-50 text-stone-800 flex flex-col relative font-sans" id="sylens-application-root">
       
-      {/* Trial Expiry Banner Row in crisp Declotr brand Orange */}
-      <div className="bg-[#E54A13] px-4 py-2 text-center text-xs font-semibold text-white select-none flex items-center justify-center gap-2 shadow-inner border-b border-orange-700" id="trial-alert-bar">
-        <span>⚡ Your corporate trial workspace has 5 days left. Add secure payment methods now to prevent downtime.</span>
-        <button 
-          onClick={() => alert("Simulation Action: Redirecting to global stripe subscription billings portal...")}
-          className="bg-white text-[#E54A13] hover:bg-orange-50 px-2.5 py-0.5 rounded text-[10px] uppercase font-extrabold tracking-wider font-mono transition-all border-0 cursor-pointer"
-        >
-          Activate
-        </button>
-      </div>
-
       {/* Main Top Header Navigation Toolbar */}
       <header className="p-4 bg-white border-b border-b-stone-200 flex justify-between items-center" id="main-navigation-toolbar">
         <div className="flex items-center gap-4">
@@ -791,13 +780,16 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
           >
             <Settings className="w-4 h-4" />
           </button>
-          <button 
-            onClick={() => alert("Simulation Action: Loading integrated user handbook manual...")}
-            className="text-stone-600 hover:text-stone-950 flex items-center gap-1 uppercase text-[10px] border-none bg-transparent cursor-pointer font-bold tracking-wider"
+          <a
+            href="https://github.com/nooboway/billables-app#readme"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-stone-600 hover:text-stone-950 flex items-center gap-1 uppercase text-[10px] border-none bg-transparent cursor-pointer font-bold tracking-wider no-underline"
+            title="Open the project README on GitHub"
           >
             <HelpCircle className="w-3.5 h-3.5 text-[#E54A13]" />
             Help
-          </button>
+          </a>
         </div>
       </header>
 
@@ -1306,9 +1298,27 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                   <div className="space-y-2 pt-4 border-t border-stone-200">
                     <div className="flex gap-2.5">
                       <button
-                        onClick={() => alert("Simulation Action: Client invoice mail confirmation resent successfully!")}
-                        className="flex-1 py-2 bg-white border border-stone-200 text-stone-750 text-stone-700 hover:text-stone-900 hover:bg-stone-50 font-bold rounded-lg font-mono uppercase tracking-wider text-[10px] transition-all cursor-pointer shadow-sm animate-pulse-dot"
-                        style={{ animationIterationCount: 1 }}
+                        onClick={() => {
+                          // Real behaviour: open the user's mail client
+                          // to the recipient with a pre-filled subject,
+                          // and log a real notification.
+                          const subject = encodeURIComponent(`Invoice #${selectedInvoice.id} from ${businessDetails.name || 'us'}`);
+                          const body = encodeURIComponent(`Hi ${selectedInvoice.clientName || ''},\n\nA gentle reminder that invoice #${selectedInvoice.id} is awaiting payment.\n\nThanks.`);
+                          if (selectedInvoice.clientEmail) {
+                            window.location.href = `mailto:${selectedInvoice.clientEmail}?subject=${subject}&body=${body}`;
+                          }
+                          handleAddNotification({
+                            id: `notif-resend-${Date.now()}`,
+                            title: 'Reminder Drafted',
+                            message: selectedInvoice.clientEmail
+                              ? `Opened a follow-up email for invoice #${selectedInvoice.id} to ${selectedInvoice.clientEmail}.`
+                              : `Invoice #${selectedInvoice.id} has no client email on file — add one to enable mail.`,
+                            type: selectedInvoice.clientEmail ? 'success' : 'warning',
+                            timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+                            read: false,
+                          });
+                        }}
+                        className="flex-1 py-2 bg-white border border-stone-200 text-stone-700 hover:text-stone-900 hover:bg-stone-50 font-bold rounded-lg uppercase tracking-wider text-[10px] transition-all cursor-pointer shadow-sm"
                       >
                         Resend Confirm Mail
                       </button>
