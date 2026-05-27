@@ -28,7 +28,9 @@ import {
   ArrowRight,
   ShieldAlert,
   BellRing,
-  Copy
+  Copy,
+  Sun,
+  Moon
 } from 'lucide-react';
 
 import { 
@@ -64,9 +66,60 @@ import SettingsDrawer from './components/SettingsDrawer';
 
 import MarketingHero from './components/MarketingHero';
 
+const AnimatedCounter = ({ value, prefix = '', fractionDigits = 2 }: { value: number; prefix?: string; fractionDigits?: number }) => {
+  const [currentValue, setCurrentValue] = useState(0);
+  const previousValueRef = React.useRef(0);
+
+  useEffect(() => {
+    const start = previousValueRef.current;
+    const duration = 1200; // 1.2s animation
+    const startTime = performance.now();
+    let frameId: number;
+
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easeOutQuad = progress * (2 - progress);
+
+      setCurrentValue(start + easeOutQuad * (value - start));
+
+      if (progress < 1) {
+        frameId = requestAnimationFrame(animate);
+      } else {
+        setCurrentValue(value);
+        previousValueRef.current = value;
+      }
+    };
+
+    frameId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frameId);
+  }, [value]);
+
+  return <>{prefix}{currentValue.toLocaleString('en-US', { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits })}</>;
+};
+
 export default function App() {
   // Navigation: 'landing' | 'overview' | 'documents' | 'catalogs' | 'reports' | 'expenses'
   const [activeScreen, setActiveScreen] = useState<'landing' | 'overview' | 'documents' | 'catalogs' | 'reports' | 'expenses'>('landing');
+  
+  const [isDarkTheme, setIsDarkTheme] = useState(() => {
+    if (typeof document !== 'undefined') {
+      return document.documentElement.classList.contains('dark');
+    }
+    return false;
+  });
+
+  const toggleTheme = () => {
+    const nextDark = !isDarkTheme;
+    setIsDarkTheme(nextDark);
+    if (nextDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  };
   
   // Document level tab for documents list
   const [docTab, setDocTab] = useState<'invoices' | 'estimates'>('invoices');
@@ -257,6 +310,44 @@ export default function App() {
     setSelectedItemsList([]);
   };
 
+  const generateNextInvoiceNumber = () => {
+    const format = templateSettings.numberingFormat || 'INV-';
+    
+    const match = format.match(/^(.*?)0+$/);
+    if (match) {
+      const prefix = match[1];
+      const zeroCount = format.length - prefix.length;
+      const nums = invoices
+        .map(inv => inv.id)
+        .filter(id => id.startsWith(prefix))
+        .map(id => parseInt(id.slice(prefix.length), 10))
+        .filter(n => !isNaN(n));
+        
+      const maxNum = nums.length > 0 ? Math.max(...nums) : 0;
+      const nextNum = maxNum + 1;
+      return `${prefix}${nextNum.toString().padStart(zeroCount, '0')}`;
+    }
+    
+    const prefix = format;
+    const nums = invoices
+      .map(inv => inv.id)
+      .filter(id => id.startsWith(prefix))
+      .map(id => parseInt(id.slice(prefix.length), 10))
+      .filter(n => !isNaN(n));
+      
+    const maxNum = nums.length > 0 ? Math.max(...nums) : 0;
+    const nextNum = maxNum === 0 ? 1 : maxNum + 1;
+    
+    return `${prefix}${nextNum.toString().padStart(3, '0')}`;
+  };
+
+  const handleOpenCreator = () => {
+    resetCreatorStates();
+    setInvoiceIdInput(generateNextInvoiceNumber());
+    setIsCreatorOpen(true);
+  };
+
+
   const handleOpenEditDoc = (inv: Invoice) => {
     setEditingInvoiceId(inv.id);
     setInvoiceIdInput(inv.id);
@@ -282,7 +373,7 @@ export default function App() {
 
   const handleCloneInvoice = (inv: Invoice) => {
     setEditingInvoiceId(null);
-    setInvoiceIdInput(Math.floor(1000 + Math.random() * 9000).toString());
+    setInvoiceIdInput(generateNextInvoiceNumber());
     setNewClientName(inv.clientName);
     setNewClientEmail(inv.clientEmail ?? '');
     setNewClientStreet(inv.clientStreet ?? '');
@@ -361,7 +452,7 @@ export default function App() {
       amount: it.qty * it.price,
     }));
 
-    const finalId = invoiceIdInput || Math.floor(600 + Math.random() * 400).toString();
+    const finalId = invoiceIdInput || generateNextInvoiceNumber();
 
     if (editingInvoiceId) {
       setInvoices(prev => prev.map(inv => {
@@ -700,6 +791,13 @@ export default function App() {
 
         {/* Audit link & Preferences */}
         <div className="flex items-center gap-4 text-xs font-mono">
+          <button
+            onClick={toggleTheme}
+            className="p-1.5 bg-stone-100 border border-stone-200 rounded-lg hover:border-[#E54A13] hover:text-[#E54A13] text-stone-500 transition-all cursor-pointer"
+            title="Toggle theme"
+          >
+            {isDarkTheme ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
           <button 
             onClick={() => setIsSettingsOpen(true)}
             className="p-1.5 bg-stone-100 border border-stone-200 rounded-lg hover:border-[#E54A13] hover:text-[#E54A13] text-stone-500 transition-all cursor-pointer"
@@ -764,12 +862,12 @@ export default function App() {
                   <div className="flex justify-between items-start">
                     <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Total Amount Paid</span>
                     <span className="w-5 h-5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold flex items-center justify-center font-mono text-[9.5px]">
-                      {paidCount}
+                      <AnimatedCounter value={paidCount} fractionDigits={0} />
                     </span>
                   </div>
                   <div>
                     <h3 className="text-2xl font-black text-emerald-600 font-mono tracking-tight animate-pulse-dot" style={{ animationIterationCount: 1 }}>
-                      {templateSettings.currencySymbol}{paidVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      <AnimatedCounter prefix={templateSettings.currencySymbol} value={paidVal} />
                     </h3>
                     <p className="text-[9.5px] text-stone-400 font-mono uppercase mt-1">Settled & Confirmed Ledger Balance</p>
                   </div>
@@ -786,12 +884,12 @@ export default function App() {
                   <div className="flex justify-between items-start">
                     <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Total Amount Due</span>
                     <span className="w-5 h-5 rounded-full bg-rose-50 text-rose-600 border border-rose-100 font-bold flex items-center justify-center font-mono text-[9.5px]">
-                      {overdueCount + unpaidCount}
+                      <AnimatedCounter value={overdueCount + unpaidCount} fractionDigits={0} />
                     </span>
                   </div>
                   <div>
                     <h3 className="text-2xl font-black text-[#E54A13] font-mono tracking-tight">
-                      {templateSettings.currencySymbol}{(unpaidVal + overdueVal).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      <AnimatedCounter prefix={templateSettings.currencySymbol} value={unpaidVal + overdueVal} />
                     </h3>
                     <p className="text-[9.5px] text-[#E54A13]/80 font-mono uppercase mt-1">Pending Bank Transfer Receivables</p>
                   </div>
@@ -811,12 +909,12 @@ export default function App() {
                   </div>
                   <div>
                     <h3 className="text-2xl font-black text-stone-900 font-mono tracking-tight">
-                      {unpaidCount + overdueCount} <span className="text-xs text-stone-400 font-sans font-normal">invoices</span>
+                      <AnimatedCounter value={unpaidCount + overdueCount} fractionDigits={0} /> <span className="text-xs text-stone-400 font-sans font-normal">invoices</span>
                     </h3>
                     <div className="flex gap-2.5 mt-1 font-mono text-[9.5px]">
-                      <span className="text-rose-500 font-bold">{overdueCount} Overdue</span>
+                      <span className="text-rose-500 font-bold"><AnimatedCounter value={overdueCount} fractionDigits={0} /> Overdue</span>
                       <span className="text-stone-400 font-bold">•</span>
-                      <span className="text-[#E54A13] font-bold">{unpaidCount} Pending</span>
+                      <span className="text-[#E54A13] font-bold"><AnimatedCounter value={unpaidCount} fractionDigits={0} /> Pending</span>
                     </div>
                   </div>
                 </motion.div>
@@ -834,7 +932,7 @@ export default function App() {
                         <span className="text-[10px] uppercase font-black text-stone-400 tracking-wider block">Capital Recovery Performance</span>
                         <p className="text-xs font-bold text-stone-700">Payment Collection Efficiency Rate</p>
                       </div>
-                      <span className="text-xs font-mono font-black text-[#E54A13] bg-orange-50 px-2.5 py-1 rounded border border-orange-200">{efficiencyRatio.toFixed(1)}%</span>
+                      <span className="text-xs font-mono font-black text-[#E54A13] bg-orange-50 px-2.5 py-1 rounded border border-orange-200"><AnimatedCounter value={efficiencyRatio} fractionDigits={1} />%</span>
                     </div>
                     <div className="w-full bg-stone-100 rounded-full h-3.5 border border-stone-200 p-0.5 overflow-hidden">
                       <div 
@@ -939,7 +1037,7 @@ export default function App() {
                   <p className="text-[13px] text-stone-500 mt-1">Filter, search and export invoices, estimates and ledgers.</p>
                 </div>
                 <button
-                  onClick={() => setIsCreatorOpen(true)}
+                  onClick={handleOpenCreator}
                   className="px-4 py-2.5 bg-[#E54A13] hover:bg-orange-700 font-bold uppercase tracking-wider text-white rounded-xl flex items-center gap-1.5 cursor-pointer text-xs shadow-sm transition-all"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -1341,7 +1439,7 @@ export default function App() {
             
             <div className="grid grid-cols-2 gap-2.5">
               <button
-                onClick={() => setIsCreatorOpen(true)}
+                onClick={handleOpenCreator}
                 className="py-2.5 px-3 bg-[#E54A13] hover:bg-orange-700 font-bold uppercase text-[10px] rounded-lg text-white flex flex-col items-center justify-center gap-1.5 transition-all text-center border-0 cursor-pointer shadow-sm animate-pulse-dot"
                 style={{ animationIterationCount: 1 }}
               >

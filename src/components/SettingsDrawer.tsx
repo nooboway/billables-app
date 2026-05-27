@@ -420,6 +420,17 @@ export default function SettingsDrawer({
               </div>
 
               <div className="space-y-1.5">
+                <label className="text-stone-400 font-semibold">Payment Link (e.g., Paystack)</label>
+                <input 
+                  type="url" 
+                  value={localBank.paymentLink || ''}
+                  onChange={(e) => setLocalBank({ ...localBank, paymentLink: e.target.value })}
+                  className="w-full bg-stone-950 border border-stone-800 focus:border-emerald-500 rounded px-3 py-2 text-stone-200 outline-none font-mono"
+                  placeholder="https://paystack.com/pay/..."
+                />
+              </div>
+
+              <div className="space-y-1.5">
                 <label className="text-stone-400 font-semibold">Branch Physical Location Address</label>
                 <textarea 
                   value={localBank.bankAddress}
@@ -639,6 +650,33 @@ export default function SettingsDrawer({
                     placeholder="e-transfer"
                   />
                 </div>
+
+                <div className="space-y-1.5 col-span-2">
+                  <label className="text-stone-400 font-semibold uppercase tracking-wider text-[10px] font-display">Invoice Number Format</label>
+                  <input 
+                    type="text" 
+                    value={localTemplate.numberingFormat || ''}
+                    onChange={(e) => setLocalTemplate({ ...localTemplate, numberingFormat: e.target.value })}
+                    className="w-full bg-stone-950 border border-stone-800 rounded px-2.5 py-2 text-stone-200 outline-none text-[11px]"
+                    placeholder="INV-0000"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-stone-950 border border-stone-800 rounded-xl mt-4 font-sans">
+                <div>
+                  <p className="font-bold text-stone-200 text-xs">Show Payment QR Code</p>
+                  <p className="text-[10px] text-stone-500 mt-1">Generate a QR code linking to payment details on invoices</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={localTemplate.showQR ?? false}
+                    onChange={(e) => setLocalTemplate({ ...localTemplate, showQR: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-stone-805 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-stone-400 after:border-stone-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 peer-checked:after:bg-white" />
+                </label>
               </div>
 
               <button 
@@ -654,6 +692,39 @@ export default function SettingsDrawer({
           {/* EDIT SECURITY & PREFERENCES FORM */}
           {activeSection === 'security' && (
             <div className="space-y-5 animate-slide-up text-xs font-mono">
+              <div className="p-4 bg-stone-950 border border-stone-800 rounded-xl space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest font-display">APPEARANCE</span>
+                </div>
+                <div className="flex items-center justify-between py-1.5">
+                  <div>
+                    <p className="font-bold text-stone-200">Dark Mode Theme</p>
+                    <p className="text-[10px] text-stone-500 font-sans mt-0.5">Toggle interface colors using CSS variables</p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      className="sr-only peer"
+                      onChange={(e) => {
+                        const isDark = e.target.checked;
+                        if (isDark) {
+                          document.documentElement.classList.add('dark');
+                          localStorage.setItem('theme', 'dark');
+                        } else {
+                          document.documentElement.classList.remove('dark');
+                          localStorage.setItem('theme', 'light');
+                        }
+                        // force re-render by triggering a state update if needed
+                        setActiveSection('menu');
+                        setTimeout(() => setActiveSection('security'), 0);
+                      }}
+                      checked={document.documentElement.classList.contains('dark')}
+                    />
+                    <div className="w-9 h-5 bg-stone-805 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-stone-400 after:border-stone-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 peer-checked:after:bg-white" />
+                  </label>
+                </div>
+              </div>
+
               <div className="p-4 bg-stone-950 border border-stone-800 rounded-xl space-y-3">
                 <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest font-display">WORKSPACE MEMBERS (My Team)</span>
                 <div className="space-y-2">

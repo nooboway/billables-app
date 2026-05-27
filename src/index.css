@@ -5,6 +5,21 @@
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
+  /* Theme color mapping */
+  --color-stone-50: var(--app-stone-50);
+  --color-stone-100: var(--app-stone-100);
+  --color-stone-200: var(--app-stone-200);
+  --color-stone-300: var(--app-stone-300);
+  --color-stone-400: var(--app-stone-400);
+  --color-stone-500: var(--app-stone-500);
+  --color-stone-600: var(--app-stone-600);
+  --color-stone-700: var(--app-stone-700);
+  --color-stone-800: var(--app-stone-800);
+  --color-stone-900: var(--app-stone-900);
+  --color-stone-950: var(--app-stone-950);
+  --color-white: var(--app-white);
+  --color-black: var(--app-black);
+
   /* ── Declotr Design Kit Token Integrations in @theme ── */
   --color-primary: #E54A13;
   --color-primary-dark: #C13A0E;
@@ -40,8 +55,8 @@
 
 @layer base {
   body {
-    background-color: #FAFAF9; /* Tailwind stone-50 */
-    color: #1c1917; /* stone-900 */
+    background-color: var(--app-stone-50);
+    color: var(--app-stone-900);
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
@@ -49,6 +64,20 @@
 
 /* ── Declotr Root Tokens ── */
 :root {
+  --app-stone-50: #fafaf9;
+  --app-stone-100: #f5f5f4;
+  --app-stone-200: #e7e5e4;
+  --app-stone-300: #d6d3d1;
+  --app-stone-400: #a8a29e;
+  --app-stone-500: #78716c;
+  --app-stone-600: #57534e;
+  --app-stone-700: #44403c;
+  --app-stone-800: #292524;
+  --app-stone-900: #1c1917;
+  --app-stone-950: #0c0a09;
+  --app-white: #ffffff;
+  --app-black: #000000;
+
   --primary:        #E54A13;
   --primary-dark:   #C13A0E;
   --primary-light:  #FF6B3D;
@@ -72,6 +101,22 @@
 
   --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --ease:        cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root[data-theme="dark"], .dark {
+  --app-stone-50: #1c1917;    /* was 900 */
+  --app-stone-100: #292524;   /* was 800 */
+  --app-stone-200: #44403c;   /* was 700 */
+  --app-stone-300: #57534e;   /* was 600 */
+  --app-stone-400: #78716c;   /* was 500 */
+  --app-stone-500: #a8a29e;   /* was 400 */
+  --app-stone-600: #d6d3d1;   /* was 300 */
+  --app-stone-700: #e7e5e4;   /* was 200 */
+  --app-stone-800: #f5f5f4;   /* was 100 */
+  --app-stone-900: #fafaf9;   /* was 50  */
+  --app-stone-950: #ffffff;   /* lighter than 50 */
+  --app-white: #0c0a09;       /* was white */
+  --app-black: #fafaf9;       /* was black */
 }
 
 /* Custom Scrollbar Styles for Light Theme */

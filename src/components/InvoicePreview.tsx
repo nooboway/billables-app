@@ -4,6 +4,7 @@
  */
 
 import React from 'react';
+import QRCode from 'react-qr-code';
 import { Invoice, BusinessDetails, BankAccount, TemplateSettings } from '../types';
 
 interface InvoicePreviewProps {
@@ -33,6 +34,8 @@ export default function InvoicePreview({
 
   const activeTemplate = invoice.templateType || 'Stripe';
   const colorAccent = templateSettings.color || '#4f46e5';
+
+  const qrValue = bankAccount.paymentLink || `Bank: ${bankAccount.bankName}\nAccount: ${bankAccount.accountNumber}\nName: ${bankAccount.accountHolder}`;
 
   if (activeTemplate === 'Classic') {
     return (
@@ -151,8 +154,17 @@ export default function InvoicePreview({
             </div>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-stone-250 text-center text-[9px] text-stone-500 font-mono">
-            {bankAccount.bankName} Account: {bankAccount.accountNumber} • Holder: {bankAccount.accountHolder}
+          <div className="mt-6 pt-4 border-t border-stone-250 flex items-center justify-between text-[9px] text-stone-500 font-mono">
+            <div>
+              {bankAccount.bankName} Account: {bankAccount.accountNumber} • Holder: {bankAccount.accountHolder}
+              {bankAccount.paymentLink && <><br />Payment URL: {bankAccount.paymentLink}</>}
+            </div>
+            {templateSettings.showQR && (
+              <div className="flex flex-col items-center gap-1.5 ml-4 text-[7px] uppercase tracking-wider text-stone-400">
+                <QRCode value={qrValue} size={48} level="M" />
+                <span>Scan to pay</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -278,8 +290,17 @@ export default function InvoicePreview({
             </div>
           </div>
 
-          <div className="mt-8 pt-4 border-t border-amber-900/10 text-center text-[10px] text-amber-800/60 font-serif">
-            Direct Routing Bank: {bankAccount.bankName} • Account Holder: {bankAccount.accountHolder} • Account Number: {bankAccount.accountNumber}
+          <div className="mt-8 pt-4 border-t border-amber-900/10 flex items-center justify-between text-[10px] text-amber-800/60 font-serif">
+            <div>
+              Direct Routing Bank: {bankAccount.bankName} • Account Holder: {bankAccount.accountHolder} • Account Number: {bankAccount.accountNumber}
+              {bankAccount.paymentLink && <><br />Payment Link: {bankAccount.paymentLink}</>}
+            </div>
+            {templateSettings.showQR && (
+              <div className="flex flex-col items-center gap-1.5 ml-4 font-sans text-[7px] uppercase tracking-wider text-amber-900/50">
+                <QRCode value={qrValue} size={48} level="M" fgColor="#451a03" bgColor="transparent" />
+                <span>Payment QR</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -410,8 +431,17 @@ export default function InvoicePreview({
             </div>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-stone-850 text-center text-[9.5px] text-stone-500">
-            PAYMENT_BRIDGE: {bankAccount.bankName} // ROUTING_HEX: #{bankAccount.accountNumber} // OWNER: {bankAccount.accountHolder}
+          <div className="mt-6 pt-4 border-t border-stone-850 flex items-center justify-between text-[9.5px] text-stone-500">
+            <div>
+              PAYMENT_BRIDGE: {bankAccount.bankName} // ROUTING_HEX: #{bankAccount.accountNumber} // OWNER: {bankAccount.accountHolder}
+              {bankAccount.paymentLink && <><br />URI_PAYLNK: {bankAccount.paymentLink}</>}
+            </div>
+            {templateSettings.showQR && (
+              <div className="flex flex-col items-center gap-1.5 ml-4 text-[7px] tracking-widest text-[#E54A13]">
+                <QRCode value={qrValue} size={48} level="M" fgColor="#E54A13" bgColor="transparent" />
+                <span>SCAN_URI</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -518,8 +548,17 @@ export default function InvoicePreview({
             </div>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-stone-100 text-center text-[9px] text-stone-400">
-            Bank transfer to: {bankAccount.bankName} / Account Number: {bankAccount.accountNumber} (Holder: {bankAccount.accountHolder})
+          <div className="mt-6 pt-4 border-t border-stone-100 flex items-center justify-between text-[9px] text-stone-400">
+            <div>
+              Bank transfer to: {bankAccount.bankName} / Account Number: {bankAccount.accountNumber} (Holder: {bankAccount.accountHolder})
+              {bankAccount.paymentLink && <><br />Payment Link: {bankAccount.paymentLink}</>}
+            </div>
+            {templateSettings.showQR && (
+              <div className="flex flex-col items-center gap-1.5 ml-4 text-[7px] uppercase tracking-wider text-stone-400">
+                <QRCode value={qrValue} size={48} level="M" />
+                <span>Scan for Payment</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -716,22 +755,30 @@ export default function InvoicePreview({
         </div>
 
         {/* Footer Contact Details & Direct Ledger details */}
-        <div className="grid grid-cols-3 gap-4 p-4 bg-stone-50 border border-stone-100 rounded-lg text-stone-500 text-[10px] mb-8 leading-relaxed font-mono">
-          <div>
-            <p className="font-bold text-stone-700 font-display uppercase text-[8px] tracking-wider mb-1">Call / Cell</p>
-            <p className="text-stone-600">{businessDetails.phone || 'N/A'}</p>
-            <p className="text-stone-600">{businessDetails.cell || 'N/A'}</p>
+        <div className="flex gap-4 mb-8">
+          <div className="grid grid-cols-3 gap-4 p-4 bg-stone-50 border border-stone-100 rounded-lg text-stone-500 text-[10px] flex-1 leading-relaxed font-mono">
+            <div>
+              <p className="font-bold text-stone-700 font-display uppercase text-[8px] tracking-wider mb-1">Call / Cell</p>
+              <p className="text-stone-600">{businessDetails.phone || 'N/A'}</p>
+              <p className="text-stone-600">{businessDetails.cell || 'N/A'}</p>
+            </div>
+            <div>
+              <p className="font-bold text-stone-700 font-display uppercase text-[8px] tracking-wider mb-1">Email / Web</p>
+              <p className="text-stone-600 text-ellipsis overflow-hidden">{businessDetails.email}</p>
+              <p className="text-stone-600">{businessDetails.website || 'N/A'}</p>
+            </div>
+            <div>
+              <p className="font-bold text-stone-700 font-display uppercase text-[8px] tracking-wider mb-1">Bank Payment Account</p>
+              <p className="text-stone-800 font-bold">{bankAccount.bankName} - {bankAccount.accountNumber}</p>
+              <p className="text-stone-600 text-[9px]">Holder: {bankAccount.accountHolder}</p>
+            </div>
           </div>
-          <div>
-            <p className="font-bold text-stone-700 font-display uppercase text-[8px] tracking-wider mb-1">Email / Web</p>
-            <p className="text-stone-600 text-ellipsis overflow-hidden">{businessDetails.email}</p>
-            <p className="text-stone-600">{businessDetails.website || 'N/A'}</p>
-          </div>
-          <div>
-            <p className="font-bold text-stone-700 font-display uppercase text-[8px] tracking-wider mb-1">Bank Payment Account</p>
-            <p className="text-stone-800 font-bold">{bankAccount.bankName} - {bankAccount.accountNumber}</p>
-            <p className="text-stone-600 text-[9px]">Holder: {bankAccount.accountHolder}</p>
-          </div>
+          {templateSettings.showQR && (
+            <div className="p-4 bg-stone-50 border border-stone-100 rounded-lg flex flex-col items-center justify-center shrink-0">
+              <QRCode value={qrValue} size={60} level="M" />
+              <span className="text-[8px] uppercase tracking-wider text-stone-400 font-mono mt-2 font-bold">Scan to Pay</span>
+            </div>
+          )}
         </div>
 
         {/* Dynamic SKU Photo section (Exactly as shown on screens!) */}

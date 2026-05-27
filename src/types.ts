@@ -28,6 +28,7 @@ export interface BankAccount {
   iban: string;
   bicSwift: string;
   bankAddress: string;
+  paymentLink?: string;
 }
 
 export interface VatSettings {
@@ -49,6 +50,7 @@ export interface TemplateSettings {
   estimateType: 'Estimate' | 'Quote';
   barcodeScannerEnabled: boolean;
   numberingFormat: string; // e.g. "INV-0000" or simple numerical
+  showQR?: boolean; // Show QR code for payments
 }
 
 export interface InvoiceItem {
