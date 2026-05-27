@@ -3,6 +3,14 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+/**
+ * Single source of truth for invoice template variants. Used both on
+ * the per-invoice level (Invoice.templateType) and on the workspace
+ * default (TemplateSettings.templateType). Previously these were two
+ * different unions which let mismatched assignments slip past tsc.
+ */
+export type InvoiceTemplate = 'Stripe' | 'Classic' | 'Serif' | 'Modern' | 'Simple';
+
 export interface BusinessDetails {
   name: string;
   country: string;
@@ -18,7 +26,7 @@ export interface BusinessDetails {
   email: string;
   website: string;
   logoUrl?: string;
-  signatureUrl?: string; // Signature photo
+  signatureUrl?: string;
 }
 
 export interface BankAccount {
@@ -34,37 +42,37 @@ export interface BankAccount {
 export interface VatSettings {
   applyToInvoices: boolean;
   taxLabel: string;
-  rate1: number; // e.g. 7.5
+  rate1: number;
   rate2: number;
   rate3: number;
 }
 
 export interface TemplateSettings {
-  color: string; // Hex or tailwind class
-  templateType: 'Stripe' | 'Modern' | 'Classic' | 'Minimalist';
-  currency: string; // e.g. NGN, USD, GBP
-  currencySymbol: string; // ₦, $, £
-  language: string; // EN, FR, etc.
-  paymentMethod: string; // e-transfer, bank, cash
-  dueDateDays: number; // e.g. 3 Days
+  color: string;
+  templateType: InvoiceTemplate;
+  currency: string;            // e.g. NGN, USD, GBP
+  currencySymbol: string;      // ₦, $, £
+  language: string;            // EN, FR, etc.
+  paymentMethod: string;       // e-transfer, bank, cash
+  dueDateDays: number;
   estimateType: 'Estimate' | 'Quote';
   barcodeScannerEnabled: boolean;
-  numberingFormat: string; // e.g. "INV-0000" or simple numerical
-  showQR?: boolean; // Show QR code for payments
+  numberingFormat: string;     // e.g. "INV-0000" or "INV-"
+  showQR?: boolean;
 }
 
 export interface InvoiceItem {
   id: string;
   description: string;
   qty: number;
-  unit: string; // Pack, Hour, Piece
+  unit: string;
   price: number;
   discount: number; // percentage
   amount: number;
 }
 
 export interface Invoice {
-  id: string; // Auto or manual e.g. "621"
+  id: string;
   clientName: string;
   clientEmail: string;
   clientCountry: string;
@@ -73,17 +81,17 @@ export interface Invoice {
   clientAptSuite?: string;
   clientPostalCode?: string;
   issueDate: string; // YYYY-MM-DD
-  dueDate: string; // YYYY-MM-DD
+  dueDate: string;   // YYYY-MM-DD
   paymentMethod: string;
   orderNo: string;
   items: InvoiceItem[];
   shippingFee: number;
-  vatRate: number; // percentage
+  vatRate: number;
   status: 'Paid' | 'Unpaid' | 'Overdue' | 'Draft';
   skuPhotoUrl?: string;
   notes?: string;
-  templateType?: 'Stripe' | 'Classic' | 'Serif' | 'Modern' | 'Simple';
-  createdTime: string; // log timestamp
+  templateType?: InvoiceTemplate;
+  createdTime: string;
   history: Array<{
     event: string;
     timestamp: string;

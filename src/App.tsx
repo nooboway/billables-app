@@ -33,17 +33,18 @@ import {
   Moon
 } from 'lucide-react';
 
-import { 
-  BusinessDetails, 
-  BankAccount, 
-  VatSettings, 
-  TemplateSettings, 
-  Invoice, 
-  Product, 
-  Service, 
-  Expense, 
-  InvoiceItem, 
-  Notification 
+import {
+  BusinessDetails,
+  BankAccount,
+  VatSettings,
+  TemplateSettings,
+  Invoice,
+  Product,
+  Service,
+  Expense,
+  InvoiceItem,
+  Notification,
+  InvoiceTemplate,
 } from './types';
 
 import {
@@ -56,6 +57,8 @@ import {
   INITIAL_SERVICES,
   INITIAL_EXPENSES
 } from './initialData';
+
+import { useLocalStorage } from './lib/persistence';
 
 import InvoicePreview from './components/InvoicePreview';
 import LiveNotifications from './components/LiveNotifications';
@@ -124,61 +127,30 @@ export default function App() {
   // Document level tab for documents list
   const [docTab, setDocTab] = useState<'invoices' | 'estimates'>('invoices');
 
-  // Core business & preferences states
-  const [businessDetails, setBusinessDetails] = useState<BusinessDetails>(() => {
-    const saved = localStorage.getItem('sylens_business');
-    return saved ? JSON.parse(saved) : INITIAL_BUSINESS_DETAILS;
-  });
+  // Core business & preferences — persisted to localStorage under the
+  // billables_* namespace (legacy sylens_* keys are migrated on first
+  // mount by lib/persistence.ts).
+  const [businessDetails, setBusinessDetails] = useLocalStorage<BusinessDetails>('business', INITIAL_BUSINESS_DETAILS);
+  const [bankAccount, setBankAccount]         = useLocalStorage<BankAccount>('bank', INITIAL_BANK_ACCOUNT);
+  const [vatSettings, setVatSettings]         = useLocalStorage<VatSettings>('vat', INITIAL_VAT_SETTINGS);
+  const [templateSettings, setTemplateSettings] = useLocalStorage<TemplateSettings>('template', INITIAL_TEMPLATE_SETTINGS);
 
-  const [bankAccount, setBankAccount] = useState<BankAccount>(() => {
-    const saved = localStorage.getItem('sylens_bank');
-    return saved ? JSON.parse(saved) : INITIAL_BANK_ACCOUNT;
-  });
+  // Business items
+  const [invoices, setInvoices]   = useLocalStorage<Invoice[]>('invoices', INITIAL_INVOICES);
+  const [products, setProducts]   = useLocalStorage<Product[]>('products', INITIAL_PRODUCTS);
+  const [services, setServices]   = useLocalStorage<Service[]>('services', INITIAL_SERVICES);
+  const [expenses, setExpenses]   = useLocalStorage<Expense[]>('expenses', INITIAL_EXPENSES);
 
-  const [vatSettings, setVatSettings] = useState<VatSettings>(() => {
-    const saved = localStorage.getItem('sylens_vat');
-    return saved ? JSON.parse(saved) : INITIAL_VAT_SETTINGS;
-  });
-
-  const [templateSettings, setTemplateSettings] = useState<TemplateSettings>(() => {
-    const saved = localStorage.getItem('sylens_template');
-    return saved ? JSON.parse(saved) : INITIAL_TEMPLATE_SETTINGS;
-  });
-
-  // Business items states
-  const [invoices, setInvoices] = useState<Invoice[]>(() => {
-    const saved = localStorage.getItem('sylens_invoices');
-    return saved ? JSON.parse(saved) : INITIAL_INVOICES;
-  });
-
-  const [products, setProducts] = useState<Product[]>(() => {
-    const saved = localStorage.getItem('sylens_products');
-    return saved ? JSON.parse(saved) : INITIAL_PRODUCTS;
-  });
-
-  const [services, setServices] = useState<Service[]>(() => {
-    const saved = localStorage.getItem('sylens_services');
-    return saved ? JSON.parse(saved) : INITIAL_SERVICES;
-  });
-
-  const [expenses, setExpenses] = useState<Expense[]>(() => {
-    const saved = localStorage.getItem('sylens_expenses');
-    return saved ? JSON.parse(saved) : INITIAL_EXPENSES;
-  });
-
-  const [notifications, setNotifications] = useState<Notification[]>(() => {
-    const saved = localStorage.getItem('sylens_notifications');
-    return saved ? JSON.parse(saved) : [
-      {
-        id: 'init-notif',
-        title: 'Billing Terminal Activated',
-        message: 'SYLENS LIMITED invoicing workspace synchronized. Real-time logging ready.',
-        timestamp: '08:09 AM',
-        type: 'success',
-        read: false
-      }
-    ];
-  });
+  const [notifications, setNotifications] = useLocalStorage<Notification[]>('notifications', [
+    {
+      id: 'init-notif',
+      title: 'Workspace Activated',
+      message: `${businessDetails.name || 'Your workspace'} is synchronized. Real-time activity log ready.`,
+      timestamp: '08:09 AM',
+      type: 'success',
+      read: false,
+    },
+  ]);
 
   // Active overlay dialog states
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -195,46 +167,14 @@ export default function App() {
   // Search filter query
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Persist edits inside client-side local persistence automatically
-  useEffect(() => {
-    localStorage.setItem('sylens_business', JSON.stringify(businessDetails));
-  }, [businessDetails]);
+  // (Persistence is handled by useLocalStorage above — no manual
+  //  useEffect writers required.)
 
+  // Automated Overdue Check on Workspace Load.
+  // Uses today's actual ISO date so this stays correct on every run
+  // rather than the literal '2026-05-26' that was hardcoded before.
   useEffect(() => {
-    localStorage.setItem('sylens_bank', JSON.stringify(bankAccount));
-  }, [bankAccount]);
-
-  useEffect(() => {
-    localStorage.setItem('sylens_vat', JSON.stringify(vatSettings));
-  }, [vatSettings]);
-
-  useEffect(() => {
-    localStorage.setItem('sylens_template', JSON.stringify(templateSettings));
-  }, [templateSettings]);
-
-  useEffect(() => {
-    localStorage.setItem('sylens_invoices', JSON.stringify(invoices));
-  }, [invoices]);
-
-  useEffect(() => {
-    localStorage.setItem('sylens_products', JSON.stringify(products));
-  }, [products]);
-
-  useEffect(() => {
-    localStorage.setItem('sylens_services', JSON.stringify(services));
-  }, [services]);
-
-  useEffect(() => {
-    localStorage.setItem('sylens_expenses', JSON.stringify(expenses));
-  }, [expenses]);
-
-  useEffect(() => {
-    localStorage.setItem('sylens_notifications', JSON.stringify(notifications));
-  }, [notifications]);
-
-  // Automated Overdue Check on Workspace Load
-  useEffect(() => {
-    const todayStr = '2026-05-26'; // Match current metadata local date
+    const todayStr = new Date().toISOString().slice(0, 10);
     let updatedNeeded = false;
     const nextInvoices = invoices.map(inv => {
       if (inv.status === 'Unpaid' && inv.dueDate < todayStr) {
@@ -288,7 +228,7 @@ export default function App() {
   const [newVatRate, setNewVatRate] = useState(vatSettings.applyToInvoices ? vatSettings.rate1 : 0);
   const [newIssueDate, setNewIssueDate] = useState(new Date().toISOString().split('T')[0]);
   const [newDueDate, setNewDueDate] = useState(new Date(Date.now() + templateSettings.dueDateDays * 86400000).toISOString().split('T')[0]);
-  const [selectedTemplate, setSelectedTemplate] = useState<'Stripe' | 'Classic' | 'Serif' | 'Modern' | 'Simple'>('Stripe');
+  const [selectedTemplate, setSelectedTemplate] = useState<InvoiceTemplate>('Stripe');
   const [selectedItemsList, setSelectedItemsList] = useState<Array<{ id: string; qty: number; desc: string; price: number; unit: string }>>([]);
   const [isAddingCustomRow, setIsAddingCustomRow] = useState(false);
   const [customRowDesc, setCustomRowDesc] = useState('');
@@ -435,7 +375,7 @@ export default function App() {
     setIsAddingCustomRow(false);
   };
 
-  const handeSubmitNewInvoice = (e: React.FormEvent) => {
+  const handleSubmitNewInvoice = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newClientName || selectedItemsList.length === 0) {
       alert("Please specify a billed client and check at least one line item!");
@@ -745,7 +685,7 @@ export default function App() {
           <div className="flex flex-col">
             <div className="flex items-center gap-1 cursor-pointer" onClick={() => setIsSettingsOpen(true)}>
               <span className="text-xs font-extrabold tracking-wide uppercase text-stone-800 hover:text-[#E54A13] transition-colors">
-                {businessDetails.name || 'SYLENS LIMITED'}
+                {businessDetails.name || 'Your Workspace'}
               </span>
               <span className="text-[10px] text-stone-400">▼</span>
             </div>
@@ -1495,7 +1435,7 @@ export default function App() {
 
       {/* FOOTER METRICS ROW */}
       <footer className="bg-stone-950 border-t border-stone-850/60 p-4 mt-auto text-center text-[10.5px] font-mono text-stone-500">
-        <p>© 2026 SYLENS LIMITED. All systems nominal. Secure invoicing workspace.</p>
+        <p>© {new Date().getFullYear()} {businessDetails.name || 'Billables'} · All systems nominal · Secure invoicing workspace</p>
       </footer>
 
       {/* SLIDE-OUT INVOICE CREATOR MODAL WINDOW */}
@@ -1518,7 +1458,7 @@ export default function App() {
             </div>
 
             {/* Forms body container */}
-            <form onSubmit={handeSubmitNewInvoice} className="flex-1 overflow-y-auto p-5 space-y-5">
+            <form onSubmit={handleSubmitNewInvoice} className="flex-1 overflow-y-auto p-5 space-y-5">
               
               <div className="p-4 bg-stone-50 rounded-2xl border border-stone-200 grid grid-cols-2 gap-4">
                 <div className="space-y-1">
@@ -1797,7 +1737,7 @@ export default function App() {
                       <button
                         key={tpl.type}
                         type="button"
-                        onClick={() => setSelectedTemplate(tpl.type as any)}
+                        onClick={() => setSelectedTemplate(tpl.type as InvoiceTemplate)}
                         className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between h-20 outline-none ${
                           selectedTemplate === tpl.type 
                             ? 'bg-orange-50/80 border-[#E54A13] text-[#E54A13] shadow-md'
