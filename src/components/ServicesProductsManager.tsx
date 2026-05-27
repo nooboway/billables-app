@@ -77,14 +77,14 @@ export default function ServicesProductsManager({
     setItemPrice(0);
     setIsCreating(false);
   };  return (
-    <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm font-sans" id="catalog-manager-section">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-4 border-b border-slate-100 mb-4 gap-4 select-none">
+    <div className="bg-white border border-stone-200 rounded-2xl p-6 shadow-sm font-sans feature-card cursor-pointer" id="catalog-manager-section">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center pb-5 border-b border-stone-100 mb-6 gap-4 select-none">
         <div>
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-800 flex items-center gap-2">
-            <Plus className="w-4 h-4 text-[#E54A13]" />
-            Commerce Catalog Manager
+          <span className="text-[11px] tracking-[0.06em] text-[#E54A13] uppercase font-black block mb-1">INVENTORY CATALOG</span>
+          <h2 className="text-2xl md:text-3xl font-black tracking-[-0.035em] text-stone-900 flex items-center gap-2">
+            Commodities Library
           </h2>
-          <p className="text-[11px] text-slate-400 mt-0.5">Predefine recurring goods/tariffs for instant click-to-invoice insertion.</p>
+          <p className="text-[13px] text-stone-500 mt-1">Predefine recurring goods or tariffs for instant click-to-invoice insertion.</p>
         </div>
 
         {/* Catalog Selector Tabs */}
@@ -92,7 +92,7 @@ export default function ServicesProductsManager({
           <button
             onClick={() => { setActiveCatalog('products'); setIsCreating(false); }}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase flex items-center gap-1.5 transition-all cursor-pointer border-0 ${
-              activeCatalog === 'products' ? 'bg-[#E54A13] text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:text-slate-700'
+              activeCatalog === 'products' ? 'bg-[#E54A13] text-white shadow-md' : 'bg-stone-100 text-stone-500 hover:text-stone-700'
             }`}
           >
             <ShoppingBag className="w-3.5 h-3.5" />
@@ -101,7 +101,7 @@ export default function ServicesProductsManager({
           <button
             onClick={() => { setActiveCatalog('services'); setIsCreating(false); }}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase flex items-center gap-1.5 transition-all cursor-pointer border-0 ${
-              activeCatalog === 'services' ? 'bg-[#E54A13] text-white shadow-md' : 'bg-slate-100 text-slate-500 hover:text-slate-700'
+              activeCatalog === 'services' ? 'bg-[#E54A13] text-white shadow-md' : 'bg-stone-100 text-stone-500 hover:text-stone-700'
             }`}
           >
             <Scissors className="w-3.5 h-3.5" />
@@ -112,8 +112,8 @@ export default function ServicesProductsManager({
 
       {/* COLLPABLE CREATOR BLOCK */}
       {isCreating ? (
-        <form onSubmit={handleSubmit} className="bg-slate-50 border border-slate-200 p-4 rounded-xl mb-4 space-y-3.5 animate-slide-up text-xs font-sans">
-          <div className="flex justify-between items-center pb-2 border-b border-slate-200 select-none">
+        <form onSubmit={handleSubmit} className="bg-stone-50 border border-stone-200 p-4 rounded-xl mb-4 space-y-3.5 animate-slide-up text-xs font-sans">
+          <div className="flex justify-between items-center pb-2 border-b border-stone-200 select-none">
             <span className="font-extrabold text-[#E54A13] uppercase tracking-widest text-[9px] flex items-center gap-1.5">
               <FolderPlus className="w-3.5 h-3.5" />
               Add new {activeCatalog === 'products' ? 'Product SKU' : 'Service Offer'}
@@ -121,53 +121,53 @@ export default function ServicesProductsManager({
             <button 
               type="button" 
               onClick={() => setIsCreating(false)} 
-              className="text-slate-400 hover:text-slate-600 text-[10px] uppercase font-bold cursor-pointer border-0 bg-transparent"
+              className="text-stone-400 hover:text-stone-600 text-[10px] uppercase font-bold cursor-pointer border-0 bg-transparent"
             >
               Cancel
             </button>
           </div>
 
           <div className="space-y-1">
-            <label className="text-slate-450 text-slate-400 font-bold block text-[10px] uppercase">Item Name</label>
+            <label className="text-stone-450 text-stone-400 font-bold block text-[10px] uppercase">Item Name</label>
             <input 
               type="text" 
               value={itemName} 
               onChange={(e) => setItemName(e.target.value)}
               placeholder={activeCatalog === 'products' ? 'e.g. Fine Herb Slimming Pack' : 'e.g. Initial alignment Checkup'}
-              className="w-full bg-white border border-slate-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] rounded-xl px-2.5 py-1.5 text-xs text-slate-800 outline-none font-sans"
+              className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] rounded-xl px-2.5 py-1.5 text-xs text-stone-800 outline-none font-sans"
               required
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-slate-450 text-slate-400 font-bold block text-[10px] uppercase">Long Description (Appears inside final invoice)</label>
+            <label className="text-stone-450 text-stone-400 font-bold block text-[10px] uppercase">Long Description (Appears inside final invoice)</label>
             <textarea 
               value={itemDesc} 
               onChange={(e) => setItemDesc(e.target.value)}
               placeholder="Provide a thorough, professional billing description..."
-              className="w-full h-16 bg-white border border-slate-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] rounded-xl px-2.5 py-1.5 text-xs text-slate-800 outline-none font-sans"
+              className="w-full h-16 bg-white border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] rounded-xl px-2.5 py-1.5 text-xs text-stone-800 outline-none font-sans"
             />
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             <div className="space-y-1">
-              <label className="text-slate-450 text-slate-400 font-bold block text-[10px] uppercase">Price ({currencySymbol})</label>
+              <label className="text-stone-450 text-stone-400 font-bold block text-[10px] uppercase">Price ({currencySymbol})</label>
               <input 
                 type="number" 
                 value={itemPrice || ''} 
                 onChange={(e) => setItemPrice(parseFloat(e.target.value) || 0)}
-                className="w-full bg-white border border-slate-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] rounded-xl px-2.5 py-1.5 text-xs text-slate-800 outline-none font-sans"
+                className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] rounded-xl px-2.5 py-1.5 text-xs text-stone-800 outline-none font-sans"
                 min="0"
                 required
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-slate-450 text-slate-400 font-bold block text-[10px] uppercase">Billing Unit Size</label>
+              <label className="text-stone-450 text-stone-400 font-bold block text-[10px] uppercase">Billing Unit Size</label>
               <select 
                 value={itemUnit} 
                 onChange={(e) => setItemUnit(e.target.value)}
-                className="w-full bg-white border border-slate-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] rounded-xl px-2.5 py-1.5 text-xs text-slate-800 outline-none font-sans"
+                className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] rounded-xl px-2.5 py-1.5 text-xs text-stone-800 outline-none font-sans"
               >
                 <option value="Pack">Pack</option>
                 <option value="Hourly">Hour</option>
@@ -179,12 +179,12 @@ export default function ServicesProductsManager({
 
             {activeCatalog === 'services' && (
               <div className="space-y-1 col-span-2 md:col-span-1">
-                <label className="text-slate-450 text-slate-400 font-bold block text-[10px] uppercase">Duration (Minutes)</label>
+                <label className="text-stone-450 text-stone-400 font-bold block text-[10px] uppercase">Duration (Minutes)</label>
                 <input 
                   type="number" 
                   value={duration} 
                   onChange={(e) => setDuration(parseInt(e.target.value) || 30)}
-                  className="w-full bg-white border border-slate-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] rounded-xl px-2.5 py-1.5 text-xs text-slate-800 outline-none font-sans"
+                  className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] rounded-xl px-2.5 py-1.5 text-xs text-stone-800 outline-none font-sans"
                   min="1"
                 />
               </div>
@@ -202,7 +202,7 @@ export default function ServicesProductsManager({
         <div className="mb-4">
           <button
             onClick={() => setIsCreating(true)}
-            className="px-3.5 py-2.5 bg-white border border-slate-200 hover:border-[#E54A13] hover:text-[#E54A13] text-slate-650 rounded-xl flex items-center gap-1.5 w-full justify-center transition-all cursor-pointer text-xs uppercase font-extrabold shadow-sm"
+            className="px-3.5 py-2.5 bg-white border border-stone-200 hover:border-[#E54A13] hover:text-[#E54A13] text-stone-650 rounded-xl flex items-center gap-1.5 w-full justify-center transition-all cursor-pointer text-xs uppercase font-extrabold shadow-sm"
           >
             <Plus className="w-4 h-4 text-[#E54A13]" />
             Create fresh {activeCatalog === 'products' ? 'Product' : 'Service'}
@@ -214,27 +214,27 @@ export default function ServicesProductsManager({
       <div className="space-y-2 max-h-[290px] overflow-y-auto pr-1">
         {activeCatalog === 'products' ? (
           products.length === 0 ? (
-            <p className="text-center py-8 text-slate-400 font-sans text-xs italic">No products in catalog yet.</p>
+            <p className="text-center py-8 text-stone-400 font-sans text-xs italic">No products in catalog yet.</p>
           ) : (
             products.map((item) => (
               <div 
                 key={item.id} 
-                className="p-3 bg-slate-50 border border-slate-100 rounded-xl flex justify-between items-center hover:bg-slate-100/50 transition-all text-xs font-sans"
+                className="p-3 bg-stone-50 border border-stone-100 rounded-xl flex justify-between items-center hover:bg-stone-100/50 transition-all text-xs font-sans"
               >
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-800 text-sm">{item.name}</span>
-                    <span className="px-1.5 py-0.2 bg-slate-200 text-[9px] text-slate-650 font-bold rounded uppercase">Pack unit</span>
+                    <span className="font-bold text-stone-800 text-sm">{item.name}</span>
+                    <span className="px-1.5 py-0.2 bg-stone-200 text-[9px] text-stone-650 font-bold rounded uppercase">Pack unit</span>
                   </div>
                   {item.description && (
-                    <p className="text-[10px] text-slate-450 mt-0.5 leading-normal">{item.description}</p>
+                    <p className="text-[10px] text-stone-450 mt-0.5 leading-normal">{item.description}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="font-extrabold text-slate-800 text-sm select-none">{formatValue(item.price)}</span>
+                  <span className="font-extrabold text-stone-800 text-sm select-none">{formatValue(item.price)}</span>
                   <button
                     onClick={() => onRemoveProduct(item.id)}
-                    className="p-1.5 bg-white border border-slate-200 hover:border-[#E54A13] text-slate-400 hover:text-[#E54A13] rounded-lg transition-all cursor-pointer"
+                    className="p-1.5 bg-white border border-stone-200 hover:border-[#E54A13] text-stone-400 hover:text-[#E54A13] rounded-lg transition-all cursor-pointer"
                     title="Remove item"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -245,29 +245,29 @@ export default function ServicesProductsManager({
           )
         ) : (
           services.length === 0 ? (
-            <p className="text-center py-8 text-slate-400 font-sans text-xs italic">No services in catalog yet.</p>
+            <p className="text-center py-8 text-stone-400 font-sans text-xs italic">No services in catalog yet.</p>
           ) : (
             services.map((item) => (
               <div 
                 key={item.id} 
-                className="p-3 bg-slate-50 border border-slate-100 rounded-xl flex justify-between items-center hover:bg-slate-100/50 transition-all text-xs font-sans"
+                className="p-3 bg-stone-50 border border-stone-100 rounded-xl flex justify-between items-center hover:bg-stone-100/50 transition-all text-xs font-sans"
               >
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-800 text-sm">{item.name}</span>
+                    <span className="font-bold text-stone-800 text-sm">{item.name}</span>
                     {item.durationMinutes && (
-                      <span className="px-1.5 py-0.2 bg-slate-200 text-[9px] text-slate-650 font-bold rounded uppercase">{item.durationMinutes} mins</span>
+                      <span className="px-1.5 py-0.2 bg-stone-200 text-[9px] text-stone-650 font-bold rounded uppercase">{item.durationMinutes} mins</span>
                     )}
                   </div>
                   {item.description && (
-                    <p className="text-[10px] text-slate-450 mt-0.5 leading-normal">{item.description}</p>
+                    <p className="text-[10px] text-stone-450 mt-0.5 leading-normal">{item.description}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="font-extrabold text-slate-800 text-sm select-none">{formatValue(item.price)}</span>
+                  <span className="font-extrabold text-stone-800 text-sm select-none">{formatValue(item.price)}</span>
                   <button
                     onClick={() => onRemoveService(item.id)}
-                    className="p-1.5 bg-white border border-slate-200 hover:border-[#E54A13] text-slate-400 hover:text-[#E54A13] rounded-lg transition-all cursor-pointer"
+                    className="p-1.5 bg-white border border-stone-200 hover:border-[#E54A13] text-stone-400 hover:text-[#E54A13] rounded-lg transition-all cursor-pointer"
                     title="Remove item"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
