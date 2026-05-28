@@ -1,142 +1,301 @@
 import { useEffect, useState } from 'react';
-import { ArrowRight, Shield, Zap, Globe, Layers } from 'lucide-react';
 import { motion } from 'motion/react';
+import { Building2, LayoutTemplate, Link as LinkIcon, FileText, PieChart, Bell, ArrowRight } from 'lucide-react';
+
+const BG = '#0C0A09';
+const BG2 = '#111110';
+const BORDER = '#292524';
+const TEXT_PRIMARY = '#f5f5f4';
+const TEXT_MUTED = '#a8a29e';
+const TEXT_DIM = '#78716c';
+const ACCENT = '#E54A13';
+const ACCENT_DARK = '#C13A0E';
+
+const features = [
+  { Icon: Building2,     title: 'Multi-business',         desc: 'One tool for all your businesses. Isolated data, no cross-contamination.' },
+  { Icon: LayoutTemplate, title: '5 Invoice templates',   desc: 'Minimal, Executive, Studio, Classic, Stripe — pick what fits.' },
+  { Icon: LinkIcon,      title: 'Paystack & Stripe',      desc: 'Embed payment links directly into invoices. Get paid in one click.' },
+  { Icon: FileText,      title: 'PDF export',             desc: 'Generate pristine PDFs instantly. Download or share as-is.' },
+  { Icon: PieChart,      title: 'Expense tracking',       desc: 'Log and categorize expenses per business. Know your numbers.' },
+  { Icon: Bell,          title: 'Send reminders',         desc: 'Follow up on unpaid invoices without leaving the app.' },
+];
+
+const steps = [
+  { n: '1', title: 'Create invoice',    desc: 'Client details, line items, VAT — done in under a minute.',  accent: false },
+  { n: '2', title: 'Add payment link',  desc: 'Attach your Stripe or Paystack link so clients can pay instantly.',  accent: false },
+  { n: '3', title: 'Get paid',          desc: 'Clients pay via your gateway. You get notified.',  accent: true },
+];
 
 export default function MarketingHero({ onEnterApp }: { onEnterApp: () => void }) {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0C0A09] text-stone-50 font-sans selection:bg-primary selection:text-white">
-      <nav className={`fixed top-0 left-0 right-0 z-50 px-6 py-4 flex items-center justify-between transition-all duration-300 ${scrolled ? 'bg-[#0C0A09]/80 backdrop-blur-xl border-b border-stone-800/50' : ''}`}>
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded bg-primary"></div>
-          <span className="font-bold tracking-tight text-lg">Billable.</span>
+    <div style={{ background: BG, color: TEXT_PRIMARY, fontFamily: "'Inter', sans-serif", minHeight: '100vh' }}>
+
+      {/* Nav */}
+      <nav style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 50,
+        padding: '1rem 1.5rem',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        transition: 'background 0.3s, border-color 0.3s',
+        background: scrolled ? 'rgba(12,10,9,0.92)' : 'transparent',
+        backdropFilter: scrolled ? 'blur(12px)' : 'none',
+        borderBottom: scrolled ? `1px solid ${BORDER}` : '1px solid transparent',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 10, height: 10, borderRadius: 2, background: ACCENT, flexShrink: 0 }} />
+          <span style={{ fontWeight: 800, fontSize: 17, letterSpacing: '-0.03em', color: TEXT_PRIMARY }}>Billable.</span>
         </div>
-        <button 
+        <button
           onClick={onEnterApp}
-          className="px-5 py-2 rounded-full bg-white text-stone-950 text-xs font-bold hover:bg-stone-200 transition-colors"
+          style={{
+            padding: '8px 20px', borderRadius: 9999, border: `1px solid ${BORDER}`,
+            background: 'transparent', color: TEXT_PRIMARY, fontSize: 13, fontWeight: 600,
+            cursor: 'pointer', transition: 'background 0.15s, color 0.15s',
+          }}
+          onMouseEnter={e => { (e.target as HTMLButtonElement).style.background = BORDER; }}
+          onMouseLeave={e => { (e.target as HTMLButtonElement).style.background = 'transparent'; }}
         >
-          Enter Workspace
+          Enter Workspace →
         </button>
       </nav>
 
-      <main className="pt-40 pb-20 px-6 relative overflow-hidden">
-        {/* Glow Effects */}
-        <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary/20 blur-[120px] rounded-full pointer-events-none"></div>
+      {/* Hero */}
+      <main style={{ paddingTop: 160, paddingBottom: 96, paddingLeft: 24, paddingRight: 24 }}>
+        <div style={{ maxWidth: 800, margin: '0 auto', textAlign: 'center' }}>
 
-        <div className="max-w-5xl mx-auto text-center relative z-10">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-stone-900 border border-stone-800 text-xs font-medium text-stone-400 mb-8"
+            transition={{ duration: 0.45 }}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '5px 14px', borderRadius: 9999,
+              border: `1px solid ${BORDER}`, background: BG2,
+              fontSize: 11, fontWeight: 600, letterSpacing: '0.08em',
+              textTransform: 'uppercase', color: TEXT_DIM, marginBottom: 32,
+            }}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
-            Terminal v2.0 Online
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: ACCENT }} />
+            Invoicing for operators
           </motion.div>
 
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
+          <motion.h1
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-5xl md:text-7xl font-black tracking-tight leading-[1.05] mb-6"
+            transition={{ duration: 0.5, delay: 0.08 }}
+            style={{
+              fontSize: 'clamp(40px, 8vw, 80px)',
+              fontWeight: 900,
+              letterSpacing: '-0.04em',
+              lineHeight: 1.03,
+              color: TEXT_PRIMARY,
+              marginBottom: 24,
+            }}
           >
-            The private command center<br />for <span className="text-primary">operators.</span>
+            Invoice faster.<br />Get paid sooner.
           </motion.h1>
 
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-lg md:text-xl text-stone-400 max-w-2xl mx-auto mb-10 leading-relaxed"
+            transition={{ duration: 0.5, delay: 0.16 }}
+            style={{
+              fontSize: 18, lineHeight: 1.65,
+              color: TEXT_MUTED,
+              maxWidth: 520, margin: '0 auto 40px',
+            }}
           >
-            Tight, fast, and quietly powerful. Manage multiple businesses, track expenses, and send world-class invoices from a single offline-first vault.
+            One workspace per business. Professional templates.
+            Payment links. All offline.
           </motion.p>
 
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            transition={{ duration: 0.5, delay: 0.24 }}
+            style={{ display: 'flex', justifyContent: 'center', gap: 12, flexWrap: 'wrap' }}
           >
-            <button 
+            <button
               onClick={onEnterApp}
-              className="w-full sm:w-auto px-8 py-4 rounded-xl bg-primary text-white font-bold text-sm hover:bg-[#C13A0E] transition-all flex items-center justify-center gap-2 shadow-[0_0_40px_rgba(229,74,19,0.3)] hover:shadow-[0_0_60px_rgba(229,74,19,0.4)]"
+              style={{
+                padding: '14px 32px', borderRadius: 12,
+                background: ACCENT, color: '#fff',
+                fontSize: 14, fontWeight: 700,
+                border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 8,
+                transition: 'background 0.15s, transform 0.15s',
+              }}
+              onMouseEnter={e => { (e.target as HTMLElement).closest('button')!.style.background = ACCENT_DARK; }}
+              onMouseLeave={e => { (e.target as HTMLElement).closest('button')!.style.background = ACCENT; }}
             >
-              Initialize Workspace <ArrowRight className="w-4 h-4" />
+              Start Now <ArrowRight size={16} />
             </button>
           </motion.div>
         </div>
-
-        {/* Abstract UI Mockup */}
-        <motion.div 
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.4 }}
-          className="max-w-6xl mx-auto mt-24 relative"
-        >
-          <div className="aspect-[16/10] md:aspect-[21/9] rounded-2xl bg-[#111110] border border-stone-800 shadow-2xl overflow-hidden flex flex-col">
-            <div className="h-10 bg-[#1C1917] border-b border-stone-800 flex items-center px-4 gap-2">
-              <div className="w-3 h-3 rounded-full bg-stone-700"></div>
-              <div className="w-3 h-3 rounded-full bg-stone-700"></div>
-              <div className="w-3 h-3 rounded-full bg-stone-700"></div>
-            </div>
-            <div className="flex-1 p-8 flex gap-6">
-              <div className="w-48 hidden md:flex flex-col gap-3">
-                <div className="h-8 rounded bg-stone-800/50 w-full"></div>
-                <div className="h-8 rounded bg-stone-800/50 w-3/4"></div>
-                <div className="h-8 rounded bg-stone-800/50 w-5/6"></div>
-              </div>
-              <div className="flex-1 flex flex-col gap-6">
-                <div className="flex gap-4">
-                  <div className="h-24 rounded-xl bg-stone-800/50 flex-1 border border-stone-800"></div>
-                  <div className="h-24 rounded-xl bg-stone-800/50 flex-1 border border-stone-800"></div>
-                  <div className="h-24 rounded-xl bg-stone-800/50 flex-1 border border-stone-800"></div>
-                </div>
-                <div className="flex-1 rounded-xl bg-stone-800/30 border border-stone-800 p-6 flex items-end gap-4">
-                  {[40, 70, 45, 90, 60, 100].map((h, i) => (
-                    <div key={i} className="w-full bg-primary/20 rounded-t-sm" style={{ height: `${h}%` }}>
-                      <div className="w-full bg-primary rounded-t-sm" style={{ height: '4px' }}></div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
       </main>
 
-      <section className="py-32 px-6 border-t border-stone-900 bg-[#111110]">
-        <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-8">
-          <div className="p-6 rounded-2xl bg-[#1C1917] border border-stone-800">
-            <div className="w-10 h-10 rounded-lg bg-stone-800 flex items-center justify-center text-stone-400 mb-6">
-              <Shield className="w-5 h-5" />
-            </div>
-            <h3 className="text-lg font-bold text-white mb-2">Local First</h3>
-            <p className="text-sm text-stone-400 leading-relaxed">Your financial data never leaves your device. Uncompromising privacy built on local storage architecture.</p>
-          </div>
-          <div className="p-6 rounded-2xl bg-[#1C1917] border border-stone-800">
-            <div className="w-10 h-10 rounded-lg bg-stone-800 flex items-center justify-center text-stone-400 mb-6">
-              <Layers className="w-5 h-5" />
-            </div>
-            <h3 className="text-lg font-bold text-white mb-2">Multi-Business</h3>
-            <p className="text-sm text-stone-400 leading-relaxed">Run a studio, a consultancy, and a side-hustle from one terminal. Context-isolated workspaces.</p>
-          </div>
-          <div className="p-6 rounded-2xl bg-[#1C1917] border border-stone-800">
-            <div className="w-10 h-10 rounded-lg bg-stone-800 flex items-center justify-center text-stone-400 mb-6">
-              <Zap className="w-5 h-5" />
-            </div>
-            <h3 className="text-lg font-bold text-white mb-2">World-Class Output</h3>
-            <p className="text-sm text-stone-400 leading-relaxed">Generate pristine, editorial-grade PDF invoices that command respect and higher rates.</p>
+      {/* Divider line */}
+      <div style={{ height: 1, background: BORDER, margin: '0 24px' }} />
+
+      {/* Features */}
+      <section style={{ padding: '80px 24px', background: BG2 }}>
+        <div style={{ maxWidth: 1024, margin: '0 auto' }}>
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            style={{
+              fontSize: 11, fontWeight: 700, letterSpacing: '0.1em',
+              textTransform: 'uppercase', color: TEXT_DIM,
+              textAlign: 'center', marginBottom: 52,
+            }}
+          >
+            Everything you need
+          </motion.p>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: '40px 48px',
+          }}>
+            {features.map(({ Icon, title, desc }, i) => (
+              <motion.div
+                key={title}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.06 }}
+                style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
+              >
+                <Icon size={20} color={ACCENT} />
+                <div style={{ fontSize: 14, fontWeight: 700, color: TEXT_PRIMARY }}>{title}</div>
+                <div style={{ fontSize: 13, color: TEXT_MUTED, lineHeight: 1.6 }}>{desc}</div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
+
+      <div style={{ height: 1, background: BORDER }} />
+
+      {/* How it works */}
+      <section style={{ padding: '80px 24px', background: BG }}>
+        <div style={{ maxWidth: 960, margin: '0 auto' }}>
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            style={{ textAlign: 'center', marginBottom: 56 }}
+          >
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: TEXT_DIM, marginBottom: 16 }}>
+              How it works
+            </p>
+            <h2 style={{ fontSize: 'clamp(28px, 5vw, 40px)', fontWeight: 800, letterSpacing: '-0.03em', color: TEXT_PRIMARY }}>
+              Three steps. Zero friction.
+            </h2>
+          </motion.div>
+
+          <div style={{
+            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+            gap: 24, position: 'relative',
+          }}>
+            {steps.map(({ n, title, desc, accent }, i) => (
+              <motion.div
+                key={n}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                style={{
+                  padding: '28px 24px', borderRadius: 16,
+                  border: `1px solid ${accent ? ACCENT + '44' : BORDER}`,
+                  background: accent ? `${ACCENT}0D` : BG2,
+                  display: 'flex', flexDirection: 'column', gap: 16,
+                }}
+              >
+                <div style={{
+                  width: 40, height: 40, borderRadius: 12,
+                  background: accent ? ACCENT : BORDER,
+                  color: accent ? '#fff' : TEXT_MUTED,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 15, fontWeight: 800,
+                }}>
+                  {n}
+                </div>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: TEXT_PRIMARY, marginBottom: 6 }}>{title}</div>
+                  <div style={{ fontSize: 13, color: TEXT_MUTED, lineHeight: 1.6 }}>{desc}</div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div style={{ height: 1, background: BORDER }} />
+
+      {/* Final CTA */}
+      <section style={{ padding: '96px 24px', background: BG, textAlign: 'center' }}>
+        <div style={{ maxWidth: 640, margin: '0 auto' }}>
+          <motion.h2
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            style={{
+              fontSize: 'clamp(30px, 6vw, 52px)',
+              fontWeight: 900, letterSpacing: '-0.04em',
+              color: TEXT_PRIMARY, marginBottom: 12, lineHeight: 1.08,
+            }}
+          >
+            Your businesses,<br />one command center.
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            style={{ color: TEXT_MUTED, fontSize: 16, marginBottom: 36, lineHeight: 1.6 }}
+          >
+            Free, offline-first, no account required.
+          </motion.p>
+          <motion.button
+            initial={{ opacity: 0, y: 8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.18 }}
+            onClick={onEnterApp}
+            style={{
+              padding: '14px 36px', borderRadius: 12,
+              background: TEXT_PRIMARY, color: BG,
+              fontSize: 14, fontWeight: 700,
+              border: 'none', cursor: 'pointer',
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+            }}
+          >
+            Start Now <ArrowRight size={16} />
+          </motion.button>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <div style={{
+        borderTop: `1px solid ${BORDER}`,
+        padding: '24px',
+        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        flexWrap: 'wrap', gap: 8,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ width: 8, height: 8, borderRadius: 2, background: ACCENT }} />
+          <span style={{ fontSize: 13, fontWeight: 700, color: TEXT_PRIMARY }}>Billable.</span>
+        </div>
+        <span style={{ fontSize: 12, color: TEXT_DIM }}>Offline-first · No account · All data stays in your browser</span>
+      </div>
     </div>
   );
 }

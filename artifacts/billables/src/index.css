@@ -67,9 +67,9 @@
 }
 
 :root[data-theme="light"] {
-  --app-stone-50:  #fafaf9;
-  --app-stone-100: #f5f5f4;
-  --app-stone-200: #e7e5e4;
+  --app-stone-50:  #ffffff;
+  --app-stone-100: #f8f7f5;
+  --app-stone-200: #e0ddd9;
   --app-stone-300: #d6d3d1;
   --app-stone-400: #a8a29e;
   --app-stone-500: #78716c;
@@ -77,7 +77,7 @@
   --app-stone-700: #44403c;
   --app-stone-800: #292524;
   --app-stone-900: #1c1917;
-  --app-stone-950: #0c0a09;
+  --app-stone-950: #111111;
   --app-white:     #ffffff;
   --app-black:     #000000;
 }
@@ -132,3 +132,18 @@
   background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--app-stone-400); background-clip: padding-box; }
+
+/* Mobile sidebar overlay */  
+.sidebar-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 40;
+  backdrop-filter: blur(2px);
+}
+
+/* Slide-in animation for mobile sidebar */
+.animate-slide-left {
+  animation: anim-slide-in-left 0.25s var(--ease-default) both;
+}
+@keyframes anim-slide-in-left {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
