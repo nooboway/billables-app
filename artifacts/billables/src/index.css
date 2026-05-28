@@ -1,0 +1,167 @@
+/* ================================================
+   Billables – Global Stylesheet
+   Imports the Declotr design kit (tokens, components,
+   animations) and wires them into Tailwind 4's @theme.
+   ================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+@import "tailwindcss";
+
+/* Design kit — order matters: tokens first, then components, then animations */
+@import "./styles/tokens.css";
+@import "./styles/components.css";
+@import "./styles/animations.css";
+
+/* ──────────────────────────────────────────────────
+   Tailwind 4 @theme — exposes design-kit tokens as
+   Tailwind utility classes (bg-primary, text-green-brand,
+   rounded-r-md, ease-default, etc).
+   ────────────────────────────────────────────────── */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Stone scale — re-exposed so the dark-theme override flips them */
+  --color-stone-50:  var(--app-stone-50);
+  --color-stone-100: var(--app-stone-100);
+  --color-stone-200: var(--app-stone-200);
+  --color-stone-300: var(--app-stone-300);
+  --color-stone-400: var(--app-stone-400);
+  --color-stone-500: var(--app-stone-500);
+  --color-stone-600: var(--app-stone-600);
+  --color-stone-700: var(--app-stone-700);
+  --color-stone-800: var(--app-stone-800);
+  --color-stone-900: var(--app-stone-900);
+  --color-stone-950: var(--app-stone-950);
+  --color-white:     var(--app-white);
+  --color-black:     var(--app-black);
+
+  /* Declotr brand tokens (Tailwind v4 picks these up as bg-primary, text-primary, etc.) */
+  --color-primary:            #E54A13;
+  --color-primary-dark:       #C13A0E;
+  --color-primary-light:      #FF6B3D;
+  --color-primary-soft:       #F08C5A;
+  --color-primary-glow:       rgba(229, 74, 19, 0.12);
+  --color-primary-glow-strong: rgba(229, 74, 19, 0.25);
+
+  --color-green-brand:        #00C566;
+  --color-green-brand-bg:     #ECFDF5;
+  --color-blue-brand:         #3B82F6;
+  --color-blue-brand-bg:      #EFF6FF;
+  --color-purple-brand:       #8B5CF6;
+  --color-purple-brand-bg:    #F5F3FF;
+  --color-yellow-brand:       #F59E0B;
+  --color-yellow-brand-bg:    #FFFBEB;
+
+  /* Radius scale */
+  --radius-r-sm:   8px;
+  --radius-r-md:   12px;
+  --radius-r-lg:   16px;
+  --radius-r-xl:   20px;
+  --radius-r-2xl:  24px;
+  --radius-r-3xl:  32px;
+  --radius-r-full: 9999px;
+
+  /* Easing */
+  --ease-spring:  cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-default: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ──────────────────────────────────────────────────
+   Stone-scale variables — light is default, dark mode
+   flips the scale so existing `bg-stone-50` classes
+   automatically read as dark surfaces in dark theme.
+   ────────────────────────────────────────────────── */
+:root {
+  --app-stone-50:  #fafaf9;
+  --app-stone-100: #f5f5f4;
+  --app-stone-200: #e7e5e4;
+  --app-stone-300: #d6d3d1;
+  --app-stone-400: #a8a29e;
+  --app-stone-500: #78716c;
+  --app-stone-600: #57534e;
+  --app-stone-700: #44403c;
+  --app-stone-800: #292524;
+  --app-stone-900: #1c1917;
+  --app-stone-950: #0c0a09;
+  --app-white:     #ffffff;
+  --app-black:     #000000;
+}
+
+:root[data-theme="dark"], .dark {
+  --app-stone-50:  #1c1917;
+  --app-stone-100: #292524;
+  --app-stone-200: #44403c;
+  --app-stone-300: #57534e;
+  --app-stone-400: #78716c;
+  --app-stone-500: #a8a29e;
+  --app-stone-600: #d6d3d1;
+  --app-stone-700: #e7e5e4;
+  --app-stone-800: #f5f5f4;
+  --app-stone-900: #fafaf9;
+  --app-stone-950: #ffffff;
+  --app-white:     #0c0a09;
+  --app-black:     #fafaf9;
+}
+
+/* ──────────────────────────────────────────────────
+   Base styles
+   ────────────────────────────────────────────────── */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    background-color: var(--app-stone-50);
+    color: var(--app-stone-900);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  *:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+/* ──────────────────────────────────────────────────
+   App-specific helpers (kept minimal — most utility
+   work happens via Tailwind + design-kit classes)
+   ────────────────────────────────────────────────── */
+.font-display {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-feature-settings: 'cv11', 'ss01';
+  letter-spacing: -0.02em;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Re-export a couple of frequently-used legacy anim classes so the
+   inline references in App.tsx keep working until the component split
+   replaces them with .anim-fade-up / .hover-lift from the design kit. */
+.animate-slide-up { animation: anim-fade-up 0.6s var(--ease) both; }
+.animate-pulse-dot { animation: anim-pulse-ring 2s infinite cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes anim-fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes anim-pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(229, 74, 19, 0.4); opacity: 1; }
+  70% { box-shadow: 0 0 0 8px rgba(229, 74, 19, 0); opacity: 0.7; }
+  100% { box-shadow: 0 0 0 0 rgba(229, 74, 19, 0); opacity: 1; }
+}
+
+/* Scrollbar — quiet, on-brand */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--gray-300, #d6d3d1);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--gray-400, #a8a29e); background-clip: padding-box; }

@@ -1,0 +1,115 @@
+/* ================================================
+   DECLOTR DESIGN TOKENS
+   Extracted from declotr.com & web.declotr.com
+   ================================================ */
+
+:root {
+  /* ── Brand Colors ── */
+  --primary:        #E54A13;
+  --primary-dark:   #C13A0E;
+  --primary-light:  #FF6B3D;
+  --primary-soft:   #F08C5A;
+  --primary-glow:   rgba(229, 74, 19, 0.12);
+  --primary-glow-strong: rgba(229, 74, 19, 0.25);
+
+  /* ── Semantic Colors ── */
+  --green:        #00C566;
+  --green-bg:     #ECFDF5;
+  --blue:         #3B82F6;
+  --blue-bg:      #EFF6FF;
+  --purple:       #8B5CF6;
+  --purple-bg:    #F5F3FF;
+  --yellow:       #F59E0B;
+  --yellow-bg:    #FFFBEB;
+  --red:          #EF4444;
+  --pink:         #EC4899;
+  --teal:         #14B8A6;
+  --teal-bg:      #F0FDFA;
+  --orange-bg:    #FFF4ED;
+
+  /* ── Neutrals ── */
+  --white:      #FFFFFF;
+  --gray-50:    #FAFAF9;
+  --gray-100:   #F5F5F4;
+  --gray-200:   #E7E5E4;
+  --gray-300:   #D6D3D1;
+  --gray-400:   #A8A29E;
+  --gray-500:   #78716C;
+  --gray-600:   #57534E;
+  --gray-700:   #44403C;
+  --gray-800:   #292524;
+  --gray-900:   #1C1917;
+  --gray-950:   #0C0A09;
+
+  /* ── Surface Colors ── */
+  --bg:           var(--white);
+  --bg-muted:     var(--gray-50);
+  --bg-soft:      var(--gray-100);
+  --bg-dark:      #09090B;
+  --bg-dark-card: #161618;
+  --bg-dark-hover:#1E1E21;
+
+  /* ── Text Colors ── */
+  --text:           var(--gray-950);
+  --text-sub:       var(--gray-500);
+  --text-muted:     var(--gray-400);
+  --text-white:     #F4F4F5;
+  --text-white-sub: #A1A1AA;
+
+  /* ── Border Colors ── */
+  --border:       var(--gray-200);
+  --border-light: var(--gray-100);
+  --border-dark:  rgba(255, 255, 255, 0.07);
+
+  /* ── Typography ── */
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* ── Border Radius ── */
+  --r-sm:   8px;
+  --r-md:   12px;
+  --r-lg:   16px;
+  --r-xl:   20px;
+  --r-2xl:  24px;
+  --r-3xl:  32px;
+  --r-full: 9999px;
+
+  /* ── Shadows ── */
+  --shadow-sm:  0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md:  0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-lg:  0 12px 32px rgba(0, 0, 0, 0.08);
+  --shadow-xl:  0 24px 48px rgba(0, 0, 0, 0.10);
+  --shadow-2xl: 0 32px 64px rgba(0, 0, 0, 0.14);
+  --shadow-primary: 0 8px 32px rgba(229, 74, 19, 0.30);
+
+  /* ── Easing ── */
+  --ease:        cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in:     cubic-bezier(0.4, 0, 1, 1);
+  --ease-out:    cubic-bezier(0, 0, 0.2, 1);
+
+  /* ── Spacing ── */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-32: 128px;
+
+  /* ── Layout ── */
+  --max-w:    1200px;
+  --max-w-sm: 760px;
+  --nav-h:    68px;
+
+  /* ── Gradients ── */
+  --gradient-primary:  linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+  --gradient-dark:     linear-gradient(135deg, #09090B 0%, #1C1917 100%);
+  --gradient-warm:     linear-gradient(135deg, #E54A13 0%, #F59E0B 100%);
+  --gradient-glow:     radial-gradient(ellipse 60% 50% at 50% 0%, rgba(229,74,19,0.15), transparent);
+}

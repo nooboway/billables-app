@@ -1,0 +1,139 @@
+/* ================================================
+   DECLOTR ANIMATIONS
+   Extracted from declotr.com & web.declotr.com
+   ================================================ */
+
+/* ── Keyframes ── */
+@keyframes orb-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(30px, -20px) scale(1.05); }
+  66%       { transform: translate(-20px, 15px) scale(0.97); }
+}
+
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(0, 197, 102, 0.5); }
+  70%  { box-shadow: 0 0 0 8px rgba(0, 197, 102, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 197, 102, 0); }
+}
+
+@keyframes scroll-anim {
+  0%   { opacity: 1; transform: scaleY(1); transform-origin: top; }
+  100% { opacity: 0; transform: scaleY(0); transform-origin: top; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes fade-down {
+  from { opacity: 0; transform: translateY(-16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(32px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes bounce-soft {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(229, 74, 19, 0.2); }
+  50%       { box-shadow: 0 0 40px rgba(229, 74, 19, 0.5); }
+}
+
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ── Utility Animation Classes ── */
+.anim-fade-up     { animation: fade-up     0.6s var(--ease) both; }
+.anim-fade-in     { animation: fade-in     0.5s var(--ease) both; }
+.anim-fade-down   { animation: fade-down   0.5s var(--ease) both; }
+.anim-scale-in    { animation: scale-in    0.5s var(--ease) both; }
+.anim-slide-left  { animation: slide-in-left  0.6s var(--ease) both; }
+.anim-slide-right { animation: slide-in-right 0.6s var(--ease) both; }
+.anim-bounce      { animation: bounce-soft 3s ease-in-out infinite; }
+.anim-glow-pulse  { animation: glow-pulse  2s ease-in-out infinite; }
+
+/* ── Stagger Delays ── */
+.delay-1  { animation-delay: 0.1s; }
+.delay-2  { animation-delay: 0.2s; }
+.delay-3  { animation-delay: 0.3s; }
+.delay-4  { animation-delay: 0.4s; }
+.delay-5  { animation-delay: 0.5s; }
+.delay-6  { animation-delay: 0.6s; }
+.delay-7  { animation-delay: 0.7s; }
+.delay-8  { animation-delay: 0.8s; }
+
+/* ── Reveal on Scroll ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal-d1 { transition-delay: 0.1s; }
+.reveal-d2 { transition-delay: 0.2s; }
+.reveal-d3 { transition-delay: 0.3s; }
+.reveal-d4 { transition-delay: 0.4s; }
+.reveal-d5 { transition-delay: 0.5s; }
+
+/* ── Shimmer Skeleton ── */
+.skeleton {
+  background: linear-gradient(90deg, var(--gray-100) 25%, var(--gray-200) 50%, var(--gray-100) 75%);
+  background-size: 200% auto;
+  animation: shimmer 1.5s linear infinite;
+  border-radius: var(--r-md);
+}
+.skeleton-dark {
+  background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+  background-size: 200% auto;
+  animation: shimmer 1.5s linear infinite;
+}
+
+/* ── Ticker / Marquee ── */
+.ticker-wrap   { overflow: hidden; width: 100%; }
+.ticker-track  { display: flex; width: max-content; animation: ticker-scroll 30s linear infinite; }
+.ticker-track:hover { animation-play-state: paused; }
+.ticker-item   { white-space: nowrap; padding: 0 48px; }
+
+/* ── Hover Effects ── */
+.hover-lift     { transition: transform .3s var(--ease), box-shadow .3s var(--ease); }
+.hover-lift:hover { transform: translateY(-4px); box-shadow: var(--shadow-xl); }
+.hover-scale    { transition: transform .3s var(--ease-spring); }
+.hover-scale:hover { transform: scale(1.03); }
+.hover-glow     { transition: box-shadow .3s var(--ease); }
+.hover-glow:hover { box-shadow: 0 0 0 3px var(--primary-glow), var(--shadow-lg); }

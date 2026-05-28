@@ -1,0 +1,175 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/**
+ * Single source of truth for invoice template variants. Used both on
+ * the per-invoice level (Invoice.templateType) and on the workspace
+ * default (TemplateSettings.templateType). Previously these were two
+ * different unions which let mismatched assignments slip past tsc.
+ */
+export type InvoiceTemplate =
+  // Original five
+  | 'Stripe' | 'Classic' | 'Serif' | 'Modern' | 'Simple'
+  // New minimalist set added from the design pack
+  | 'Circle'     // White minimalist · circular logo · centered · "thank you" script
+  | 'Wardiere'   // Beige-gray · peach header band · serif INVOICE · two-col Bill To/From
+  | 'Bold';      // Cream · oversized "Invoice" wordmark · typecentric editorial
+
+export interface BusinessDetails {
+  name: string;
+  country: string;
+  street: string;
+  aptSuite: string;
+  postalCode: string;
+  city: string;
+  taxRegNo: string;
+  contactPerson: string;
+  cell: string;
+  phone: string;
+  fax: string;
+  email: string;
+  website: string;
+  logoUrl?: string;
+  signatureUrl?: string;
+}
+
+export interface BankAccount {
+  accountHolder: string;
+  bankName: string;
+  accountNumber: string;
+  iban: string;
+  bicSwift: string;
+  bankAddress: string;
+  /** Generic payment link (Stripe, PayPal, custom checkout). */
+  paymentLink?: string;
+  /** Paystack-specific link. Rendered as a dedicated CTA button on
+   *  invoices, distinct from the generic paymentLink. */
+  paystackLink?: string;
+}
+
+export interface VatSettings {
+  applyToInvoices: boolean;
+  taxLabel: string;
+  rate1: number;
+  rate2: number;
+  rate3: number;
+}
+
+export interface TemplateSettings {
+  color: string;
+  templateType: InvoiceTemplate;
+  currency: string;            // e.g. NGN, USD, GBP
+  currencySymbol: string;      // ₦, $, £
+  language: string;            // EN, FR, etc.
+  paymentMethod: string;       // e-transfer, bank, cash
+  dueDateDays: number;
+  estimateType: 'Estimate' | 'Quote';
+  barcodeScannerEnabled: boolean;
+  numberingFormat: string;     // e.g. "INV-0000" or "INV-"
+  showQR?: boolean;
+}
+
+export interface InvoiceItem {
+  id: string;
+  description: string;
+  qty: number;
+  unit: string;
+  price: number;
+  discount: number; // percentage
+  amount: number;
+}
+
+export interface Invoice {
+  id: string;
+  clientName: string;
+  clientEmail: string;
+  clientCountry: string;
+  clientStreet: string;
+  clientCity: string;
+  clientAptSuite?: string;
+  clientPostalCode?: string;
+  issueDate: string; // YYYY-MM-DD
+  dueDate: string;   // YYYY-MM-DD
+  paymentMethod: string;
+  orderNo: string;
+  items: InvoiceItem[];
+  shippingFee: number;
+  vatRate: number;
+  status: 'Paid' | 'Unpaid' | 'Overdue' | 'Draft';
+  skuPhotoUrl?: string;
+  notes?: string;
+  templateType?: InvoiceTemplate;
+  createdTime: string;
+  history: Array<{
+    event: string;
+    timestamp: string;
+  }>;
+  /** Original file the invoice was imported from, normalized to PDF
+   *  and stored as a data URL. Lets the user re-download or visually
+   *  diff against the source. Absent on invoices created from scratch. */
+  originalPdfDataUrl?: string;
+  /** Human-readable name of the original imported file (e.g. "scan.jpg"). */
+  originalFileName?: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  description: string;
+  unit: string;
+  price: number;
+  discount: number;
+  imageUrl?: string;
+}
+
+export interface Service {
+  id: string;
+  name: string;
+  description: string;
+  unit: string;
+  price: number;
+  discount: number;
+  durationMinutes?: number;
+}
+
+export interface Expense {
+  id: string;
+  description: string;
+  vendor: string;
+  category: 'Administration' | 'Advertising' | 'Travel' | 'Supplies' | 'Rent' | 'Other';
+  date: string;
+  paid: boolean;
+  taxRate: number;
+  amount: number;
+  invoicePhotoUrl?: string;
+}
+
+export interface Notification {
+  id: string;
+  title: string;
+  message: string;
+  timestamp: string;
+  type: 'info' | 'success' | 'warning' | 'alert';
+  read: boolean;
+}
+
+/**
+ * A Workspace is one business. Each workspace owns its own identity
+ * (business + bank + VAT + invoice template) and has an independent
+ * pool of invoices, products, services, expenses, and notifications.
+ *
+ * Storage strategy: each per-entity localStorage key is suffixed with
+ * the workspace id (e.g. `billables_invoices_ws_1`). Switching the
+ * active workspace just changes which key we read, so the existing
+ * useLocalStorage hook can stay unchanged.
+ */
+export interface Workspace {
+  id: string;                       // e.g. "ws_1", "ws_<short>"
+  businessDetails: BusinessDetails;
+  bankAccount: BankAccount;
+  vatSettings: VatSettings;
+  templateSettings: TemplateSettings;
+  createdAt: string;                // ISO timestamp
+}
