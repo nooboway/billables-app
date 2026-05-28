@@ -766,30 +766,21 @@ export default function SettingsDrawer({
                 </div>
               </div>
 
-              <div className="p-4 bg-stone-950 border border-stone-800 rounded-xl space-y-3">
-                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest font-display">WORKSPACE MEMBERS (My Team)</span>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center py-1.5 border-b border-b-stone-900">
-                    <span className="text-stone-200 font-bold">Dr. Justice (You)</span>
-                    <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 font-bold text-[9px] uppercase">Owner Administrator</span>
-                  </div>
-                  <div className="flex justify-between items-center py-1.5">
-                    <span className="text-stone-400">Assistant Auditor</span>
-                    <span className="px-2 py-0.5 rounded bg-stone-800 text-stone-400 text-[9px] uppercase">Access Pending</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-4 bg-stone-950 border border-stone-800 rounded-xl space-y-3">
-                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest font-display">MFA Security Encryption</span>
-                <p className="text-[10.5px] text-stone-500 font-sans leading-normal">Session protection keys are monitored in real-time. If you believe your Private Relay link on AppleID has been breached, reset keys below.</p>
-                <button
-                  type="button"
-                  onClick={() => alert("Simulation Action: MFA keys reset successfully!")}
-                  className="px-3 py-1.5 bg-stone-900 hover:bg-stone-800 text-stone-300 rounded border border-stone-800 hover:text-white transition-all text-[10px] uppercase font-bold"
-                >
-                  Reset Security Credentials
-                </button>
+              {/* Local-data scope notice — replaces the fake MFA + team-
+                  members blocks. Billable has no auth or multi-user; all
+                  data lives in your browser's localStorage under the
+                  active workspace. */}
+              <div className="p-4 bg-stone-950 border border-stone-800 rounded-xl space-y-2">
+                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest font-display">Where your data lives</span>
+                <p className="text-[10.5px] text-stone-500 font-sans leading-normal">
+                  Billable is a single-user, browser-only app — every invoice, client and setting is stored in
+                  this browser's localStorage under the <code className="px-1 py-0.5 rounded bg-stone-900 text-stone-300 text-[10px]">billables_*</code> namespace.
+                  Nothing leaves your machine, but clearing site data or switching browsers wipes everything.
+                </p>
+                <p className="text-[10.5px] text-stone-500 font-sans leading-normal">
+                  Multi-business: each workspace owns its own scoped pool of data — switch from the top-nav
+                  picker. Authentication, MFA and team-member roles are not part of this build.
+                </p>
               </div>
 
               <div className="p-4 bg-rose-950/20 border border-rose-900 rounded-xl space-y-2.5">
