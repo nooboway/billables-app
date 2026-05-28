@@ -154,7 +154,7 @@ export default function ReportsDashboard({
           <select 
             value={selectedYear} 
             onChange={(e) => setSelectedYear(e.target.value)}
-            className="bg-white border border-stone-200 rounded-xl px-2.5 py-1 text-stone-700 text-stone-700 outline-none font-sans focus:border-[var(--primary)] text-[11px] font-bold"
+            className="bg-white border border-stone-200 rounded-xl px-2.5 py-1 text-stone-700 outline-none font-sans focus:border-[var(--primary)] text-[11px] font-bold"
           >
             <option value="2026">This year (2026)</option>
             <option value="2025">Last year (2025)</option>
@@ -167,7 +167,7 @@ export default function ReportsDashboard({
           <select 
             value={selectedClientFilter} 
             onChange={(e) => setSelectedClientFilter(e.target.value)}
-            className="bg-white border border-stone-200 rounded-xl px-2.5 py-1 text-stone-700 text-stone-700 outline-none font-sans focus:border-[var(--primary)] text-[11px] font-bold"
+            className="bg-white border border-stone-200 rounded-xl px-2.5 py-1 text-stone-700 outline-none font-sans focus:border-[var(--primary)] text-[11px] font-bold"
           >
             <option value="All">All clients</option>
             {topClients.map(c => (

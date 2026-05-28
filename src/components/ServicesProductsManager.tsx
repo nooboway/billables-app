@@ -128,7 +128,7 @@ export default function ServicesProductsManager({
           </div>
 
           <div className="space-y-1">
-            <label className="text-stone-400 text-stone-400 font-bold block text-[10px] uppercase">Item Name</label>
+            <label className="text-stone-400 font-bold block text-[10px] uppercase">Item Name</label>
             <input 
               type="text" 
               value={itemName} 
@@ -140,7 +140,7 @@ export default function ServicesProductsManager({
           </div>
 
           <div className="space-y-1">
-            <label className="text-stone-400 text-stone-400 font-bold block text-[10px] uppercase">Long Description (Appears inside final invoice)</label>
+            <label className="text-stone-400 font-bold block text-[10px] uppercase">Long Description (Appears inside final invoice)</label>
             <textarea 
               value={itemDesc} 
               onChange={(e) => setItemDesc(e.target.value)}
@@ -151,7 +151,7 @@ export default function ServicesProductsManager({
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             <div className="space-y-1">
-              <label className="text-stone-400 text-stone-400 font-bold block text-[10px] uppercase">Price ({currencySymbol})</label>
+              <label className="text-stone-400 font-bold block text-[10px] uppercase">Price ({currencySymbol})</label>
               <input 
                 type="number" 
                 value={itemPrice || ''} 
@@ -163,7 +163,7 @@ export default function ServicesProductsManager({
             </div>
 
             <div className="space-y-1">
-              <label className="text-stone-400 text-stone-400 font-bold block text-[10px] uppercase">Billing Unit Size</label>
+              <label className="text-stone-400 font-bold block text-[10px] uppercase">Billing Unit Size</label>
               <select 
                 value={itemUnit} 
                 onChange={(e) => setItemUnit(e.target.value)}
@@ -179,7 +179,7 @@ export default function ServicesProductsManager({
 
             {activeCatalog === 'services' && (
               <div className="space-y-1 col-span-2 md:col-span-1">
-                <label className="text-stone-400 text-stone-400 font-bold block text-[10px] uppercase">Duration (Minutes)</label>
+                <label className="text-stone-400 font-bold block text-[10px] uppercase">Duration (Minutes)</label>
                 <input 
                   type="number" 
                   value={duration} 

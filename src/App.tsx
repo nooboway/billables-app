@@ -873,16 +873,16 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
               {/* Heading Tab block */}
               <div className="flex justify-between items-center bg-white p-6 rounded-2xl border border-stone-200 shadow-sm relative overflow-hidden">
                 <div>
-                  <span className="text-[11px] tracking-[0.06em] text-[var(--primary)] uppercase font-black block mb-1">REAL-TIME TELEMETRY</span>
-                  <h2 className="text-2xl md:text-3xl font-black tracking-[-0.035em] text-stone-900">Financial Summary Ledger</h2>
-                  <p className="text-[13px] text-stone-500 mt-1">Workspace performance dashboard for real-time auditable ledger entries.</p>
+                  <span className="text-[11px] tracking-[0.06em] text-[var(--primary)] uppercase font-black block mb-1">Overview</span>
+                  <h2 className="text-2xl md:text-3xl font-black tracking-[-0.035em] text-stone-900">{businessDetails.name || 'Your workspace'} at a glance</h2>
+                  <p className="text-[13px] text-stone-500 mt-1">Paid vs awaiting, recent invoices, and how much of what you've billed has actually been collected.</p>
                 </div>
                 <button 
                   onClick={() => setActiveScreen('reports')}
                   className="px-3.5 py-1.5 bg-white border border-stone-200 hover:border-[var(--primary)] text-[var(--primary)] hover:bg-orange-50/50 flex items-center gap-1.5 font-mono uppercase text-[10px] font-bold rounded-lg transition-all cursor-pointer shadow-sm shrink-0"
                 >
                   <PieChart className="w-3.5 h-3.5 text-[var(--primary)]" />
-                  Detailed Reports
+                  Open reports
                 </button>
               </div>
 
@@ -907,7 +907,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     <h3 className="text-2xl font-black text-emerald-600 tracking-tight tabular-nums animate-pulse-dot" style={{ animationIterationCount: 1 }}>
                       <AnimatedCounter prefix={templateSettings.currencySymbol} value={paidVal} />
                     </h3>
-                    <p className="text-[9.5px] text-stone-400 font-mono uppercase mt-1">Settled & Confirmed Ledger Balance</p>
+                    <p className="text-[9.5px] text-stone-400 uppercase tracking-wider font-bold mt-1">Paid this period</p>
                   </div>
                 </motion.div>
 
@@ -929,7 +929,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     <h3 className="text-2xl font-black text-[var(--primary)] tracking-tight tabular-nums">
                       <AnimatedCounter prefix={templateSettings.currencySymbol} value={unpaidVal + overdueVal} />
                     </h3>
-                    <p className="text-[9.5px] text-[var(--primary)]/80 font-mono uppercase mt-1">Pending Bank Transfer Receivables</p>
+                    <p className="text-[9.5px] text-[var(--primary)]/80 uppercase tracking-wider font-bold mt-1">Awaiting payment</p>
                   </div>
                 </motion.div>
 
@@ -943,7 +943,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                 >
                   <div className="flex justify-between items-start">
                     <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Outstanding Bills</span>
-                    <span className="text-[9.5px] text-[var(--primary)] font-mono font-black uppercase">Active Ledger</span>
+                    <span className="text-[9.5px] text-[var(--primary)] font-black uppercase tracking-wider">Open</span>
                   </div>
                   <div>
                     <h3 className="text-2xl font-black text-stone-900 tracking-tight tabular-nums">
@@ -967,8 +967,8 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                   <div className="bg-white border border-stone-200 p-6 rounded-2xl shadow-sm feature-card cursor-pointer">
                     <div className="flex justify-between items-end mb-3">
                       <div className="space-y-0.5">
-                        <span className="text-[10px] uppercase font-black text-stone-400 tracking-wider block">Capital Recovery Performance</span>
-                        <p className="text-xs font-bold text-stone-700">Payment Collection Efficiency Rate</p>
+                        <span className="text-[10px] uppercase font-black text-stone-400 tracking-wider block">Collections</span>
+                        <p className="text-xs font-bold text-stone-700">Share of invoiced revenue that's been paid</p>
                       </div>
                       <span className="text-xs font-mono font-black text-[var(--primary)] bg-orange-50 px-2.5 py-1 rounded border border-orange-200"><AnimatedCounter value={efficiencyRatio} fractionDigits={1} />%</span>
                     </div>
@@ -990,7 +990,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
               <div className="bg-white border border-stone-200 p-6 rounded-2xl space-y-4 shadow-sm feature-card cursor-pointer">
                 <div className="flex justify-between items-center flex-wrap gap-2.5">
                   <div className="flex items-center gap-2">
-                    <span className="font-extrabold text-stone-900 text-sm tracking-tight">RECENT INVOICES LIST</span>
+                    <span className="font-extrabold text-stone-900 text-sm tracking-tight">Recent invoices</span>
                     <span className="text-[10px] py-0.5 px-2 bg-orange-50 border border-orange-100 text-[var(--primary)] rounded-full font-mono font-bold uppercase">{filteredInvoices.length} entries</span>
                   </div>
                   <div className="relative max-w-xs w-full">
@@ -1070,9 +1070,9 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
             >
               <div className="flex justify-between items-center bg-white p-6 rounded-2xl border border-stone-200 shadow-sm relative overflow-hidden">
                 <div>
-                  <span className="text-[11px] tracking-[0.06em] text-[var(--primary)] uppercase font-black block mb-1">LEDGER DISTRIBUTION</span>
-                  <h2 className="text-2xl md:text-3xl font-black tracking-[-0.035em] text-stone-900">Documents Hub</h2>
-                  <p className="text-[13px] text-stone-500 mt-1">Filter, search and export invoices, estimates and ledgers.</p>
+                  <span className="text-[11px] tracking-[0.06em] text-[var(--primary)] uppercase font-black block mb-1">Documents</span>
+                  <h2 className="text-2xl md:text-3xl font-black tracking-[-0.035em] text-stone-900">All invoices</h2>
+                  <p className="text-[13px] text-stone-500 mt-1">Filter, search and export. Import an existing invoice as PDF or image to pre-fill a draft.</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -1434,7 +1434,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     <div className="flex gap-2.5">
                       <button
                         onClick={() => handleOpenEditDoc(selectedInvoice)}
-                        className="flex-1 py-2 bg-white border border-stone-200 text-stone-700 text-stone-700 text-stone-700 hover:text-[var(--primary)] hover:border-[var(--primary)] font-bold rounded-lg font-mono uppercase tracking-wider text-[10px] transition-all cursor-pointer shadow-sm"
+                        className="flex-1 py-2 bg-white border border-stone-200 text-stone-700 hover:text-[var(--primary)] hover:border-[var(--primary)] font-bold rounded-lg font-mono uppercase tracking-wider text-[10px] transition-all cursor-pointer shadow-sm"
                       >
                         Edit Parameters
                       </button>
@@ -1588,9 +1588,13 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
 
       </main>
 
-      {/* FOOTER METRICS ROW */}
-      <footer className="bg-stone-950 border-t border-stone-900/60 p-4 mt-auto text-center text-[10.5px] font-mono text-stone-500">
-        <p>© {new Date().getFullYear()} {businessDetails.name || 'Your workspace'} · <span style={{ color: 'var(--primary)' }}>Billable</span> by Sylens · All systems nominal</p>
+      {/* Footer — unified with the light app theme. */}
+      <footer className="bg-white border-t border-stone-200 px-4 py-3 mt-auto text-center text-[11px] text-stone-500">
+        <p>
+          © {new Date().getFullYear()} {businessDetails.name || 'Your workspace'} ·{' '}
+          <span className="font-bold" style={{ color: 'var(--primary)' }}>Billable</span>{' '}
+          <span className="text-stone-400">by Sylens</span>
+        </p>
       </footer>
 
       {/* SLIDE-OUT INVOICE CREATOR MODAL WINDOW */}
@@ -1758,7 +1762,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
 
               {/* Client customer fields */}
               <div className="space-y-3.5">
-                <span className="font-bold text-stone-800 uppercase tracking-widest text-[10px] font-sans block">Client customer coordinates</span>
+                <span className="font-bold text-stone-800 uppercase tracking-widest text-[10px] font-sans block">Client details</span>
                 <div className="space-y-1">
                   <span className="text-stone-500">Billed Name / Entity</span>
                   <input 
@@ -1807,13 +1811,13 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
               {/* Items configuration lists */}
               <div className="space-y-3">
                 <div className="flex justify-between items-baseline flex-wrap">
-                  <span className="font-bold text-stone-800 uppercase tracking-widest text-[10px] font-sans block">Document Line Items</span>
+                  <span className="font-bold text-stone-800 uppercase tracking-widest text-[10px] font-sans block">Line items</span>
                   <span className="text-[10px] text-stone-500 font-sans">Add predefined item from selectors or define custom row</span>
                 </div>
 
                 {/* Predefined selection pill bars */}
                 <div className="p-4 bg-stone-50 border border-stone-200 rounded-2xl space-y-2">
-                  <span className="text-[9px] text-stone-500 uppercase tracking-wider block font-sans font-bold">Predefined Catalog Items (Instantly Insert)</span>
+                  <span className="text-[9px] text-stone-500 uppercase tracking-wider block font-sans font-bold">From your catalog</span>
                   <div className="flex flex-wrap gap-2">
                     {products.map(p => (
                       <button
@@ -1867,7 +1871,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                           onClick={handleAddCustomRow}
                           className="px-3.5 py-1.5 bg-[var(--primary)] hover:bg-orange-700 text-white font-bold uppercase rounded-lg border-0 cursor-pointer shadow-sm"
                         >
-                          Insert Inline
+                          Add
                         </button>
                       </div>
                     </div>
@@ -1878,7 +1882,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     onClick={() => setIsAddingCustomRow(true)}
                     className="w-full py-2.5 bg-white border border-stone-200 border-dashed hover:border-[var(--primary)] hover:text-[var(--primary)] rounded-2xl text-stone-500 text-[11px] uppercase font-bold cursor-pointer transition-all shadow-sm"
                   >
-                    + Define Arbitrary Item Row
+                    + Add a custom line item
                   </button>
                 )}
 
@@ -1995,7 +1999,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
               {newClientName && selectedItemsList.length > 0 && (
                 <div className="space-y-3 p-4 bg-stone-100 p-4 bg-stone-50 rounded-2xl border border-dashed border-[var(--primary)]/40 animate-slide-up animate-slide-up">
                   <div className="flex justify-between items-center">
-                    <span className="font-extrabold text-stone-800 uppercase tracking-widest text-[9.5px] block font-sans">Select Invoice Style Template (5 Varieties)</span>
+                    <span className="font-extrabold text-stone-800 uppercase tracking-widest text-[9.5px] block font-sans">Pick a template</span>
                     <span className="text-[10px] text-[var(--primary)] font-sans font-extrabold uppercase">{selectedTemplate} Active</span>
                   </div>
                   

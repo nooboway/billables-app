@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { X, Save, Building, CreditCard, Percent, Palette, Globe, Shield, UserCheck, AlertCircle } from 'lucide-react';
 import { BusinessDetails, BankAccount, VatSettings, TemplateSettings } from '../types';
 import { ACCENTS } from '../lib/accent';
@@ -40,6 +40,22 @@ export default function SettingsDrawer({
   const [localBank, setLocalBank] = useState<BankAccount>({ ...bankAccount });
   const [localVat, setLocalVat] = useState<VatSettings>({ ...vatSettings });
   const [localTemplate, setLocalTemplate] = useState<TemplateSettings>({ ...templateSettings });
+  // Local mirror of the document's dark class so the toggle has its own
+  // controlled state — previously the component force-rerendered via
+  // setActiveSection('menu') → setTimeout(()=>setActiveSection('security'))
+  // which was a workaround for not having a state binding.
+  const [isDark, setIsDark] = useState<boolean>(
+    typeof document !== 'undefined' && document.documentElement.classList.contains('dark'),
+  );
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      try { localStorage.setItem('theme', 'dark'); } catch {}
+    } else {
+      document.documentElement.classList.remove('dark');
+      try { localStorage.setItem('theme', 'light'); } catch {}
+    }
+  }, [isDark]);
 
   if (!isOpen) return null;
 
@@ -743,25 +759,13 @@ export default function SettingsDrawer({
                     <p className="text-[10px] text-stone-500 font-sans mt-0.5">Toggle interface colors using CSS variables</p>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       className="sr-only peer"
-                      onChange={(e) => {
-                        const isDark = e.target.checked;
-                        if (isDark) {
-                          document.documentElement.classList.add('dark');
-                          localStorage.setItem('theme', 'dark');
-                        } else {
-                          document.documentElement.classList.remove('dark');
-                          localStorage.setItem('theme', 'light');
-                        }
-                        // force re-render by triggering a state update if needed
-                        setActiveSection('menu');
-                        setTimeout(() => setActiveSection('security'), 0);
-                      }}
-                      checked={document.documentElement.classList.contains('dark')}
+                      checked={isDark}
+                      onChange={(e) => setIsDark(e.target.checked)}
                     />
-                    <div className="w-9 h-5 bg-stone-805 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-stone-400 after:border-stone-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 peer-checked:after:bg-white" />
+                    <div className="w-9 h-5 bg-stone-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-stone-400 after:border-stone-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 peer-checked:after:bg-white" />
                   </label>
                 </div>
               </div>

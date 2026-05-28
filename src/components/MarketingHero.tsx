@@ -225,7 +225,7 @@ export default function MarketingLanding({ onEnterApp }: { onEnterApp: () => voi
           onClick={onEnterApp}
           className="bg-[var(--primary)] hover:bg-orange-600 text-white px-10 py-5 rounded-full text-[16px] font-bold transition-all shadow-[0_0_40px_rgba(229,74,19,0.4)] hover:shadow-[0_0_60px_rgba(229,74,19,0.6)]"
         >
-          Initialize Workspace
+          Open the workspace
         </button>
       </footer>
     </div>
