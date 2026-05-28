@@ -601,7 +601,7 @@ export default function SettingsDrawer({
                     type="text" 
                     value={localTemplate.color} 
                     onChange={(e) => setLocalTemplate({ ...localTemplate, color: e.target.value })}
-                    className="w-24 px-1.5 py-0.5 bg-stone-900 border border-stone-850 rounded font-mono text-[11px] text-white uppercase outline-none"
+                    className="w-24 px-1.5 py-0.5 bg-stone-900 border border-stone-900 rounded font-mono text-[11px] text-white uppercase outline-none"
                   />
                 </div>
               </div>
@@ -786,7 +786,7 @@ export default function SettingsDrawer({
                 <button
                   type="button"
                   onClick={() => alert("Simulation Action: MFA keys reset successfully!")}
-                  className="px-3 py-1.5 bg-stone-900 hover:bg-stone-800 text-stone-300 rounded border border-stone-820 hover:text-white transition-all text-[10px] uppercase font-bold"
+                  className="px-3 py-1.5 bg-stone-900 hover:bg-stone-800 text-stone-300 rounded border border-stone-800 hover:text-white transition-all text-[10px] uppercase font-bold"
                 >
                   Reset Security Credentials
                 </button>

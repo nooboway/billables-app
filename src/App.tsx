@@ -774,7 +774,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
           {/* App Logo style of web.declotr.com */}
           <div className="flex items-center gap-0.5 cursor-pointer pr-4 border-r border-stone-200" onClick={() => setActiveScreen('overview')}>
             <span className="text-2xl font-black tracking-tighter text-stone-950 lowercase font-sans">billable</span>
-            <span className="w-2.5 h-2.5 rounded-full bg-[#E54A13] self-end mb-1.5"></span>
+            <span className="w-2.5 h-2.5 rounded-full bg-[var(--primary)] self-end mb-1.5"></span>
           </div>
 
           {/* Multi-business switcher */}
@@ -793,7 +793,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
           <button
             onClick={() => { setActiveScreen('overview'); setSelectedInvoiceId(null); }}
             className={`px-3.5 py-1.5 rounded-md font-bold uppercase transition-all text-[10px] tracking-wider cursor-pointer ${
-              activeScreen === 'overview' ? 'bg-white text-[#E54A13] shadow-sm' : 'text-stone-600 hover:text-stone-950'
+              activeScreen === 'overview' ? 'bg-white text-[var(--primary)] shadow-sm' : 'text-stone-600 hover:text-stone-950'
             }`}
           >
             Overview
@@ -801,7 +801,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
           <button
             onClick={() => { setActiveScreen('documents'); setSelectedInvoiceId(null); }}
             className={`px-3.5 py-1.5 rounded-md font-bold uppercase transition-all text-[10px] tracking-wider cursor-pointer ${
-              activeScreen === 'documents' ? 'bg-white text-[#E54A13] shadow-sm' : 'text-stone-600 hover:text-stone-950'
+              activeScreen === 'documents' ? 'bg-white text-[var(--primary)] shadow-sm' : 'text-stone-600 hover:text-stone-950'
             }`}
           >
             Documents
@@ -809,7 +809,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
           <button
             onClick={() => { setActiveScreen('catalogs'); setSelectedInvoiceId(null); }}
             className={`px-3.5 py-1.5 rounded-md font-bold uppercase transition-all text-[10px] tracking-wider cursor-pointer ${
-              activeScreen === 'catalogs' ? 'bg-white text-[#E54A13] shadow-sm' : 'text-stone-600 hover:text-stone-950'
+              activeScreen === 'catalogs' ? 'bg-white text-[var(--primary)] shadow-sm' : 'text-stone-600 hover:text-stone-950'
             }`}
           >
             Product Library
@@ -817,7 +817,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
           <button
             onClick={() => { setActiveScreen('reports'); setSelectedInvoiceId(null); }}
             className={`px-3.5 py-1.5 rounded-md font-bold uppercase transition-all text-[10px] tracking-wider cursor-pointer ${
-              activeScreen === 'reports' ? 'bg-white text-[#E54A13] shadow-sm' : 'text-stone-600 hover:text-stone-950'
+              activeScreen === 'reports' ? 'bg-white text-[var(--primary)] shadow-sm' : 'text-stone-600 hover:text-stone-950'
             }`}
           >
             Analytics Reports
@@ -828,14 +828,14 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
         <div className="flex items-center gap-4 text-xs font-mono">
           <button
             onClick={toggleTheme}
-            className="p-1.5 bg-stone-100 border border-stone-200 rounded-lg hover:border-[#E54A13] hover:text-[#E54A13] text-stone-500 transition-all cursor-pointer"
+            className="p-1.5 bg-stone-100 border border-stone-200 rounded-lg hover:border-[var(--primary)] hover:text-[var(--primary)] text-stone-500 transition-all cursor-pointer"
             title="Toggle theme"
           >
             {isDarkTheme ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
           <button 
             onClick={() => setIsSettingsOpen(true)}
-            className="p-1.5 bg-stone-100 border border-stone-200 rounded-lg hover:border-[#E54A13] hover:text-[#E54A13] text-stone-500 transition-all cursor-pointer"
+            className="p-1.5 bg-stone-100 border border-stone-200 rounded-lg hover:border-[var(--primary)] hover:text-[var(--primary)] text-stone-500 transition-all cursor-pointer"
             title="Open Workspace Settings"
             id="settings-trigger-button"
           >
@@ -848,7 +848,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
             className="text-stone-600 hover:text-stone-950 flex items-center gap-1 uppercase text-[10px] border-none bg-transparent cursor-pointer font-bold tracking-wider no-underline"
             title="Open the project README on GitHub"
           >
-            <HelpCircle className="w-3.5 h-3.5 text-[#E54A13]" />
+            <HelpCircle className="w-3.5 h-3.5 text-[var(--primary)]" />
             Help
           </a>
         </div>
@@ -873,15 +873,15 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
               {/* Heading Tab block */}
               <div className="flex justify-between items-center bg-white p-6 rounded-2xl border border-stone-200 shadow-sm relative overflow-hidden">
                 <div>
-                  <span className="text-[11px] tracking-[0.06em] text-[#E54A13] uppercase font-black block mb-1">REAL-TIME TELEMETRY</span>
+                  <span className="text-[11px] tracking-[0.06em] text-[var(--primary)] uppercase font-black block mb-1">REAL-TIME TELEMETRY</span>
                   <h2 className="text-2xl md:text-3xl font-black tracking-[-0.035em] text-stone-900">Financial Summary Ledger</h2>
                   <p className="text-[13px] text-stone-500 mt-1">Workspace performance dashboard for real-time auditable ledger entries.</p>
                 </div>
                 <button 
                   onClick={() => setActiveScreen('reports')}
-                  className="px-3.5 py-1.5 bg-white border border-stone-200 hover:border-[#E54A13] text-[#E54A13] hover:bg-orange-50/50 flex items-center gap-1.5 font-mono uppercase text-[10px] font-bold rounded-lg transition-all cursor-pointer shadow-sm shrink-0"
+                  className="px-3.5 py-1.5 bg-white border border-stone-200 hover:border-[var(--primary)] text-[var(--primary)] hover:bg-orange-50/50 flex items-center gap-1.5 font-mono uppercase text-[10px] font-bold rounded-lg transition-all cursor-pointer shadow-sm shrink-0"
                 >
-                  <PieChart className="w-3.5 h-3.5 text-[#E54A13]" />
+                  <PieChart className="w-3.5 h-3.5 text-[var(--primary)]" />
                   Detailed Reports
                 </button>
               </div>
@@ -926,10 +926,10 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     </span>
                   </div>
                   <div>
-                    <h3 className="text-2xl font-black text-[#E54A13] tracking-tight tabular-nums">
+                    <h3 className="text-2xl font-black text-[var(--primary)] tracking-tight tabular-nums">
                       <AnimatedCounter prefix={templateSettings.currencySymbol} value={unpaidVal + overdueVal} />
                     </h3>
-                    <p className="text-[9.5px] text-[#E54A13]/80 font-mono uppercase mt-1">Pending Bank Transfer Receivables</p>
+                    <p className="text-[9.5px] text-[var(--primary)]/80 font-mono uppercase mt-1">Pending Bank Transfer Receivables</p>
                   </div>
                 </motion.div>
 
@@ -943,7 +943,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                 >
                   <div className="flex justify-between items-start">
                     <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">Outstanding Bills</span>
-                    <span className="text-[9.5px] text-[#E54A13] font-mono font-black uppercase">Active Ledger</span>
+                    <span className="text-[9.5px] text-[var(--primary)] font-mono font-black uppercase">Active Ledger</span>
                   </div>
                   <div>
                     <h3 className="text-2xl font-black text-stone-900 tracking-tight tabular-nums">
@@ -952,7 +952,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     <div className="flex gap-2.5 mt-1 font-mono text-[9.5px]">
                       <span className="text-rose-500 font-bold"><AnimatedCounter value={overdueCount} fractionDigits={0} /> Overdue</span>
                       <span className="text-stone-400 font-bold">•</span>
-                      <span className="text-[#E54A13] font-bold"><AnimatedCounter value={unpaidCount} fractionDigits={0} /> Pending</span>
+                      <span className="text-[var(--primary)] font-bold"><AnimatedCounter value={unpaidCount} fractionDigits={0} /> Pending</span>
                     </div>
                   </div>
                 </motion.div>
@@ -970,11 +970,11 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                         <span className="text-[10px] uppercase font-black text-stone-400 tracking-wider block">Capital Recovery Performance</span>
                         <p className="text-xs font-bold text-stone-700">Payment Collection Efficiency Rate</p>
                       </div>
-                      <span className="text-xs font-mono font-black text-[#E54A13] bg-orange-50 px-2.5 py-1 rounded border border-orange-200"><AnimatedCounter value={efficiencyRatio} fractionDigits={1} />%</span>
+                      <span className="text-xs font-mono font-black text-[var(--primary)] bg-orange-50 px-2.5 py-1 rounded border border-orange-200"><AnimatedCounter value={efficiencyRatio} fractionDigits={1} />%</span>
                     </div>
                     <div className="w-full bg-stone-100 rounded-full h-3.5 border border-stone-200 p-0.5 overflow-hidden">
                       <div 
-                        className="bg-[#E54A13] rounded-full h-full transition-all duration-1000 origin-left"
+                        className="bg-[var(--primary)] rounded-full h-full transition-all duration-1000 origin-left"
                         style={{ width: `${efficiencyRatio}%` }}
                       />
                     </div>
@@ -991,7 +991,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                 <div className="flex justify-between items-center flex-wrap gap-2.5">
                   <div className="flex items-center gap-2">
                     <span className="font-extrabold text-stone-900 text-sm tracking-tight">RECENT INVOICES LIST</span>
-                    <span className="text-[10px] py-0.5 px-2 bg-orange-50 border border-orange-100 text-[#E54A13] rounded-full font-mono font-bold uppercase">{filteredInvoices.length} entries</span>
+                    <span className="text-[10px] py-0.5 px-2 bg-orange-50 border border-orange-100 text-[var(--primary)] rounded-full font-mono font-bold uppercase">{filteredInvoices.length} entries</span>
                   </div>
                   <div className="relative max-w-xs w-full">
                     <input 
@@ -999,7 +999,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                       placeholder="Search client/invoice id..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full bg-stone-50 border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] rounded px-3.5 py-1.5 pl-8 text-xs text-stone-800 outline-none transition-all placeholder-stone-400"
+                      className="w-full bg-stone-50 border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] rounded px-3.5 py-1.5 pl-8 text-xs text-stone-800 outline-none transition-all placeholder-stone-400"
                     />
                     <Search className="w-3.5 h-3.5 text-stone-400 absolute left-2.5 top-2.5" />
                   </div>
@@ -1032,7 +1032,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                               <div className="flex items-center gap-2.5 mt-1 font-mono text-[10px] text-stone-500">
                                 <span className={`px-1.5 py-0.2 rounded border text-[8.5px] font-bold uppercase ${
                                   inv.status === 'Paid' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' :
-                                  inv.status === 'Overdue' ? 'bg-rose-50 border-rose-100 text-rose-600' : 'bg-orange-50 border-orange-100 text-[#E54A13]'
+                                  inv.status === 'Overdue' ? 'bg-rose-50 border-rose-100 text-rose-600' : 'bg-orange-50 border-orange-100 text-[var(--primary)]'
                                 }`}>
                                   {inv.status}
                                 </span>
@@ -1070,7 +1070,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
             >
               <div className="flex justify-between items-center bg-white p-6 rounded-2xl border border-stone-200 shadow-sm relative overflow-hidden">
                 <div>
-                  <span className="text-[11px] tracking-[0.06em] text-[#E54A13] uppercase font-black block mb-1">LEDGER DISTRIBUTION</span>
+                  <span className="text-[11px] tracking-[0.06em] text-[var(--primary)] uppercase font-black block mb-1">LEDGER DISTRIBUTION</span>
                   <h2 className="text-2xl md:text-3xl font-black tracking-[-0.035em] text-stone-900">Documents Hub</h2>
                   <p className="text-[13px] text-stone-500 mt-1">Filter, search and export invoices, estimates and ledgers.</p>
                 </div>
@@ -1085,7 +1085,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                   </button>
                   <button
                     onClick={handleOpenCreator}
-                    className="px-4 py-2.5 bg-[#E54A13] hover:bg-orange-700 font-bold uppercase tracking-wider text-white rounded-xl flex items-center gap-1.5 cursor-pointer text-xs shadow-sm transition-all"
+                    className="px-4 py-2.5 bg-[var(--primary)] hover:bg-orange-700 font-bold uppercase tracking-wider text-white rounded-xl flex items-center gap-1.5 cursor-pointer text-xs shadow-sm transition-all"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     New Invoice
@@ -1098,7 +1098,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                 <button
                   onClick={() => setDocTab('invoices')}
                   className={`flex-1 py-2 text-xs font-bold uppercase rounded-lg transition-all cursor-pointer ${
-                    docTab === 'invoices' ? 'bg-white text-[#E54A13] shadow-sm' : 'text-stone-500 hover:text-stone-800'
+                    docTab === 'invoices' ? 'bg-white text-[var(--primary)] shadow-sm' : 'text-stone-500 hover:text-stone-800'
                   }`}
                 >
                   Invoices ({invoices.length})
@@ -1109,7 +1109,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     alert("Estimates folder is currently empty. Switch back to 'Invoices' or click '+ Create' to generated estimates!");
                   }}
                   className={`flex-1 py-2 text-xs font-bold uppercase rounded-lg transition-all cursor-pointer ${
-                    docTab === 'estimates' ? 'bg-white text-[#E54A13] shadow-sm' : 'text-stone-500 hover:text-stone-800'
+                    docTab === 'estimates' ? 'bg-white text-[var(--primary)] shadow-sm' : 'text-stone-500 hover:text-stone-800'
                   }`}
                 >
                   Estimates (0)
@@ -1124,7 +1124,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     placeholder="Search documents by code, customer or mail ledger..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full bg-stone-50 border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] rounded px-4.5 py-2 pl-9 text-xs text-stone-800 outline-none"
+                    className="w-full bg-stone-50 border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] rounded px-4.5 py-2 pl-9 text-xs text-stone-800 outline-none"
                   />
                   <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-3" />
                 </div>
@@ -1139,7 +1139,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                         className="py-3.5 flex justify-between items-center hover:bg-stone-50 px-3 rounded-lg transition-all cursor-pointer"
                       >
                         <div className="flex items-center gap-3.5">
-                          <span className={`w-2.5 h-2.5 rounded-full ${inv.status === 'Paid' ? 'bg-emerald-500' : inv.status === 'Overdue' ? 'bg-rose-500' : 'bg-[#E54A13]'}`} />
+                          <span className={`w-2.5 h-2.5 rounded-full ${inv.status === 'Paid' ? 'bg-emerald-500' : inv.status === 'Overdue' ? 'bg-rose-500' : 'bg-[var(--primary)]'}`} />
                           <div>
                             <p className="font-bold text-stone-900 font-sans text-sm">{inv.clientName}</p>
                             <p className="text-[10px] text-stone-400 mt-1">ID: #{inv.id} • Date: {inv.issueDate}</p>
@@ -1149,7 +1149,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                           <p className="font-bold text-stone-900 text-sm tabular-nums">{templateSettings.currencySymbol}{totalVal.toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
                           <span className={`px-1.5 py-0.2 rounded border text-[8.5px] font-bold uppercase mt-1 inline-block ${
                             inv.status === 'Paid' ? 'bg-emerald-50 border-emerald-100 text-emerald-600' :
-                            inv.status === 'Overdue' ? 'bg-rose-50 border-rose-100 text-rose-600' : 'bg-orange-50 border-orange-100 text-[#E54A13]'
+                            inv.status === 'Overdue' ? 'bg-rose-50 border-rose-100 text-rose-600' : 'bg-orange-50 border-orange-100 text-[var(--primary)]'
                           }`}>{inv.status}</span>
                         </div>
                       </div>
@@ -1236,7 +1236,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                   <div className="text-right">
                     <span className="text-[10px] text-stone-500 font-mono tracking-wider uppercase font-bold block">Active Invoice reference</span>
                     <div className="flex items-center justify-end gap-2 mt-0.5">
-                      <span className="text-xs font-extrabold text-[#E54A13] font-mono">Invoice #{selectedInvoice.id}</span>
+                      <span className="text-xs font-extrabold text-[var(--primary)] font-mono">Invoice #{selectedInvoice.id}</span>
                       {selectedInvoice.originalPdfDataUrl && (
                         <a
                           href={selectedInvoice.originalPdfDataUrl}
@@ -1270,7 +1270,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
               {/* Quick status filter of client invoices */}
               <div className="bg-stone-50 border border-stone-200/80 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono select-none">
                 <div className="flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-[#E54A13]" />
+                  <span className="w-2 h-2 rounded-full bg-[var(--primary)]" />
                   <div>
                     <span className="text-stone-400 uppercase text-[9px] font-bold block leading-none">Client Invoices Filter</span>
                     <span className="text-stone-900 font-bold font-sans text-sm block mt-1">{selectedInvoice.clientName}</span>
@@ -1281,7 +1281,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                   <select 
                     value={inspectorStatusFilter}
                     onChange={(e) => setInspectorStatusFilter(e.target.value as any)}
-                    className="bg-white border border-stone-200 text-stone-800 rounded px-2.5 py-1.5 text-xs outline-none focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] cursor-pointer"
+                    className="bg-white border border-stone-200 text-stone-800 rounded px-2.5 py-1.5 text-xs outline-none focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] cursor-pointer"
                   >
                     <option value="All">All Statuses ({clientInvoices.length})</option>
                     <option value="Paid">Paid ({clientInvoices.filter(i => i.status === 'Paid').length})</option>
@@ -1307,8 +1307,8 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                         onClick={() => setSelectedInvoiceId(inv.id)}
                         className={`px-3.5 py-2.5 border rounded-xl flex flex-col items-start gap-1 transition-all text-xs font-mono text-left cursor-pointer shrink-0 min-w-[145px] shadow-sm relative overflow-hidden ${
                           isActive 
-                            ? 'bg-stone-900 border-stone-950 text-white hover:bg-stone-850' 
-                            : 'bg-white border-stone-200 text-stone-700 hover:border-[#E54A13] hover:text-[#E54A13]'
+                            ? 'bg-stone-900 border-stone-950 text-white hover:bg-stone-900' 
+                            : 'bg-white border-stone-200 text-stone-700 hover:border-[var(--primary)] hover:text-[var(--primary)]'
                         }`}
                       >
                         <div className="flex justify-between w-full items-center gap-1.5 text-[9.5px]">
@@ -1318,7 +1318,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                               ? isActive ? 'bg-emerald-500 text-white' : 'bg-emerald-50 border border-emerald-100 text-emerald-600'
                               : inv.status === 'Overdue'
                               ? isActive ? 'bg-rose-500 text-white' : 'bg-rose-50 border border-rose-100 text-rose-600'
-                              : isActive ? 'bg-orange-500 text-white' : 'bg-orange-50 border border-orange-100 text-[#E54A13]'
+                              : isActive ? 'bg-orange-500 text-white' : 'bg-orange-50 border border-orange-100 text-[var(--primary)]'
                           }`}>
                             {inv.status}
                           </span>
@@ -1342,7 +1342,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     key={tab}
                     onClick={() => setDetailTab(tab)}
                     className={`flex-1 py-1.5 text-xs font-bold uppercase rounded-lg transition-all cursor-pointer ${
-                      detailTab === tab ? 'bg-white text-[#E54A13] shadow-sm' : 'text-stone-500 hover:text-stone-850'
+                      detailTab === tab ? 'bg-white text-[var(--primary)] shadow-sm' : 'text-stone-500 hover:text-stone-900'
                     }`}
                   >
                     {tab}
@@ -1375,7 +1375,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     <div>
                       <span className="text-[10px] text-stone-400 uppercase block font-bold">Status</span>
                       <span className={`font-bold uppercase text-[10px] ${
-                        selectedInvoice.status === 'Paid' ? 'text-emerald-600' : 'text-[#E54A13]'
+                        selectedInvoice.status === 'Paid' ? 'text-emerald-600' : 'text-[var(--primary)]'
                       }`}>
                         {selectedInvoice.status}
                       </span>
@@ -1425,7 +1425,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                       {selectedInvoice.status !== 'Paid' && (
                         <button
                           onClick={() => handleAddPaymentToInvoice(selectedInvoice.id)}
-                          className="flex-1 py-2 bg-[#E54A13] text-white hover:bg-orange-700 font-bold rounded-lg font-mono uppercase tracking-wider text-[10px] transition-all cursor-pointer shadow-sm border-0"
+                          className="flex-1 py-2 bg-[var(--primary)] text-white hover:bg-orange-700 font-bold rounded-lg font-mono uppercase tracking-wider text-[10px] transition-all cursor-pointer shadow-sm border-0"
                         >
                           Confirm payment
                         </button>
@@ -1434,7 +1434,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     <div className="flex gap-2.5">
                       <button
                         onClick={() => handleOpenEditDoc(selectedInvoice)}
-                        className="flex-1 py-2 bg-white border border-stone-200 text-stone-755 text-stone-705 text-stone-700 hover:text-[#E54A13] hover:border-[#E54A13] font-bold rounded-lg font-mono uppercase tracking-wider text-[10px] transition-all cursor-pointer shadow-sm"
+                        className="flex-1 py-2 bg-white border border-stone-200 text-stone-700 text-stone-700 text-stone-700 hover:text-[var(--primary)] hover:border-[var(--primary)] font-bold rounded-lg font-mono uppercase tracking-wider text-[10px] transition-all cursor-pointer shadow-sm"
                       >
                         Edit Parameters
                       </button>
@@ -1449,7 +1449,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     {/* Clone Invoice Button with brand-matching dark focus flow */}
                     <button
                       onClick={() => handleCloneInvoice(selectedInvoice)}
-                      className="w-full py-2.5 bg-stone-900 hover:bg-[#E54A13] text-white font-bold rounded-lg font-mono uppercase tracking-wider text-[10px] transition-all cursor-pointer shadow-sm flex items-center justify-center gap-1.5 border border-stone-800"
+                      className="w-full py-2.5 bg-stone-900 hover:bg-[var(--primary)] text-white font-bold rounded-lg font-mono uppercase tracking-wider text-[10px] transition-all cursor-pointer shadow-sm flex items-center justify-center gap-1.5 border border-stone-800"
                     >
                       <Copy className="w-3.5 h-3.5 text-white" />
                       Clone Invoice (Duplicate Template)
@@ -1478,10 +1478,10 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                   </motion.div>
                   <div className="mt-4 p-5 bg-stone-50 border border-stone-200 rounded-2xl flex items-center justify-between text-xs font-mono shadow-inner">
                     <div className="flex gap-2.5 items-center">
-                      <ShieldAlert className="w-5 h-5 text-[#E54A13]" />
+                      <ShieldAlert className="w-5 h-5 text-[var(--primary)]" />
                       <div className="select-none">
                         <p className="text-stone-800 font-bold">Fidelity Verification Complete</p>
-                        <p className="text-[10px] text-stone-550 leading-normal mt-0.5">Vector fonts, handwriting path signatures and background patterns are correctly mapped.</p>
+                        <p className="text-[10px] text-stone-500 leading-normal mt-0.5">Vector fonts, handwriting path signatures and background patterns are correctly mapped.</p>
                       </div>
                     </div>
                     <button
@@ -1490,7 +1490,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                       className={`px-3.5 py-1.5 rounded uppercase font-bold text-[10.5px] cursor-pointer shadow-sm transition-all border ${
                         isGeneratingPDF
                           ? 'bg-orange-100 border-orange-300 text-orange-700 cursor-wait animate-pulse'
-                          : 'bg-white text-stone-700 border-stone-200 hover:border-[#E54A13] hover:text-[#E54A13] hover:bg-orange-50/50'
+                          : 'bg-white text-stone-700 border-stone-200 hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-orange-50/50'
                       }`}
                     >
                       {isGeneratingPDF ? 'Generating...' : 'Download as PDF'}
@@ -1535,7 +1535,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
             <div className="grid grid-cols-2 gap-2.5">
               <button
                 onClick={handleOpenCreator}
-                className="py-2.5 px-3 bg-[#E54A13] hover:bg-orange-700 font-bold uppercase text-[10px] rounded-lg text-white flex flex-col items-center justify-center gap-1.5 transition-all text-center border-0 cursor-pointer shadow-sm animate-pulse-dot"
+                className="py-2.5 px-3 bg-[var(--primary)] hover:bg-orange-700 font-bold uppercase text-[10px] rounded-lg text-white flex flex-col items-center justify-center gap-1.5 transition-all text-center border-0 cursor-pointer shadow-sm animate-pulse-dot"
                 style={{ animationIterationCount: 1 }}
               >
                 <Plus className="w-4 h-4 text-white" />
@@ -1543,9 +1543,9 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
               </button>
               <button
                 onClick={() => setIsSettingsOpen(true)}
-                className="py-2.5 px-3 bg-white border border-stone-200 hover:border-[#E54A13] hover:text-[#E54A13] hover:bg-orange-50/20 text-stone-600 rounded-lg flex flex-col items-center justify-center gap-1.5 transition-all text-center cursor-pointer shadow-sm"
+                className="py-2.5 px-3 bg-white border border-stone-200 hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-orange-50/20 text-stone-600 rounded-lg flex flex-col items-center justify-center gap-1.5 transition-all text-center cursor-pointer shadow-sm"
               >
-                <Settings className="w-4 h-4 text-[#E54A13]" />
+                <Settings className="w-4 h-4 text-[var(--primary)]" />
                 <span>Preferences</span>
               </button>
             </div>
@@ -1553,13 +1553,13 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
             <div className="pt-2 border-t border-stone-200 grid grid-cols-2 gap-2 text-[10px] text-stone-500 uppercase font-mono tracking-wider font-bold">
               <button 
                 onClick={() => setActiveScreen('catalogs')}
-                className={`py-1 rounded text-center border bg-transparent hover:text-[#E54A13] hover:border-[#E54A13] transition-all cursor-pointer ${activeScreen === 'catalogs' ? 'text-[#E54A13] border-[#E54A13]' : 'border-stone-200 text-stone-600'}`}
+                className={`py-1 rounded text-center border bg-transparent hover:text-[var(--primary)] hover:border-[var(--primary)] transition-all cursor-pointer ${activeScreen === 'catalogs' ? 'text-[var(--primary)] border-[var(--primary)]' : 'border-stone-200 text-stone-600'}`}
               >
                 Predefine SKU
               </button>
               <button 
                 onClick={() => setActiveScreen('expenses')}
-                className={`py-1 rounded text-center border bg-transparent hover:text-[#E54A13] hover:border-[#E54A13] transition-all cursor-pointer ${activeScreen === 'expenses' ? 'text-[#E54A13] border-[#E54A13]' : 'border-stone-200 text-stone-600'}`}
+                className={`py-1 rounded text-center border bg-transparent hover:text-[var(--primary)] hover:border-[var(--primary)] transition-all cursor-pointer ${activeScreen === 'expenses' ? 'text-[var(--primary)] border-[var(--primary)]' : 'border-stone-200 text-stone-600'}`}
               >
                 Expenses Ledger
               </button>
@@ -1577,7 +1577,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
           <div className="bg-white p-5 rounded-2xl border border-stone-200 text-xs font-mono space-y-1.5 select-none text-stone-500 leading-normal shadow-sm feature-card cursor-pointer">
             <div className="flex justify-between font-bold text-stone-800 text-[10px] uppercase font-sans mb-1.5">
               <span>Account Credentials</span>
-              <span className="text-[#E54A13] font-bold">Connected</span>
+              <span className="text-[var(--primary)] font-bold">Connected</span>
             </div>
             <p className="truncate text-stone-600">Client ID: Private Relay Account W44ZRHJSVB</p>
             <p className="text-stone-600">Moniepoint Ledger: Registered</p>
@@ -1589,7 +1589,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
       </main>
 
       {/* FOOTER METRICS ROW */}
-      <footer className="bg-stone-950 border-t border-stone-850/60 p-4 mt-auto text-center text-[10.5px] font-mono text-stone-500">
+      <footer className="bg-stone-950 border-t border-stone-900/60 p-4 mt-auto text-center text-[10.5px] font-mono text-stone-500">
         <p>© {new Date().getFullYear()} {businessDetails.name || 'Your workspace'} · <span style={{ color: 'var(--primary)' }}>Billable</span> by Sylens · All systems nominal</p>
       </footer>
 
@@ -1635,7 +1635,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
             {/* Header toolbar — title + Edit/Preview tabs + close */}
             <div className="p-4 border-b border-stone-200 bg-white flex justify-between items-center gap-4 shrink-0">
               <h3 className="text-sm font-extrabold uppercase text-stone-950 flex items-center gap-2 min-w-0">
-                <Plus className="w-4 h-4 text-[#E54A13] shrink-0" />
+                <Plus className="w-4 h-4 text-[var(--primary)] shrink-0" />
                 <span className="truncate">
                   {editingInvoiceId ? `Edit invoice #${editingInvoiceId}` : 'New invoice'}
                 </span>
@@ -1648,7 +1648,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                   onClick={() => setCreatorMode('edit')}
                   className={`px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider cursor-pointer transition-all ${
                     creatorMode === 'edit'
-                      ? 'bg-white text-[#E54A13] shadow-sm'
+                      ? 'bg-white text-[var(--primary)] shadow-sm'
                       : 'text-stone-500 hover:text-stone-900'
                   }`}
                 >
@@ -1663,7 +1663,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     !canPreview
                       ? 'text-stone-300 cursor-not-allowed'
                       : creatorMode === 'preview'
-                        ? 'bg-white text-[#E54A13] shadow-sm cursor-pointer'
+                        ? 'bg-white text-[var(--primary)] shadow-sm cursor-pointer'
                         : 'text-stone-500 hover:text-stone-900 cursor-pointer'
                   }`}
                 >
@@ -1673,7 +1673,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
 
               <button
                 onClick={() => { setIsCreatorOpen(false); resetCreatorStates(); setCreatorMode('edit'); }}
-                className="p-1 rounded-lg bg-stone-100 hover:bg-orange-50 text-stone-500 hover:text-[#E54A13] transition-all border-0 cursor-pointer shrink-0"
+                className="p-1 rounded-lg bg-stone-100 hover:bg-orange-50 text-stone-500 hover:text-[var(--primary)] transition-all border-0 cursor-pointer shrink-0"
                 title="Close"
               >
                 <X className="w-4 h-4" />
@@ -1695,8 +1695,8 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                         onClick={() => setSelectedTemplate(t)}
                         className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider cursor-pointer transition-all ${
                           selectedTemplate === t
-                            ? 'bg-[#E54A13] text-white'
-                            : 'text-stone-500 hover:text-[#E54A13]'
+                            ? 'bg-[var(--primary)] text-white'
+                            : 'text-stone-500 hover:text-[var(--primary)]'
                         }`}
                       >
                         {t}
@@ -1714,14 +1714,14 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                   <button
                     type="button"
                     onClick={() => setCreatorMode('edit')}
-                    className="flex-1 py-2.5 bg-white border border-stone-200 hover:border-[#E54A13] text-stone-700 hover:text-[#E54A13] rounded-xl uppercase font-bold text-xs cursor-pointer shadow-sm transition-all"
+                    className="flex-1 py-2.5 bg-white border border-stone-200 hover:border-[var(--primary)] text-stone-700 hover:text-[var(--primary)] rounded-xl uppercase font-bold text-xs cursor-pointer shadow-sm transition-all"
                   >
                     ← Back to edit
                   </button>
                   <button
                     type="button"
                     onClick={(e) => handleSubmitNewInvoice(e as any)}
-                    className="flex-1 py-2.5 bg-[#E54A13] hover:bg-orange-700 text-white font-extrabold rounded-xl uppercase tracking-wider text-xs cursor-pointer shadow-md transition-all border-0"
+                    className="flex-1 py-2.5 bg-[var(--primary)] hover:bg-orange-700 text-white font-extrabold rounded-xl uppercase tracking-wider text-xs cursor-pointer shadow-md transition-all border-0"
                   >
                     {editingInvoiceId ? 'Update invoice' : 'Save & issue invoice'}
                   </button>
@@ -1741,7 +1741,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     placeholder="e.g. 622 (Auto if empty)"
                     value={invoiceIdInput}
                     onChange={(e) => setInvoiceIdInput(e.target.value)}
-                    className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm"
+                    className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] outline-none rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm"
                   />
                 </div>
                 <div className="space-y-1">
@@ -1751,7 +1751,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     placeholder="e.g. oozz27"
                     value={newOrderNo}
                     onChange={(e) => setNewOrderNo(e.target.value)}
-                    className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm"
+                    className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] outline-none rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm"
                   />
                 </div>
               </div>
@@ -1766,7 +1766,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     placeholder="e.g. Pilot Abubakar"
                     value={newClientName}
                     onChange={(e) => setNewClientName(e.target.value)}
-                    className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl px-2.5 py-2 text-xs font-sans text-stone-800 shadow-sm"
+                    className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] outline-none rounded-xl px-2.5 py-2 text-xs font-sans text-stone-800 shadow-sm"
                     required
                   />
                 </div>
@@ -1778,7 +1778,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                       placeholder="e.g. pilot@example.com"
                       value={newClientEmail}
                       onChange={(e) => setNewClientEmail(e.target.value)}
-                      className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl px-2.5 py-2 text-xs font-sans text-stone-800 shadow-sm"
+                      className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] outline-none rounded-xl px-2.5 py-2 text-xs font-sans text-stone-800 shadow-sm"
                     />
                   </div>
                   <div className="space-y-1">
@@ -1788,7 +1788,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                       placeholder="e.g. Abuja"
                       value={newClientCity}
                       onChange={(e) => setNewClientCity(e.target.value)}
-                      className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl px-2.5 py-2 text-xs font-sans text-stone-800 shadow-sm"
+                      className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] outline-none rounded-xl px-2.5 py-2 text-xs font-sans text-stone-800 shadow-sm"
                     />
                   </div>
                 </div>
@@ -1799,7 +1799,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     placeholder="e.g. Asokoro Extension"
                     value={newClientStreet}
                     onChange={(e) => setNewClientStreet(e.target.value)}
-                    className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl px-2.5 py-2 text-xs font-sans text-stone-800 shadow-sm"
+                    className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] outline-none rounded-xl px-2.5 py-2 text-xs font-sans text-stone-800 shadow-sm"
                   />
                 </div>
               </div>
@@ -1820,7 +1820,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                         key={p.id}
                         type="button"
                         onClick={() => handleInsertPredefinedItem(p.id, 'product')}
-                        className="px-2.5 py-1 bg-white border border-stone-200 text-stone-700 rounded-lg hover:border-[#E54A13] hover:text-[#E54A13] hover:bg-orange-50/20 transition-all text-[11px] select-none text-left cursor-pointer font-sans shadow-sm font-semibold"
+                        className="px-2.5 py-1 bg-white border border-stone-200 text-stone-700 rounded-lg hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-orange-50/20 transition-all text-[11px] select-none text-left cursor-pointer font-sans shadow-sm font-semibold"
                       >
                         + Product: {p.name}
                       </button>
@@ -1830,7 +1830,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                         key={s.id}
                         type="button"
                         onClick={() => handleInsertPredefinedItem(s.id, 'service')}
-                        className="px-2.5 py-1 bg-white border border-stone-200 text-stone-700 rounded-lg hover:border-[#E54A13] hover:text-[#E54A13] hover:bg-orange-50/20 transition-all text-[11px] select-none text-left cursor-pointer font-sans shadow-sm font-semibold"
+                        className="px-2.5 py-1 bg-white border border-stone-200 text-stone-700 rounded-lg hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-orange-50/20 transition-all text-[11px] select-none text-left cursor-pointer font-sans shadow-sm font-semibold"
                       >
                         + Service: {s.name}
                       </button>
@@ -1848,24 +1848,24 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                         value={customRowDesc}
                         onChange={(e) => setCustomRowDesc(e.target.value)}
                         placeholder="Define item details..."
-                        className="w-full h-12 bg-white border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl px-2.5 py-1.5 text-stone-800"
+                        className="w-full h-12 bg-white border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] outline-none rounded-xl px-2.5 py-1.5 text-stone-800"
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-2">
                       <div className="space-y-1">
-                        <span className="font-bold text-stone-550 text-stone-500">Price (₦)</span>
+                        <span className="font-bold text-stone-500 text-stone-500">Price (₦)</span>
                         <input 
                           type="number" 
                           value={customRowPrice || ''}
                           onChange={(e) => setCustomRowPrice(parseFloat(e.target.value) || 0)}
-                          className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl p-1.5 text-stone-800"
+                          className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] outline-none rounded-xl p-1.5 text-stone-800"
                         />
                       </div>
                       <div className="flex items-end justify-end">
                         <button
                           type="button"
                           onClick={handleAddCustomRow}
-                          className="px-3.5 py-1.5 bg-[#E54A13] hover:bg-orange-700 text-white font-bold uppercase rounded-lg border-0 cursor-pointer shadow-sm"
+                          className="px-3.5 py-1.5 bg-[var(--primary)] hover:bg-orange-700 text-white font-bold uppercase rounded-lg border-0 cursor-pointer shadow-sm"
                         >
                           Insert Inline
                         </button>
@@ -1876,7 +1876,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                   <button
                     type="button"
                     onClick={() => setIsAddingCustomRow(true)}
-                    className="w-full py-2.5 bg-white border border-stone-200 border-dashed hover:border-[#E54A13] hover:text-[#E54A13] rounded-2xl text-stone-550 text-[11px] uppercase font-bold cursor-pointer transition-all shadow-sm"
+                    className="w-full py-2.5 bg-white border border-stone-200 border-dashed hover:border-[var(--primary)] hover:text-[var(--primary)] rounded-2xl text-stone-500 text-[11px] uppercase font-bold cursor-pointer transition-all shadow-sm"
                   >
                     + Define Arbitrary Item Row
                   </button>
@@ -1884,7 +1884,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
 
                 {/* Grid list of selected items in the build */}
                 <div className="space-y-1.5">
-                  <span className="text-[10px] text-stone-550 font-bold uppercase">Selected items list ({selectedItemsList.length})</span>
+                  <span className="text-[10px] text-stone-500 font-bold uppercase">Selected items list ({selectedItemsList.length})</span>
                   {selectedItemsList.length === 0 ? (
                     <div className="text-center p-6 bg-stone-50 rounded-2xl border border-stone-200 text-stone-400 italic font-sans">
                       No items added yet. Click preset items or specify a custom row above to proceed.
@@ -1902,7 +1902,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                             onClick={() => {
                               setSelectedItemsList(prev => prev.map((item, i) => i === idx ? { ...item, qty: Math.max(1, item.qty - 1) } : item));
                             }}
-                            className="w-6 h-6 bg-stone-100 border border-stone-200 hover:border-[#E54A13] rounded-full text-stone-500 hover:text-[#E54A13] flex items-center justify-center font-bold cursor-pointer font-sans"
+                            className="w-6 h-6 bg-stone-100 border border-stone-200 hover:border-[var(--primary)] rounded-full text-stone-500 hover:text-[var(--primary)] flex items-center justify-center font-bold cursor-pointer font-sans"
                           >
                             -
                           </button>
@@ -1912,7 +1912,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                             onClick={() => {
                               setSelectedItemsList(prev => prev.map((item, i) => i === idx ? { ...item, qty: item.qty + 1 } : item));
                             }}
-                            className="w-6 h-6 bg-stone-100 border border-stone-200 hover:border-[#E54A13] rounded-full text-stone-500 hover:text-[#E54A13] flex items-center justify-center font-bold cursor-pointer font-sans"
+                            className="w-6 h-6 bg-stone-100 border border-stone-200 hover:border-[var(--primary)] rounded-full text-stone-500 hover:text-[var(--primary)] flex items-center justify-center font-bold cursor-pointer font-sans"
                           >
                             +
                           </button>
@@ -1921,7 +1921,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                             onClick={() => {
                               setSelectedItemsList(prev => prev.filter((_, i) => i !== idx));
                             }}
-                            className="p-1 text-[#E54A13] hover:text-rose-700 font-bold ml-1.5 cursor-pointer"
+                            className="p-1 text-[var(--primary)] hover:text-rose-700 font-bold ml-1.5 cursor-pointer"
                             title="Remove item"
                           >
                             ✕
@@ -1941,7 +1941,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     type="number" 
                     value={newShipping || ''}
                     onChange={(e) => setNewShipping(parseFloat(e.target.value) || 0)}
-                    className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm font-sans"
+                    className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] outline-none rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm font-sans"
                     placeholder="2320"
                     min="0"
                   />
@@ -1949,7 +1949,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                 <div className="flex items-end justify-end text-right font-bold text-stone-700 text-sm py-2">
                   <div className="w-full text-right leading-none">
                     <span className="text-[10px] text-stone-500 uppercase block font-sans mb-1 font-bold">Interactive Subtotal</span>
-                    <span className="font-sans text-[#E54A13] text-lg font-extrabold block">
+                    <span className="font-sans text-[var(--primary)] text-lg font-extrabold block">
                       ₦{(
                         selectedItemsList.reduce((sum, item) => sum + item.qty * item.price, 0) + newShipping
                       ).toLocaleString('en-US', { minimumFractionDigits: 2 })}
@@ -1966,7 +1966,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     type="date" 
                     value={newIssueDate}
                     onChange={(e) => setNewIssueDate(e.target.value)}
-                    className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm font-sans"
+                    className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] outline-none rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm font-sans"
                   />
                 </div>
                 <div className="space-y-1">
@@ -1975,7 +1975,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     type="date" 
                     value={newDueDate}
                     onChange={(e) => setNewDueDate(e.target.value)}
-                    className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm font-sans"
+                    className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] outline-none rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm font-sans"
                   />
                 </div>
                 <div className="space-y-1">
@@ -1984,7 +1984,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     type="number" 
                     value={newVatRate}
                     onChange={(e) => setNewVatRate(parseFloat(e.target.value) || 0)}
-                    className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] outline-none rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm font-sans"
+                    className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] outline-none rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm font-sans"
                     min="0"
                     max="100"
                   />
@@ -1993,10 +1993,10 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
 
               {/* TEMPLATE CHOOSER SHOWN WHEN DETAILS ARE IMPUTED */}
               {newClientName && selectedItemsList.length > 0 && (
-                <div className="space-y-3 p-4 bg-stone-150 p-4 bg-stone-50 rounded-2xl border border-dashed border-[#E54A13]/40 animate-slide-up animate-slide-up">
+                <div className="space-y-3 p-4 bg-stone-100 p-4 bg-stone-50 rounded-2xl border border-dashed border-[var(--primary)]/40 animate-slide-up animate-slide-up">
                   <div className="flex justify-between items-center">
                     <span className="font-extrabold text-stone-800 uppercase tracking-widest text-[9.5px] block font-sans">Select Invoice Style Template (5 Varieties)</span>
-                    <span className="text-[10px] text-[#E54A13] font-sans font-extrabold uppercase">{selectedTemplate} Active</span>
+                    <span className="text-[10px] text-[var(--primary)] font-sans font-extrabold uppercase">{selectedTemplate} Active</span>
                   </div>
                   
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -2016,8 +2016,8 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                         onClick={() => setSelectedTemplate(tpl.type as InvoiceTemplate)}
                         className={`p-2 rounded-xl border text-left transition-all cursor-pointer flex flex-col justify-between h-20 outline-none ${
                           selectedTemplate === tpl.type 
-                            ? 'bg-orange-50/80 border-[#E54A13] text-[#E54A13] shadow-md'
-                            : 'bg-white border-stone-200 text-stone-500 hover:border-[#E54A13] hover:text-[#E54A13] hover:bg-orange-50/10'
+                            ? 'bg-orange-50/80 border-[var(--primary)] text-[var(--primary)] shadow-md'
+                            : 'bg-white border-stone-200 text-stone-500 hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-orange-50/10'
                         }`}
                       >
                         <span className="font-black text-[10px] block leading-none font-sans">{tpl.label}</span>
@@ -2039,7 +2039,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-[#E54A13] hover:bg-orange-700 text-white font-extrabold rounded-xl uppercase tracking-wider text-xs flex justify-center items-center gap-1.5 cursor-pointer shadow-md transition-all border-0"
+                  className="flex-1 py-2.5 bg-[var(--primary)] hover:bg-orange-700 text-white font-extrabold rounded-xl uppercase tracking-wider text-xs flex justify-center items-center gap-1.5 cursor-pointer shadow-md transition-all border-0"
                 >
                   {editingInvoiceId ? 'Update & Record Invoice' : 'Save & Issue Document'}
                 </button>

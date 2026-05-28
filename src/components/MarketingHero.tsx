@@ -20,13 +20,13 @@ export default function MarketingLanding({ onEnterApp }: { onEnterApp: () => voi
           <span className={`text-2xl font-black tracking-tighter lowercase ${scrolled ? 'text-stone-900' : 'text-white'}`}>
             billables
           </span>
-          <span className="w-2.5 h-2.5 rounded-full bg-[#E54A13] self-end mb-1.5"></span>
+          <span className="w-2.5 h-2.5 rounded-full bg-[var(--primary)] self-end mb-1.5"></span>
         </div>
         <div className="flex items-center gap-4">
           <button className={`text-sm font-semibold transition-colors ${scrolled ? 'text-stone-600 hover:text-stone-900' : 'text-stone-300 hover:text-white'}`}>Log In</button>
           <button 
             onClick={onEnterApp}
-            className="bg-[#E54A13] hover:bg-orange-700 text-white px-5 py-2 rounded-full text-sm font-bold transition-all shadow-lg hover:shadow-orange-500/25"
+            className="bg-[var(--primary)] hover:bg-orange-700 text-white px-5 py-2 rounded-full text-sm font-bold transition-all shadow-lg hover:shadow-orange-500/25"
           >
             Enter Dashboard
           </button>
@@ -56,7 +56,7 @@ export default function MarketingLanding({ onEnterApp }: { onEnterApp: () => voi
           <div className="flex flex-col sm:flex-row gap-4 animate-slide-up reveal-d3">
             <button 
               onClick={onEnterApp}
-              className="bg-[#E54A13] hover:bg-orange-600 text-white px-8 py-4 rounded-full text-[15px] font-bold transition-all shadow-xl hover:shadow-orange-500/30 flex items-center justify-center gap-2 group"
+              className="bg-[var(--primary)] hover:bg-orange-600 text-white px-8 py-4 rounded-full text-[15px] font-bold transition-all shadow-xl hover:shadow-orange-500/30 flex items-center justify-center gap-2 group"
             >
               Start Building <ArrowRight className="w-4 h-4 group-hover:transtone-x-1 transition-transform" />
             </button>
@@ -90,7 +90,7 @@ export default function MarketingLanding({ onEnterApp }: { onEnterApp: () => voi
                       <div className="w-1/6 bg-stone-100 rounded-t h-[60%]"></div>
                       <div className="w-1/6 bg-stone-100 rounded-t h-[30%]"></div>
                       <div className="w-1/6 bg-orange-100 rounded-t h-[80%]"></div>
-                      <div className="w-1/6 bg-[#E54A13] rounded-t h-[100%] shadow-[0_0_20px_rgba(229,74,19,0.3)]"></div>
+                      <div className="w-1/6 bg-[var(--primary)] rounded-t h-[100%] shadow-[0_0_20px_rgba(229,74,19,0.3)]"></div>
                    </div>
                 </div>
                 <div className="h-24 rounded-2xl bg-white border border-stone-200 shadow-sm p-5">
@@ -111,7 +111,7 @@ export default function MarketingLanding({ onEnterApp }: { onEnterApp: () => voi
       {/* Feature Section 1 */}
       <section className="py-32 px-6 max-w-7xl mx-auto">
         <div className="mb-16 md:text-center flex flex-col md:items-center">
-          <span className="text-[13px] tracking-[0.06em] text-[#E54A13] uppercase font-bold mb-4 block">Engineered for Scale</span>
+          <span className="text-[13px] tracking-[0.06em] text-[var(--primary)] uppercase font-bold mb-4 block">Engineered for Scale</span>
           <h2 className="text-4xl md:text-5xl font-black tracking-[-0.035em] text-stone-900 mb-5">
             Everything you need. Nothing you don't.
           </h2>
@@ -122,7 +122,7 @@ export default function MarketingLanding({ onEnterApp }: { onEnterApp: () => voi
 
         <div className="grid md:grid-cols-3 gap-6">
           <div className="bg-white p-8 rounded-3xl border border-stone-200 shadow-sm feature-card cursor-pointer group">
-            <div className="w-12 h-12 bg-orange-50 text-[#E54A13] rounded-2xl flex items-center justify-center mb-6 border border-orange-100 group-hover:scale-110 transition-transform duration-500 ease-out">
+            <div className="w-12 h-12 bg-orange-50 text-[var(--primary)] rounded-2xl flex items-center justify-center mb-6 border border-orange-100 group-hover:scale-110 transition-transform duration-500 ease-out">
               <Zap className="w-6 h-6" />
             </div>
             <h3 className="text-xl font-bold text-stone-900 mb-3 tracking-tight">Instant Generation</h3>
@@ -149,7 +149,7 @@ export default function MarketingLanding({ onEnterApp }: { onEnterApp: () => voi
       <section className="py-32 px-6 bg-white border-y border-stone-200 relative overflow-hidden">
         <div className="max-w-7xl mx-auto">
           <div className="mb-20">
-            <span className="text-[13px] tracking-[0.06em] text-[#E54A13] uppercase font-bold mb-4 block">The Workflow</span>
+            <span className="text-[13px] tracking-[0.06em] text-[var(--primary)] uppercase font-bold mb-4 block">The Workflow</span>
             <h2 className="text-4xl md:text-5xl font-black tracking-[-0.035em] text-stone-900 mb-5">
               From quote to cash in 3 steps.
             </h2>
@@ -164,17 +164,17 @@ export default function MarketingLanding({ onEnterApp }: { onEnterApp: () => voi
              
              <div className="grid md:grid-cols-3 gap-12 relative z-10">
                 <div className="bg-stone-50/80 backdrop-blur-sm p-8 rounded-3xl border border-stone-200 feature-card">
-                  <div className="w-10 h-10 rounded-full bg-stone-200 text-stone-600 font-bold flex items-center justify-center mb-6 transition-colors duration-700 ease-out group-hover:bg-[#E54A13] group-hover:text-white">1</div>
+                  <div className="w-10 h-10 rounded-full bg-stone-200 text-stone-600 font-bold flex items-center justify-center mb-6 transition-colors duration-700 ease-out group-hover:bg-[var(--primary)] group-hover:text-white">1</div>
                   <h3 className="text-xl font-bold text-stone-900 mb-3 tracking-tight">Define Catalog</h3>
                   <p className="text-stone-500 text-[15px]">Pre-load your services and physical products. Define unit prices and applicable VAT once.</p>
                 </div>
                 <div className="bg-stone-50/80 backdrop-blur-sm p-8 rounded-3xl border border-stone-200 feature-card">
-                  <div className="w-10 h-10 rounded-full bg-stone-200 text-stone-600 font-bold flex items-center justify-center mb-6 transition-colors duration-700 ease-out group-hover:bg-[#E54A13] group-hover:text-white">2</div>
+                  <div className="w-10 h-10 rounded-full bg-stone-200 text-stone-600 font-bold flex items-center justify-center mb-6 transition-colors duration-700 ease-out group-hover:bg-[var(--primary)] group-hover:text-white">2</div>
                   <h3 className="text-xl font-bold text-stone-900 mb-3 tracking-tight">Generate</h3>
                   <p className="text-stone-500 text-[15px]">Insert clients, append catalog items, and hit print. Secure PDFs compiled structurally.</p>
                 </div>
                 <div className="bg-stone-50/80 backdrop-blur-sm p-8 rounded-3xl border border-stone-200 feature-card">
-                  <div className="w-10 h-10 rounded-full bg-[#E54A13] text-white font-bold flex items-center justify-center mb-6 ring-4 ring-orange-50">3</div>
+                  <div className="w-10 h-10 rounded-full bg-[var(--primary)] text-white font-bold flex items-center justify-center mb-6 ring-4 ring-orange-50">3</div>
                   <h3 className="text-xl font-bold text-stone-900 mb-3 tracking-tight">Get Paid</h3>
                   <p className="text-stone-500 text-[15px]">Log incoming receipts, reconcile expenses, and watch your analytics dashboard light up.</p>
                 </div>
@@ -186,7 +186,7 @@ export default function MarketingLanding({ onEnterApp }: { onEnterApp: () => voi
       {/* Testimonial & FAQ Section */}
       <section className="py-32 px-6 max-w-4xl mx-auto">
         <div className="text-center mb-16">
-          <span className="text-[13px] tracking-[0.06em] text-[#E54A13] uppercase font-bold mb-4 block">Knowledge Base</span>
+          <span className="text-[13px] tracking-[0.06em] text-[var(--primary)] uppercase font-bold mb-4 block">Knowledge Base</span>
           <h2 className="text-4xl md:text-5xl font-black tracking-[-0.035em] text-stone-900">
             Frequently Asked Questions
           </h2>
@@ -201,7 +201,7 @@ export default function MarketingLanding({ onEnterApp }: { onEnterApp: () => voi
             <details key={i} className="faq-accordion group bg-white border border-stone-200 rounded-2xl overflow-hidden transition-all duration-300 ease-out">
               <summary className="px-6 py-5 cursor-pointer flex justify-between items-center font-bold text-stone-900 text-[17px] select-none">
                 {faq.q}
-                <span className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center transition-transform duration-300 ease-out group-open:rotate-45 group-open:bg-orange-50 group-open:text-[#E54A13]">
+                <span className="w-8 h-8 rounded-full bg-stone-100 flex items-center justify-center transition-transform duration-300 ease-out group-open:rotate-45 group-open:bg-orange-50 group-open:text-[var(--primary)]">
                   <PlusIcon />
                 </span>
               </summary>
@@ -223,7 +223,7 @@ export default function MarketingLanding({ onEnterApp }: { onEnterApp: () => voi
         </p>
         <button 
           onClick={onEnterApp}
-          className="bg-[#E54A13] hover:bg-orange-600 text-white px-10 py-5 rounded-full text-[16px] font-bold transition-all shadow-[0_0_40px_rgba(229,74,19,0.4)] hover:shadow-[0_0_60px_rgba(229,74,19,0.6)]"
+          className="bg-[var(--primary)] hover:bg-orange-600 text-white px-10 py-5 rounded-full text-[16px] font-bold transition-all shadow-[0_0_40px_rgba(229,74,19,0.4)] hover:shadow-[0_0_60px_rgba(229,74,19,0.6)]"
         >
           Initialize Workspace
         </button>

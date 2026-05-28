@@ -121,7 +121,7 @@ export default function ReportsDashboard({
       {/* Filters & Tabs Navigation */}
       <div className="flex flex-col md:flex-row gap-4 justify-between items-start md:items-center pb-5 border-b border-stone-100 mb-6 select-none">
         <div>
-          <span className="text-[11px] tracking-[0.06em] text-[#E54A13] uppercase font-black block mb-1">METRICS & ANALYTICS</span>
+          <span className="text-[11px] tracking-[0.06em] text-[var(--primary)] uppercase font-black block mb-1">METRICS & ANALYTICS</span>
           <h2 className="text-2xl md:text-3xl font-black tracking-[-0.035em] text-stone-900 flex items-center gap-2">
             Reports & Analytics
           </h2>
@@ -136,7 +136,7 @@ export default function ReportsDashboard({
               onClick={() => setActiveTab(tab)}
               className={`px-3 py-1.5 rounded-lg text-[11px] font-bold uppercase transition-all border-0 cursor-pointer ${
                 activeTab === tab
-                  ? 'bg-[#E54A13] text-white shadow-sm'
+                  ? 'bg-[var(--primary)] text-white shadow-sm'
                   : 'text-stone-500 hover:text-stone-800 hover:bg-stone-100'
               }`}
             >
@@ -154,7 +154,7 @@ export default function ReportsDashboard({
           <select 
             value={selectedYear} 
             onChange={(e) => setSelectedYear(e.target.value)}
-            className="bg-white border border-stone-200 rounded-xl px-2.5 py-1 text-stone-705 text-stone-700 outline-none font-sans focus:border-[#E54A13] text-[11px] font-bold"
+            className="bg-white border border-stone-200 rounded-xl px-2.5 py-1 text-stone-700 text-stone-700 outline-none font-sans focus:border-[var(--primary)] text-[11px] font-bold"
           >
             <option value="2026">This year (2026)</option>
             <option value="2025">Last year (2025)</option>
@@ -167,7 +167,7 @@ export default function ReportsDashboard({
           <select 
             value={selectedClientFilter} 
             onChange={(e) => setSelectedClientFilter(e.target.value)}
-            className="bg-white border border-stone-200 rounded-xl px-2.5 py-1 text-stone-705 text-stone-700 outline-none font-sans focus:border-[#E54A13] text-[11px] font-bold"
+            className="bg-white border border-stone-200 rounded-xl px-2.5 py-1 text-stone-700 text-stone-700 outline-none font-sans focus:border-[var(--primary)] text-[11px] font-bold"
           >
             <option value="All">All clients</option>
             {topClients.map(c => (
@@ -195,13 +195,13 @@ export default function ReportsDashboard({
                 <div className="relative w-32 h-32 rounded-full flex items-center justify-center bg-transparent border-[12px] border-stone-200"
                   style={{
                     backgroundImage: totalInvoiced > 0 
-                      ? `conic-gradient(#10B981 0% ${paid / totalInvoiced * 100}%, #E54A13 ${paid / totalInvoiced * 100}% ${(paid + overdue) / totalInvoiced * 100}%, #94A3B8 ${(paid + overdue) / totalInvoiced * 100}% 100%)`
+                      ? `conic-gradient(#10B981 0% ${paid / totalInvoiced * 100}%, var(--primary) ${paid / totalInvoiced * 100}% ${(paid + overdue) / totalInvoiced * 100}%, #94A3B8 ${(paid + overdue) / totalInvoiced * 100}% 100%)`
                       : 'none'
                   }}
                 >
                   <div className="absolute inset-2 w-[100px] h-[100px] rounded-full bg-stone-50 flex flex-col items-center justify-center">
                     <span className="text-[10px] font-sans text-stone-400 uppercase font-semibold">Unpaid</span>
-                    <span className="text-xs font-bold font-sans text-[#E54A13] mt-0.5">
+                    <span className="text-xs font-bold font-sans text-[var(--primary)] mt-0.5">
                       {totalInvoiced > 0 ? `${((unpaid + overdue)/totalInvoiced * 100).toFixed(0)}%` : '0%'}
                     </span>
                   </div>
@@ -218,7 +218,7 @@ export default function ReportsDashboard({
                 </div>
                 <div className="flex justify-between items-center text-stone-600">
                   <span className="flex items-center gap-1.5 font-semibold">
-                    <span className="w-2.5 h-2.5 rounded-full bg-[#E54A13]" /> Unpaid
+                    <span className="w-2.5 h-2.5 rounded-full bg-[var(--primary)]" /> Unpaid
                   </span>
                   <span className="font-bold">{formatValue(unpaid)}</span>
                 </div>
@@ -240,13 +240,13 @@ export default function ReportsDashboard({
                 <div className="flex gap-1.5 bg-white p-1 rounded-xl border border-stone-200">
                   <button 
                     onClick={() => setTimeMode('month')}
-                    className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-lg border-0 cursor-pointer ${timeMode === 'month' ? 'bg-orange-55 shadow-sm bg-orange-50 text-[#E54A13]' : 'text-stone-500'}`}
+                    className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-lg border-0 cursor-pointer ${timeMode === 'month' ? 'bg-orange-55 shadow-sm bg-orange-50 text-[var(--primary)]' : 'text-stone-500'}`}
                   >
                     Monthly
                   </button>
                   <button 
                     onClick={() => setTimeMode('quarter')}
-                    className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-lg border-0 cursor-pointer ${timeMode === 'quarter' ? 'bg-orange-55 shadow-sm bg-orange-50 text-[#E54A13]' : 'text-stone-505 text-stone-500'}`}
+                    className={`px-2 py-0.5 text-[10px] font-bold uppercase rounded-lg border-0 cursor-pointer ${timeMode === 'quarter' ? 'bg-orange-55 shadow-sm bg-orange-50 text-[var(--primary)]' : 'text-stone-505 text-stone-500'}`}
                   >
                     Quarterly
                   </button>
@@ -261,13 +261,13 @@ export default function ReportsDashboard({
                     return (
                       <div key={m.name} className="flex-1 flex flex-col items-center group relative cursor-pointer">
                         {/* Tooltip */}
-                        <div className="absolute bottom-full mb-1 bg-white border border-stone-200 text-[9px] text-stone-850 text-stone-800 px-1.5 py-0.5 rounded-xl font-sans hidden group-hover:block whitespace-nowrap z-10 shadow-sm font-bold">
+                        <div className="absolute bottom-full mb-1 bg-white border border-stone-200 text-[9px] text-stone-900 text-stone-800 px-1.5 py-0.5 rounded-xl font-sans hidden group-hover:block whitespace-nowrap z-10 shadow-sm font-bold">
                           {formatValue(m.amount)} ({m.count} inv)
                         </div>
                         {/* Fill line */}
                         <div className="w-3.5 bg-stone-200 rounded-t-sm h-36 flex items-end justify-center">
                           <div 
-                            className="w-full bg-[#E54A13] rounded-t-sm transition-all duration-500 hover:bg-orange-600"
+                            className="w-full bg-[var(--primary)] rounded-t-sm transition-all duration-500 hover:bg-orange-600"
                             style={{ height: `${pct > 0 ? Math.max(pct, 4) : 0}%` }}
                           />
                         </div>
@@ -293,7 +293,7 @@ export default function ReportsDashboard({
                         </div>
                         <div className="w-6 bg-stone-200 rounded-t-sm h-36 flex items-end justify-center">
                           <div 
-                            className="w-full bg-[#E54A13] rounded-t-sm transition-all duration-500"
+                            className="w-full bg-[var(--primary)] rounded-t-sm transition-all duration-500"
                             style={{ height: `${pct > 0 ? Math.max(pct, 4) : 0}%` }}
                           />
                         </div>
@@ -311,12 +311,12 @@ export default function ReportsDashboard({
           {/* Month list rows (Exactly as shown at the botton of screen) */}
           <div className="bg-stone-50 rounded-xl border border-stone-200 p-4">
             <h4 className="text-[11px] font-bold text-stone-400 uppercase font-sans tracking-wider mb-2.5">Detailed monthly breakdown table</h4>
-            <div className="divide-y divide-stone-150">
+            <div className="divide-y divide-stone-100">
               {monthlyData.map((m) => (
                 <div key={m.name} className="py-2.5 flex justify-between items-center hover:bg-stone-100/50 px-2 rounded-lg transition-all text-xs font-sans">
                   <span className="text-stone-700 font-bold">{m.name} 2026</span>
                   <div className="flex gap-6 items-center">
-                    <span className="text-stone-450 text-stone-400">{m.count} {m.count === 1 ? 'Invoice' : 'Invoices'}</span>
+                    <span className="text-stone-400 text-stone-400">{m.count} {m.count === 1 ? 'Invoice' : 'Invoices'}</span>
                     <span className="text-stone-800 font-extrabold w-24 text-right">{formatValue(m.amount)}</span>
                   </div>
                 </div>
@@ -337,13 +337,13 @@ export default function ReportsDashboard({
                 <div className="w-36 h-36 rounded-full border-8 border-stone-200 flex items-center justify-center relative bg-transparent"
                   style={{
                     backgroundImage: topClients.length > 0
-                      ? 'conic-gradient(#E54A13 0% 100%)' // Simplistic representative for main client
+                      ? 'conic-gradient(var(--primary) 0% 100%)' // Simplistic representative for main client
                       : 'none'
                   }}
                 >
                   <div className="absolute inset-1 w-[116px] h-[116px] rounded-full bg-stone-50 flex flex-col justify-center items-center">
                     <span className="text-[9px] text-stone-400 uppercase font-sans font-bold">Top Client</span>
-                    <span className="text-xs font-extrabold text-[#E54A13] text-center font-sans px-2 overflow-hidden truncate max-w-full">
+                    <span className="text-xs font-extrabold text-[var(--primary)] text-center font-sans px-2 overflow-hidden truncate max-w-full">
                       {topClients[0]?.name || 'N/A'}
                     </span>
                     <span className="text-[10px] font-bold text-stone-500 font-sans mt-0.5">100% Volume</span>
@@ -358,7 +358,7 @@ export default function ReportsDashboard({
                 {topClients.map((client, index) => (
                   <div key={client.name} className="p-3 bg-white rounded-xl border border-stone-100 flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2.5">
-                      <span className="w-6 h-6 rounded-full bg-orange-50 text-[#E54A13] flex items-center justify-center font-extrabold text-[10px] font-sans">
+                      <span className="w-6 h-6 rounded-full bg-orange-50 text-[var(--primary)] flex items-center justify-center font-extrabold text-[10px] font-sans">
                         0{index + 1}
                       </span>
                       <div>
@@ -402,7 +402,7 @@ export default function ReportsDashboard({
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-baseline">
                         <p className="font-bold text-stone-800 text-sm">{item.name}</p>
-                        <span className="font-extrabold text-[#E54A13] font-sans">{formatValue(item.price)}</span>
+                        <span className="font-extrabold text-[var(--primary)] font-sans">{formatValue(item.price)}</span>
                       </div>
                       <p className="text-[10.5px] text-stone-400 truncate leading-normal mt-1">{item.description}</p>
                       <div className="flex items-center gap-2 mt-2">
@@ -424,7 +424,7 @@ export default function ReportsDashboard({
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between items-baseline">
                         <p className="font-bold text-stone-805 text-stone-800 text-sm">{item.name}</p>
-                        <span className="font-extrabold text-[#E54A13] font-sans">{formatValue(item.price)}</span>
+                        <span className="font-extrabold text-[var(--primary)] font-sans">{formatValue(item.price)}</span>
                       </div>
                       <p className="text-[10.5px] text-stone-400 truncate mt-1 leading-normal">{item.description}</p>
                       <div className="flex items-center gap-2 mt-2 font-sans text-[9px]">
@@ -444,7 +444,7 @@ export default function ReportsDashboard({
             <div className="bg-stone-50 p-5 rounded-xl border border-stone-200 text-xs text-stone-800">
               <div className="flex justify-between items-baseline mb-4">
                 <h3 className="text-[10px] text-stone-400 uppercase font-sans tracking-wider font-bold">Expenditure & Financial Outflow Logs</h3>
-                <span className="text-xs font-sans font-extrabold text-[#E54A13]">Total Outgoing: {formatValue(totalExpenses)}</span>
+                <span className="text-xs font-sans font-extrabold text-[var(--primary)]">Total Outgoing: {formatValue(totalExpenses)}</span>
               </div>
               <div className="space-y-3">
                 {expenses.map((exp) => (
@@ -457,7 +457,7 @@ export default function ReportsDashboard({
                       <p className="text-[10px] text-stone-400 font-sans mt-1">Vendor: {exp.vendor} • Date: {exp.date}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-extrabold text-[#E54A13] font-sans text-sm">-{formatValue(exp.amount)}</p>
+                      <p className="font-extrabold text-[var(--primary)] font-sans text-sm">-{formatValue(exp.amount)}</p>
                       <span className="text-[9px] font-sans uppercase bg-emerald-50 text-emerald-600 px-1 py-0.2 rounded font-bold">
                         {exp.paid ? 'PAID' : 'PENDING'}
                       </span>

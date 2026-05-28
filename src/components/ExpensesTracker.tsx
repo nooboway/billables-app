@@ -62,13 +62,13 @@ export default function ExpensesTracker({
     <div className="bg-white border border-stone-200 rounded-2xl p-6 shadow-sm font-sans feature-card cursor-pointer" id="expenses-tracker-module">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center pb-5 border-b border-stone-100 mb-6 gap-4 select-none">
         <div>
-          <span className="text-[11px] tracking-[0.06em] text-[#E54A13] uppercase font-black block mb-1">CAPITAL OUTFLOWS</span>
+          <span className="text-[11px] tracking-[0.06em] text-[var(--primary)] uppercase font-black block mb-1">CAPITAL OUTFLOWS</span>
           <h2 className="text-2xl md:text-3xl font-black tracking-[-0.035em] text-stone-900 flex items-center gap-2">
             Expenses Ledger
           </h2>
           <p className="text-[13px] text-stone-500 mt-1">Record business financial outgoing costs and inventory receipts.</p>
         </div>
-        <span className="text-[12px] font-sans font-extrabold select-none px-3.5 py-1.5 bg-orange-50 border border-orange-100 text-[#E54A13] rounded-xl shrink-0">
+        <span className="text-[12px] font-sans font-extrabold select-none px-3.5 py-1.5 bg-orange-50 border border-orange-100 text-[var(--primary)] rounded-xl shrink-0">
           Logged Outflow: {formatValue(expenses.reduce((s, e) => s + e.amount, 0))}
         </span>
       </div>
@@ -76,7 +76,7 @@ export default function ExpensesTracker({
       {isCreating ? (
         <form onSubmit={handleSaveExpense} className="bg-stone-50 border border-stone-200 p-4 rounded-xl mb-4 space-y-3.5 animate-slide-up text-xs font-sans">
           <div className="flex justify-between items-center pb-2 border-b border-stone-200 select-none">
-            <span className="font-extrabold text-[#E54A13] uppercase tracking-widest text-[9px] flex items-center gap-1.5 font-sans">
+            <span className="font-extrabold text-[var(--primary)] uppercase tracking-widest text-[9px] flex items-center gap-1.5 font-sans">
               <Plus className="w-3.5 h-3.5" />
               Log Business Outlay cost
             </span>
@@ -96,7 +96,7 @@ export default function ExpensesTracker({
               value={desc} 
               onChange={(e) => setDesc(e.target.value)}
               placeholder="e.g. Packing box design prints batch"
-              className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm font-sans outline-none"
+              className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm font-sans outline-none"
               required
             />
           </div>
@@ -109,7 +109,7 @@ export default function ExpensesTracker({
                 value={vendor} 
                 onChange={(e) => setVendor(e.target.value)}
                 placeholder="e.g. GIG Logistics"
-                className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm font-sans outline-none"
+                className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm font-sans outline-none"
               />
             </div>
             <div className="space-y-1">
@@ -117,7 +117,7 @@ export default function ExpensesTracker({
               <select 
                 value={category} 
                 onChange={(e: any) => setCategory(e.target.value)}
-                className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm font-sans outline-none"
+                className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm font-sans outline-none"
               >
                 <option value="Supplies">Supplies</option>
                 <option value="Administration">Administration</option>
@@ -136,7 +136,7 @@ export default function ExpensesTracker({
                 type="date" 
                 value={date} 
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm font-sans outline-none"
+                className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm font-sans outline-none"
                 required
               />
             </div>
@@ -146,7 +146,7 @@ export default function ExpensesTracker({
                 type="number" 
                 value={amount || ''} 
                 onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
-                className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[#E54A13] focus:border-[#E54A13] rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm font-sans outline-none"
+                className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm font-sans outline-none"
                 min="1"
                 required
               />
@@ -159,7 +159,7 @@ export default function ExpensesTracker({
               type="button"
               onClick={() => setPaid(!paid)}
               className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer border ${
-                paid ? 'bg-orange-50 text-[#E54A13] border-[#E54A13]/40' : 'bg-stone-100 text-stone-500 border-stone-200'
+                paid ? 'bg-orange-50 text-[var(--primary)] border-[var(--primary)]/40' : 'bg-stone-100 text-stone-500 border-stone-200'
               }`}
             >
               {paid ? 'PAID / SETTLED' : 'DRAFT / UNPAID'}
@@ -168,7 +168,7 @@ export default function ExpensesTracker({
 
           <button
             type="submit"
-            className="w-full py-2 bg-[#E54A13] hover:bg-orange-700 text-white rounded-xl font-bold uppercase tracking-wide transition-all cursor-pointer shadow-md border-0"
+            className="w-full py-2 bg-[var(--primary)] hover:bg-orange-700 text-white rounded-xl font-bold uppercase tracking-wide transition-all cursor-pointer shadow-md border-0"
           >
             Log Outgoings Details
           </button>
@@ -177,9 +177,9 @@ export default function ExpensesTracker({
         <div className="mb-4">
           <button
             onClick={() => setIsCreating(true)}
-            className="px-3.5 py-2.5 bg-white border border-stone-200 hover:border-[#E54A13] hover:text-[#E54A13] text-stone-600 rounded-xl flex items-center gap-1.5 w-full justify-center transition-all cursor-pointer text-xs uppercase font-extrabold shadow-sm"
+            className="px-3.5 py-2.5 bg-white border border-stone-200 hover:border-[var(--primary)] hover:text-[var(--primary)] text-stone-600 rounded-xl flex items-center gap-1.5 w-full justify-center transition-all cursor-pointer text-xs uppercase font-extrabold shadow-sm"
           >
-            <Plus className="w-4 h-4 text-[#E54A13]" />
+            <Plus className="w-4 h-4 text-[var(--primary)]" />
             File outlay voucher
           </button>
         </div>
@@ -206,14 +206,14 @@ export default function ExpensesTracker({
               </div>
               <div className="flex items-center gap-3">
                 <div className="text-right select-none">
-                  <span className="font-sans font-extrabold text-[#E54A13] block text-sm">-{formatValue(exp.amount)}</span>
+                  <span className="font-sans font-extrabold text-[var(--primary)] block text-sm">-{formatValue(exp.amount)}</span>
                   <span className={`text-[8.5px] font-extrabold font-sans uppercase ${exp.paid ? 'text-emerald-500' : 'text-stone-400'}`}>
                     {exp.paid ? 'PAID' : 'DRAFT'}
                   </span>
                 </div>
                 <button
                   onClick={() => onRemoveExpense(exp.id)}
-                  className="p-1.5 bg-white border border-stone-200 hover:border-[#E54A13] text-stone-400 hover:text-[#E54A13] rounded-lg transition-all cursor-pointer shadow-sm"
+                  className="p-1.5 bg-white border border-stone-200 hover:border-[var(--primary)] text-stone-400 hover:text-[var(--primary)] rounded-lg transition-all cursor-pointer shadow-sm"
                   title="Remove expense"
                 >
                   <Trash2 className="w-3.5 h-3.5" />

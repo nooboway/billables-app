@@ -99,7 +99,7 @@ export default function InvoicePreview({
             </div>
           </div>
 
-          <div className="bg-stone-50 p-3 rounded border border-stone-250 grid grid-cols-4 gap-4 mb-6 font-mono text-[11px]">
+          <div className="bg-stone-50 p-3 rounded border border-stone-200 grid grid-cols-4 gap-4 mb-6 font-mono text-[11px]">
             <div>
               <span className="text-stone-500 block uppercase text-[9px] font-sans">Date of Issue</span>
               <span className="font-bold text-stone-800">{invoice.issueDate}</span>
@@ -187,7 +187,7 @@ export default function InvoicePreview({
               <PaystackCTA />
             </div>
           )}
-          <div className="mt-6 pt-4 border-t border-stone-250 flex items-center justify-between text-[9px] text-stone-500 font-mono">
+          <div className="mt-6 pt-4 border-t border-stone-200 flex items-center justify-between text-[9px] text-stone-500 font-mono">
             <div>
               {bankAccount.bankName} Account: {bankAccount.accountNumber} • Holder: {bankAccount.accountHolder}
               {bankAccount.paymentLink && <><br />Payment URL: {bankAccount.paymentLink}</>}
@@ -387,19 +387,19 @@ export default function InvoicePreview({
 
           <div className="grid grid-cols-4 gap-2 bg-stone-900 p-3 rounded border border-stone-800 text-center mb-6">
             <div>
-              <span className="text-stone-550 text-[9px] uppercase block mb-0.5">Maturity Date</span>
+              <span className="text-stone-500 text-[9px] uppercase block mb-0.5">Maturity Date</span>
               <span className="text-stone-200 font-bold">{invoice.dueDate}</span>
             </div>
             <div>
-              <span className="text-stone-550 text-[9px] uppercase block mb-0.5">Order Ref</span>
+              <span className="text-stone-500 text-[9px] uppercase block mb-0.5">Order Ref</span>
               <span className="text-stone-200 font-bold">{invoice.orderNo || 'N/A'}</span>
             </div>
             <div>
-              <span className="text-stone-550 text-[9px] uppercase block mb-0.5">Method Route</span>
+              <span className="text-stone-500 text-[9px] uppercase block mb-0.5">Method Route</span>
               <span className="text-stone-200 font-bold uppercase">{invoice.paymentMethod}</span>
             </div>
             <div>
-              <span className="text-stone-550 text-[9px] uppercase block mb-0.5">System Sum</span>
+              <span className="text-stone-500 text-[9px] uppercase block mb-0.5">System Sum</span>
               <span className="font-bold" style={{ color: colorAccent }}>{formatValue(grandTotal)}</span>
             </div>
           </div>
@@ -408,14 +408,14 @@ export default function InvoicePreview({
           <div className="rounded-xl overflow-hidden border border-stone-800 mb-6">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-stone-900/80 text-stone-450 border-b border-stone-800">
+                <tr className="bg-stone-900/80 text-stone-400 border-b border-stone-800">
                   <th className="py-2.5 px-3 uppercase tracking-wider text-[9px] text-stone-400">Ledger Entry</th>
                   <th className="py-2.5 px-3 text-center w-16 uppercase tracking-wider text-[9px] text-stone-400">Qty</th>
                   <th className="py-2.5 px-3 text-right w-24 uppercase tracking-wider text-[9px] text-stone-400">Price</th>
-                  <th className="py-2.5 px-3 text-right w-28 uppercase tracking-wider text-[9px] text-stone-450 text-stone-200">Total</th>
+                  <th className="py-2.5 px-3 text-right w-28 uppercase tracking-wider text-[9px] text-stone-400 text-stone-200">Total</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-850 bg-stone-900/20">
+              <tbody className="divide-y divide-stone-900 bg-stone-900/20">
                 {invoice.items.map((item) => (
                   <tr key={item.id} className="hover:bg-stone-900/55">
                     <td className="py-2.5 px-3">
@@ -476,7 +476,7 @@ export default function InvoicePreview({
               <PaystackCTA />
             </div>
           )}
-          <div className="mt-6 pt-4 border-t border-stone-850 flex items-center justify-between text-[9.5px] text-stone-500">
+          <div className="mt-6 pt-4 border-t border-stone-900 flex items-center justify-between text-[9.5px] text-stone-500">
             <div>
               PAYMENT_BRIDGE: {bankAccount.bankName} // ROUTING_HEX: #{bankAccount.accountNumber} // OWNER: {bankAccount.accountHolder}
               {bankAccount.paymentLink && <><br />URI_PAYLNK: {bankAccount.paymentLink}</>}
@@ -504,7 +504,7 @@ export default function InvoicePreview({
               <p className="text-[10px] text-stone-500">Reference No. #{invoice.id}</p>
             </div>
             <div className="text-right text-[10px] text-stone-500 leading-normal">
-              <p className="font-bold text-stone-850">{businessDetails.name}</p>
+              <p className="font-bold text-stone-900">{businessDetails.name}</p>
               <p>{businessDetails.email}</p>
             </div>
           </div>
@@ -1116,7 +1116,7 @@ export default function InvoicePreview({
         {invoice.skuPhotoUrl && (
           <div className="border border-dashed border-stone-200 rounded-xl p-4 bg-stone-55 bg-stone-50 text-stone-700">
             <div className="flex flex-col md:flex-row gap-4 items-center md:items-start">
-              <div className="shrink-0 w-44 bg-stone-950 p-2 rounded-lg border border-stone-250 shadow-sm flex justify-center">
+              <div className="shrink-0 w-44 bg-stone-950 p-2 rounded-lg border border-stone-200 shadow-sm flex justify-center">
                 <img 
                   src={invoice.skuPhotoUrl} 
                   alt="SKU Preview Attached" 
@@ -1133,10 +1133,10 @@ export default function InvoicePreview({
                   <span className="px-2 py-1 bg-white border border-stone-200 rounded text-[9px] font-mono text-stone-500">
                     ID: {invoice.items[0]?.id || 'SKU-DETOX-1'}
                   </span>
-                  <span className="px-2 py-1 bg-white border border-stone-250 rounded text-[9px] font-mono text-emerald-600 font-bold">
+                  <span className="px-2 py-1 bg-white border border-stone-200 rounded text-[9px] font-mono text-emerald-600 font-bold">
                     VERIFIED SKU
                   </span>
-                  <span className="px-2 py-1 bg-white border border-stone-250 rounded text-[9px] font-mono text-rose-500 font-bold">
+                  <span className="px-2 py-1 bg-white border border-stone-200 rounded text-[9px] font-mono text-rose-500 font-bold">
                     SECURITY PROTECTED
                   </span>
                 </div>
