@@ -1,11 +1,7 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import React, { useState } from 'react';
-import { Tag, Plus, Trash2, Calendar, FileText, CheckCircle2 } from 'lucide-react';
+import { Plus, Trash2, Calendar, FileText, CheckCircle2 } from 'lucide-react';
 import { Expense, TemplateSettings } from '../types';
+import { motion } from 'motion/react';
 
 interface ExpensesTrackerProps {
   expenses: Expense[];
@@ -24,203 +20,173 @@ export default function ExpensesTracker({
   const [desc, setDesc] = useState('');
   const [vendor, setVendor] = useState('');
   const [category, setCategory] = useState<'Administration' | 'Advertising' | 'Travel' | 'Supplies' | 'Rent' | 'Other'>('Supplies');
-  const [date, setDate] = useState('2026-05-26');
-  const [amount, setAmount] = useState(0);
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [amount, setAmount] = useState<number | ''>('');
   const [paid, setPaid] = useState(true);
 
   const currencySymbol = templateSettings.currencySymbol || '₦';
 
-  const formatValue = (num: number) => {
-    return `${currencySymbol}${num.toLocaleString('en-US', {
-      minimumFractionDigits: 2,
-    })}`;
-  };
+  const formatValue = (num: number) => `${currencySymbol}${num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   const handleSaveExpense = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!desc || amount <= 0) return;
+    if (!desc || typeof amount !== 'number' || amount <= 0) return;
 
-    const newExp: Expense = {
+    onAddExpense({
       id: `exp-${Date.now()}`,
       description: desc,
-      vendor: vendor || 'Direct Vendor',
+      vendor: vendor || 'Unknown Vendor',
       category,
       date,
       paid,
-      taxRate: 7.5,
+      taxRate: 0,
       amount,
-    };
+    });
 
-    onAddExpense(newExp);
-
-    // Reset Form
     setDesc('');
     setVendor('');
-    setAmount(0);
+    setAmount('');
     setIsCreating(false);
-  };  return (
-    <div className="bg-white border border-stone-200 rounded-2xl p-6 shadow-sm font-sans feature-card cursor-pointer" id="expenses-tracker-module">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center pb-5 border-b border-stone-100 mb-6 gap-4 select-none">
+  };
+
+  const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <span className="text-[11px] tracking-[0.06em] text-[var(--primary)] uppercase font-black block mb-1">CAPITAL OUTFLOWS</span>
-          <h2 className="text-2xl md:text-3xl font-black tracking-[-0.035em] text-stone-900 flex items-center gap-2">
-            Expenses Ledger
-          </h2>
-          <p className="text-[13px] text-stone-500 mt-1">Record business financial outgoing costs and inventory receipts.</p>
+          <h2 className="text-2xl font-black text-stone-900 tracking-tight">Expenses</h2>
+          <p className="text-sm text-stone-500 mt-1">Track operational outflows and overhead.</p>
         </div>
-        <span className="text-[12px] font-sans font-extrabold select-none px-3.5 py-1.5 bg-orange-50 border border-orange-100 text-[var(--primary)] rounded-xl shrink-0">
-          Logged Outflow: {formatValue(expenses.reduce((s, e) => s + e.amount, 0))}
-        </span>
+        <div className="px-4 py-2 bg-stone-100 rounded-lg border border-stone-200">
+          <span className="text-xs font-bold text-stone-500 uppercase tracking-wider mr-2">Total Logged</span>
+          <span className="font-mono font-bold text-stone-900">{formatValue(totalExpenses)}</span>
+        </div>
       </div>
 
-      {isCreating ? (
-        <form onSubmit={handleSaveExpense} className="bg-stone-50 border border-stone-200 p-4 rounded-xl mb-4 space-y-3.5 animate-slide-up text-xs font-sans">
-          <div className="flex justify-between items-center pb-2 border-b border-stone-200 select-none">
-            <span className="font-extrabold text-[var(--primary)] uppercase tracking-widest text-[9px] flex items-center gap-1.5 font-sans">
-              <Plus className="w-3.5 h-3.5" />
-              Log Business Outlay cost
-            </span>
-            <button 
-              type="button" 
-              onClick={() => setIsCreating(false)} 
-              className="text-stone-405 text-stone-400 hover:text-stone-600 font-bold uppercase cursor-pointer border-0 bg-transparent text-[10px]"
-            >
-              Cancel
-            </button>
+      {!isCreating ? (
+        <button
+          onClick={() => setIsCreating(true)}
+          className="w-full py-4 border-2 border-dashed border-stone-200 rounded-xl text-stone-500 hover:text-stone-900 hover:border-stone-300 hover:bg-stone-50 transition-all flex items-center justify-center gap-2 font-medium text-sm"
+        >
+          <Plus className="w-4 h-4" /> Record New Expense
+        </button>
+      ) : (
+        <motion.form 
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: 'auto' }}
+          className="bg-stone-50 border border-stone-200 rounded-xl p-6 space-y-4"
+          onSubmit={handleSaveExpense}
+        >
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="font-bold text-stone-900">New Expense Record</h3>
+            <button type="button" onClick={() => setIsCreating(false)} className="text-xs font-bold text-stone-500 hover:text-stone-900">CANCEL</button>
           </div>
 
-          <div className="space-y-1">
-            <label className="text-stone-400 font-bold block text-[10px] uppercase font-sans">Expense Description</label>
+          <div>
+            <label className="block text-xs font-bold text-stone-500 mb-1.5 uppercase tracking-wider">Description</label>
             <input 
-              type="text" 
-              value={desc} 
-              onChange={(e) => setDesc(e.target.value)}
-              placeholder="e.g. Packing box design prints batch"
-              className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm font-sans outline-none"
-              required
+              type="text" required value={desc} onChange={e => setDesc(e.target.value)}
+              className="w-full px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+              placeholder="e.g. AWS Hosting"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-stone-400 font-bold block text-[10px] uppercase font-sans">Vendor Provider</label>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-stone-500 mb-1.5 uppercase tracking-wider">Vendor</label>
               <input 
-                type="text" 
-                value={vendor} 
-                onChange={(e) => setVendor(e.target.value)}
-                placeholder="e.g. GIG Logistics"
-                className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm font-sans outline-none"
+                type="text" value={vendor} onChange={e => setVendor(e.target.value)}
+                className="w-full px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                placeholder="e.g. Amazon Web Services"
               />
             </div>
-            <div className="space-y-1">
-              <label className="text-stone-400 font-bold block text-[10px] uppercase font-sans">Expenditure Category</label>
+            <div>
+              <label className="block text-xs font-bold text-stone-500 mb-1.5 uppercase tracking-wider">Category</label>
               <select 
-                value={category} 
-                onChange={(e: any) => setCategory(e.target.value)}
-                className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm font-sans outline-none"
+                value={category} onChange={e => setCategory(e.target.value as any)}
+                className="w-full px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
               >
-                <option value="Supplies">Supplies</option>
                 <option value="Administration">Administration</option>
-                <option value="Travel">Travel</option>
                 <option value="Advertising">Advertising</option>
+                <option value="Travel">Travel</option>
+                <option value="Supplies">Supplies</option>
                 <option value="Rent">Rent</option>
                 <option value="Other">Other</option>
               </select>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-stone-400 font-bold block text-[10px] uppercase font-sans">Date Logged</label>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-stone-500 mb-1.5 uppercase tracking-wider">Date</label>
               <input 
-                type="date" 
-                value={date} 
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm font-sans outline-none"
-                required
+                type="date" required value={date} onChange={e => setDate(e.target.value)}
+                className="w-full px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
               />
             </div>
-            <div className="space-y-1">
-              <label className="text-stone-400 font-bold block text-[10px] uppercase font-sans">Amount Charged ({currencySymbol})</label>
+            <div>
+              <label className="block text-xs font-bold text-stone-500 mb-1.5 uppercase tracking-wider">Amount ({currencySymbol})</label>
               <input 
-                type="number" 
-                value={amount || ''} 
-                onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
-                className="w-full bg-white border border-stone-200 focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] rounded-xl px-2.5 py-1.5 text-xs text-stone-800 shadow-sm font-sans outline-none"
-                min="1"
-                required
+                type="number" required min="0.01" step="0.01" value={amount} onChange={e => setAmount(parseFloat(e.target.value))}
+                className="w-full px-3 py-2 bg-white border border-stone-200 rounded-lg text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none font-mono"
               />
             </div>
           </div>
 
-          <div className="flex justify-between items-center p-3 bg-white border border-stone-200 rounded-xl select-none">
-            <span className="font-sans text-stone-600 font-semibold text-xs">Has this cost been settled/paid?</span>
+          <div className="flex items-center gap-3 pt-2">
             <button
               type="button"
               onClick={() => setPaid(!paid)}
-              className={`px-3 py-1 rounded-lg text-[10px] font-bold uppercase transition-all cursor-pointer border ${
-                paid ? 'bg-orange-50 text-[var(--primary)] border-[var(--primary)]/40' : 'bg-stone-100 text-stone-500 border-stone-200'
+              className={`flex-1 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors border ${
+                paid ? 'bg-green-50 border-green-200 text-green-700' : 'bg-white border-stone-200 text-stone-500 hover:bg-stone-50'
               }`}
             >
-              {paid ? 'PAID / SETTLED' : 'DRAFT / UNPAID'}
+              {paid ? 'STATUS: PAID' : 'STATUS: PENDING'}
+            </button>
+            <button type="submit" className="flex-1 py-2.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg text-xs font-bold uppercase tracking-wider transition-colors">
+              Save Record
             </button>
           </div>
-
-          <button
-            type="submit"
-            className="w-full py-2 bg-[var(--primary)] hover:bg-orange-700 text-white rounded-xl font-bold uppercase tracking-wide transition-all cursor-pointer shadow-md border-0"
-          >
-            Log Outgoings Details
-          </button>
-        </form>
-      ) : (
-        <div className="mb-4">
-          <button
-            onClick={() => setIsCreating(true)}
-            className="px-3.5 py-2.5 bg-white border border-stone-200 hover:border-[var(--primary)] hover:text-[var(--primary)] text-stone-600 rounded-xl flex items-center gap-1.5 w-full justify-center transition-all cursor-pointer text-xs uppercase font-extrabold shadow-sm"
-          >
-            <Plus className="w-4 h-4 text-[var(--primary)]" />
-            File outlay voucher
-          </button>
-        </div>
+        </motion.form>
       )}
 
-      {/* Expense Listing scrolling list */}
-      <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+      <div className="bg-white border border-stone-200 rounded-xl overflow-hidden shadow-sm">
         {expenses.length === 0 ? (
-          <p className="text-center py-8 text-stone-400 font-sans text-xs italic">No logged expenses loaded.</p>
+          <div className="p-8 text-center text-sm text-stone-500">No expenses recorded yet.</div>
         ) : (
-          expenses.map((exp) => (
-            <div 
-              key={exp.id} 
-              className="p-3 bg-stone-50 border border-stone-100 rounded-xl flex justify-between items-center hover:bg-stone-100/50 transition-all text-xs"
-            >
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-stone-800 text-sm font-sans">{exp.description}</span>
-                  <span className="px-1.5 py-0.2 bg-stone-200 text-[9px] text-stone-600 font-sans rounded uppercase font-bold">{exp.category}</span>
-                </div>
-                <p className="text-[10px] text-stone-400 font-sans mt-0.5">
-                  Vendor: {exp.vendor} • Approved: {exp.date}
-                </p>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="text-right select-none">
-                  <span className="font-sans font-extrabold text-[var(--primary)] block text-sm">-{formatValue(exp.amount)}</span>
-                  <span className={`text-[8.5px] font-extrabold font-sans uppercase ${exp.paid ? 'text-emerald-500' : 'text-stone-400'}`}>
-                    {exp.paid ? 'PAID' : 'DRAFT'}
-                  </span>
-                </div>
-                <button
-                  onClick={() => onRemoveExpense(exp.id)}
-                  className="p-1.5 bg-white border border-stone-200 hover:border-[var(--primary)] text-stone-400 hover:text-[var(--primary)] rounded-lg transition-all cursor-pointer shadow-sm"
-                  title="Remove expense"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          ))
+          <table className="w-full text-left text-sm">
+            <thead className="bg-stone-50 border-b border-stone-200 text-xs uppercase tracking-wider text-stone-500 font-bold">
+              <tr>
+                <th className="px-4 py-3">Description</th>
+                <th className="px-4 py-3">Vendor / Category</th>
+                <th className="px-4 py-3">Date</th>
+                <th className="px-4 py-3 text-right">Amount</th>
+                <th className="px-4 py-3 w-10"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-stone-100">
+              {expenses.map(exp => (
+                <tr key={exp.id} className="hover:bg-stone-50 transition-colors group">
+                  <td className="px-4 py-3">
+                    <div className="font-bold text-stone-900">{exp.description}</div>
+                    <div className="text-xs text-stone-500 mt-0.5">{exp.paid ? <span className="text-green-600">Paid</span> : 'Pending'}</div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="text-stone-900">{exp.vendor}</div>
+                    <div className="text-xs text-stone-500 mt-0.5">{exp.category}</div>
+                  </td>
+                  <td className="px-4 py-3 font-mono text-xs text-stone-600">{exp.date}</td>
+                  <td className="px-4 py-3 font-mono font-bold text-stone-900 text-right">{formatValue(exp.amount)}</td>
+                  <td className="px-4 py-3 text-right">
+                    <button onClick={() => onRemoveExpense(exp.id)} className="p-1.5 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded opacity-0 group-hover:opacity-100 transition-all">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         )}
       </div>
     </div>

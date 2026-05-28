@@ -1,51 +1,28 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import { Link } from 'wouter';
 import { ArrowLeft, Compass } from 'lucide-react';
 
 export default function NotFound() {
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-6"
-      style={{ background: 'var(--bg-muted)', fontFamily: 'var(--font)' }}
-    >
-      <div
-        className="anim-fade-up max-w-md w-full text-center p-10 rounded-2xl"
-        style={{
-          background: 'var(--white)',
-          border: '1px solid var(--border)',
-          boxShadow: 'var(--shadow-lg)',
-        }}
-      >
-        <div
-          className="mx-auto mb-6 w-16 h-16 rounded-2xl flex items-center justify-center"
-          style={{ background: 'var(--orange-bg)', color: 'var(--primary)' }}
-        >
-          <Compass className="w-8 h-8" strokeWidth={1.6} />
+    <div className="min-h-screen flex items-center justify-center px-6 bg-white">
+      <div className="max-w-md w-full text-center p-10 rounded-2xl bg-stone-50 border border-stone-200 shadow-xl">
+        <div className="mx-auto mb-6 w-16 h-16 rounded-2xl flex items-center justify-center bg-stone-100 text-stone-400">
+          <Compass className="w-8 h-8" strokeWidth={1.5} />
         </div>
-        <div className="tag" style={{ color: 'var(--primary)' }}>
-          Route not found
+        <div className="text-primary font-bold text-xs uppercase tracking-widest mb-2">
+          404 Not Found
         </div>
-        <h1
-          className="heading-lg"
-          style={{ fontSize: 'clamp(28px, 4vw, 40px)', marginTop: 8, marginBottom: 12 }}
-        >
-          Nothing lives here.
+        <h1 className="text-3xl font-black text-stone-900 mb-3 tracking-tight">
+          Lost in the void.
         </h1>
-        <p className="subtitle" style={{ fontSize: 15, margin: '0 auto 28px' }}>
-          The page you're looking for either moved or was never
-          part of the workspace. Head back to the overview to keep going.
+        <p className="text-stone-500 mb-8 leading-relaxed text-sm">
+          This record or endpoint doesn't exist within the current workspace.
         </p>
         <Link
           href="/overview"
-          className="btn btn-primary btn-sm"
-          style={{ textDecoration: 'none', display: 'inline-flex' }}
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-stone-900 text-stone-50 hover:bg-stone-800 transition-colors font-medium text-sm"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back to Overview
+          Return to Command Center
         </Link>
       </div>
     </div>

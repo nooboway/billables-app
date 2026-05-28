@@ -1,18 +1,7 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- *
- * Top-nav dropdown that lets the user switch the active business,
- * spin up a new one, and rename or delete existing ones. Sources of
- * truth live in lib/workspaces.ts.
- */
-
 import { useEffect, useRef, useState } from 'react';
 import { Check, ChevronDown, Plus, Building2, Pencil, Trash2, X } from 'lucide-react';
 import type { Workspace } from '../types';
 
-/** Props mirror the relevant pieces of useWorkspaces() so the owner
- *  (App.tsx) keeps a single instance of the underlying state. */
 interface Props {
   workspaces: Workspace[];
   activeId: string;
@@ -34,9 +23,8 @@ export default function WorkspaceSwitcher({
   const rootRef = useRef<HTMLDivElement | null>(null);
 
   const active = workspaces.find(w => w.id === activeId) ?? workspaces[0];
-  const activeName = active?.businessDetails?.name || 'Your workspace';
+  const activeName = active?.businessDetails?.name || 'Workspace';
 
-  // Click-outside / Escape to dismiss.
   useEffect(() => {
     if (!open) return;
     const onDown = (e: MouseEvent) => {
@@ -51,7 +39,6 @@ export default function WorkspaceSwitcher({
     };
   }, [open]);
 
-  // Reset to list view whenever the dropdown closes.
   useEffect(() => { if (!open) { setMode('list'); setRenameId(null); setNewName(''); } }, [open]);
 
   const handleAdd = () => {
@@ -75,42 +62,34 @@ export default function WorkspaceSwitcher({
       <button
         type="button"
         onClick={() => setOpen(v => !v)}
-        className="flex flex-col items-start group cursor-pointer"
+        className="flex items-center gap-3 w-full p-2 rounded-xl hover:bg-stone-50 transition-colors border border-transparent hover:border-stone-200"
         aria-haspopup="menu"
         aria-expanded={open}
       >
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs font-extrabold tracking-wide uppercase text-stone-800 group-hover:text-[var(--primary)] transition-colors">
-            {activeName}
-          </span>
-          <ChevronDown className={`w-3 h-3 text-stone-400 group-hover:text-[var(--primary)] transition-transform ${open ? 'rotate-180' : ''}`} strokeWidth={2.5} />
+        <div className="w-8 h-8 rounded-lg bg-stone-900 text-stone-50 flex items-center justify-center font-bold text-xs">
+          {activeName.slice(0, 2).toUpperCase()}
         </div>
-        <span className="text-[8.5px] font-mono text-[var(--primary)] font-extrabold uppercase select-none tracking-widest">
-          {workspaces.length > 1 ? `${workspaces.length} workspaces` : 'Workspace Terminal'}
-        </span>
+        <div className="flex-1 text-left">
+          <div className="text-sm font-bold text-stone-900 truncate tracking-tight">{activeName}</div>
+          <div className="text-[10px] text-stone-400 font-mono tracking-wider uppercase">Workspace</div>
+        </div>
+        <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
 
       {open && (
         <div
           role="menu"
-          className="absolute left-0 top-full mt-2 w-80 rounded-xl z-50 overflow-hidden"
-          style={{
-            background: 'var(--white)',
-            border: '1px solid var(--border)',
-            boxShadow: 'var(--shadow-lg)',
-            fontFamily: 'var(--font)',
-          }}
+          className="absolute left-0 top-full mt-2 w-72 bg-white rounded-xl border border-stone-200 shadow-2xl z-50 overflow-hidden"
         >
-          {/* Header */}
-          <div className="px-4 pt-3 pb-2 flex items-center justify-between">
+          <div className="px-4 pt-3 pb-2 flex items-center justify-between border-b border-stone-100 bg-stone-50/50">
             <div className="flex items-center gap-2">
-              <Building2 className="w-3.5 h-3.5" style={{ color: 'var(--primary)' }} strokeWidth={2.2} />
-              <span className="text-[10px] font-extrabold tracking-widest uppercase" style={{ color: 'var(--text-muted)' }}>
-                {mode === 'add' ? 'Add business' : mode === 'manage' ? 'Manage businesses' : 'Your businesses'}
+              <Building2 className="w-3.5 h-3.5 text-stone-500" />
+              <span className="text-[10px] font-bold tracking-widest uppercase text-stone-500">
+                {mode === 'add' ? 'New Workspace' : mode === 'manage' ? 'Manage' : 'Switch Workspace'}
               </span>
             </div>
             {mode !== 'list' && (
-              <button onClick={() => setMode('list')} className="text-stone-400 hover:text-stone-700" aria-label="Back">
+              <button onClick={() => setMode('list')} className="text-stone-400 hover:text-stone-900">
                 <X className="w-3.5 h-3.5" />
               </button>
             )}
@@ -118,51 +97,39 @@ export default function WorkspaceSwitcher({
 
           {mode === 'list' && (
             <>
-              <ul className="max-h-72 overflow-y-auto px-1.5 pb-1.5">
+              <ul className="max-h-72 overflow-y-auto p-2 space-y-1">
                 {workspaces.map(ws => {
                   const isActive = ws.id === activeId;
-                  const name = ws.businessDetails?.name || 'Untitled business';
+                  const name = ws.businessDetails?.name || 'Untitled';
                   return (
                     <li key={ws.id}>
                       <button
                         onClick={() => { setActiveId(ws.id); setOpen(false); }}
-                        className="w-full flex items-center gap-3 px-2.5 py-2 rounded-lg transition-colors text-left hover:bg-[var(--bg-muted)]"
+                        className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-left ${isActive ? 'bg-primary/10 text-primary' : 'hover:bg-stone-50 text-stone-700'}`}
                       >
-                        <div
-                          className="w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-black"
-                          style={{
-                            background: isActive ? 'var(--orange-bg)' : 'var(--bg-muted)',
-                            color: isActive ? 'var(--primary)' : 'var(--text-muted)',
-                            border: '1px solid var(--border)',
-                          }}
-                        >
+                        <div className={`w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold ${isActive ? 'bg-primary text-white' : 'bg-stone-200 text-stone-600'}`}>
                           {name.slice(0, 2).toUpperCase()}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>{name}</div>
-                          <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                            {ws.businessDetails?.email || ws.id}
-                          </div>
+                          <div className="text-sm font-semibold truncate">{name}</div>
                         </div>
-                        {isActive && <Check className="w-4 h-4" style={{ color: 'var(--primary)' }} strokeWidth={2.5} />}
+                        {isActive && <Check className="w-4 h-4" />}
                       </button>
                     </li>
                   );
                 })}
               </ul>
-              <div className="border-t flex" style={{ borderColor: 'var(--border)' }}>
+              <div className="border-t border-stone-100 flex bg-stone-50">
                 <button
                   onClick={() => setMode('add')}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-semibold transition-colors hover:bg-[var(--bg-muted)]"
-                  style={{ color: 'var(--primary)' }}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-3 text-xs font-bold text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors"
                 >
-                  <Plus className="w-3.5 h-3.5" strokeWidth={2.5} /> Add business
+                  <Plus className="w-3.5 h-3.5" /> Add New
                 </button>
-                <div className="w-px" style={{ background: 'var(--border)' }} />
+                <div className="w-px bg-stone-200" />
                 <button
                   onClick={() => setMode('manage')}
-                  className="flex-1 py-2.5 text-xs font-semibold transition-colors hover:bg-[var(--bg-muted)]"
-                  style={{ color: 'var(--text)' }}
+                  className="flex-1 py-3 text-xs font-bold text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors"
                 >
                   Manage
                 </button>
@@ -171,55 +138,39 @@ export default function WorkspaceSwitcher({
           )}
 
           {mode === 'add' && (
-            <div className="px-4 pb-4 pt-1">
-              <label className="block text-[10px] font-bold uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-muted)' }}>
-                Business name
+            <div className="p-4 bg-stone-50">
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-stone-500 mb-2">
+                Business Name
               </label>
               <input
                 autoFocus
                 value={newName}
                 onChange={e => setNewName(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') handleAdd(); }}
-                placeholder="e.g. Acme Studios"
-                className="w-full px-3 py-2 rounded-md text-sm outline-none"
-                style={{
-                  background: 'var(--bg-muted)',
-                  border: '1px solid var(--border)',
-                  color: 'var(--text)',
-                  fontFamily: 'var(--font)',
-                }}
+                placeholder="Acme Corp"
+                className="w-full px-3 py-2 rounded-lg border border-stone-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none text-sm bg-white"
               />
-              <p className="text-[11px] mt-2" style={{ color: 'var(--text-muted)' }}>
-                You can add bank details, VAT, logo and template later in Settings.
-              </p>
-              <div className="flex justify-end gap-2 mt-3">
-                <button
-                  onClick={() => setMode('list')}
-                  className="btn btn-ghost btn-sm"
-                  style={{ fontFamily: 'var(--font)' }}
-                >
-                  Cancel
-                </button>
+              <div className="flex justify-end gap-2 mt-4">
+                <button onClick={() => setMode('list')} className="px-3 py-1.5 text-xs font-bold text-stone-500 hover:text-stone-900">Cancel</button>
                 <button
                   onClick={handleAdd}
                   disabled={!newName.trim()}
-                  className="btn btn-primary btn-sm"
-                  style={{ fontFamily: 'var(--font)', opacity: newName.trim() ? 1 : 0.5 }}
+                  className="px-4 py-1.5 rounded-lg bg-stone-900 text-white text-xs font-bold disabled:opacity-50"
                 >
-                  Create & switch
+                  Create
                 </button>
               </div>
             </div>
           )}
 
           {mode === 'manage' && (
-            <ul className="max-h-80 overflow-y-auto px-1.5 pb-2">
+            <ul className="max-h-80 overflow-y-auto p-2 space-y-1">
               {workspaces.map(ws => {
-                const name = ws.businessDetails?.name || 'Untitled business';
+                const name = ws.businessDetails?.name || 'Untitled';
                 const isOnly = workspaces.length === 1;
                 const editing = renameId === ws.id;
                 return (
-                  <li key={ws.id} className="px-2 py-2 rounded-lg">
+                  <li key={ws.id} className="p-2 rounded-lg hover:bg-stone-50 group">
                     {editing ? (
                       <div className="flex items-center gap-2">
                         <input
@@ -230,42 +181,32 @@ export default function WorkspaceSwitcher({
                             if (e.key === 'Enter') commitRename();
                             if (e.key === 'Escape') { setRenameId(null); setRenameValue(''); }
                           }}
-                          className="flex-1 px-2 py-1 rounded text-sm outline-none"
-                          style={{
-                            background: 'var(--bg-muted)',
-                            border: '1px solid var(--border)',
-                            color: 'var(--text)',
-                          }}
+                          className="flex-1 px-2 py-1 rounded border border-stone-200 text-sm outline-none bg-white"
                         />
-                        <button onClick={commitRename} className="btn btn-primary btn-sm">Save</button>
+                        <button onClick={commitRename} className="px-2 py-1 bg-stone-900 text-white rounded text-xs font-bold">Save</button>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-semibold truncate" style={{ color: 'var(--text)' }}>
-                            {name} {ws.id === activeId && <span className="text-[9px] ml-1 uppercase tracking-wider" style={{ color: 'var(--primary)' }}>active</span>}
+                          <div className="text-sm font-semibold truncate text-stone-800">
+                            {name} {ws.id === activeId && <span className="text-[9px] ml-2 px-1.5 py-0.5 rounded-full bg-stone-200 text-stone-600 uppercase tracking-wider">Active</span>}
                           </div>
-                          <div className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{ws.id}</div>
                         </div>
                         <button
-                          title="Rename"
                           onClick={() => { setRenameId(ws.id); setRenameValue(name); }}
-                          className="p-1.5 rounded hover:bg-[var(--bg-muted)]"
-                          style={{ color: 'var(--text-muted)' }}
+                          className="p-1.5 rounded text-stone-400 hover:text-stone-900 hover:bg-stone-200 transition-colors"
                         >
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          title={isOnly ? 'Cannot delete the only workspace' : 'Delete'}
                           disabled={isOnly}
                           onClick={() => {
                             if (isOnly) return;
-                            if (confirm(`Delete "${name}"? Its invoices, products, services, expenses and notifications will also be removed.`)) {
+                            if (confirm(`Delete "${name}"? This cannot be undone.`)) {
                               removeWorkspace(ws.id);
                             }
                           }}
-                          className="p-1.5 rounded hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
-                          style={{ color: isOnly ? 'var(--text-muted)' : '#dc2626' }}
+                          className="p-1.5 rounded text-stone-400 hover:text-red-600 hover:bg-red-50 disabled:opacity-30 transition-colors"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
