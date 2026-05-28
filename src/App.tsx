@@ -1063,11 +1063,11 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => setIsPdfImportOpen(true)}
-                    title="Drop a PDF invoice — we'll try to extract its fields and pre-fill a new draft."
+                    title="Drop a PDF or image of an invoice — we extract its fields (OCR if needed) and pre-fill a new draft."
                     className="px-4 py-2.5 bg-white border border-stone-200 hover:border-[var(--primary)] hover:text-[var(--primary)] text-stone-700 font-bold uppercase tracking-wider rounded-xl flex items-center gap-1.5 cursor-pointer text-xs shadow-sm transition-all"
                   >
                     <FileText className="w-3.5 h-3.5" />
-                    Import PDF
+                    Import PDF / image
                   </button>
                   <button
                     onClick={handleOpenCreator}
