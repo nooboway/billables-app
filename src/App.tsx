@@ -63,6 +63,8 @@ import { useWorkspaces, useScopedLocalStorage, useWorkspaceIdentity } from './li
 import { applyAccent } from './lib/accent';
 import { useNavigate } from './Root';
 import WorkspaceSwitcher from './components/WorkspaceSwitcher';
+import PdfImportDialog from './components/PdfImportDialog';
+import type { ExtractedInvoice } from './lib/pdfExtract';
 
 import InvoicePreview from './components/InvoicePreview';
 import LiveNotifications from './components/LiveNotifications';
@@ -287,6 +289,43 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
   // see a live render of the in-progress invoice in any of the 5
   // templates before committing to save.
   const [creatorMode, setCreatorMode] = useState<'edit' | 'preview'>('edit');
+
+  // PDF import dialog — toggled from the Documents header.
+  const [isPdfImportOpen, setIsPdfImportOpen] = useState(false);
+
+  /** Apply extraction payload to the creator's form state. Anything
+   *  the parser didn't detect is left as the user's current value. */
+  const handleApplyExtracted = (d: ExtractedInvoice) => {
+    if (d.invoiceId)    setInvoiceIdInput(d.invoiceId);
+    if (d.orderNo)      setNewOrderNo(d.orderNo);
+    if (d.issueDate)    setNewIssueDate(d.issueDate);
+    if (d.dueDate)      setNewDueDate(d.dueDate);
+    if (d.clientName)   setNewClientName(d.clientName);
+    if (d.clientEmail)  setNewClientEmail(d.clientEmail);
+    if (d.clientStreet) setNewClientStreet(d.clientStreet);
+    if (d.clientCity)   setNewClientCity(d.clientCity);
+    if (d.vatRate !== undefined) setNewVatRate(d.vatRate);
+    if (d.items.length > 0) {
+      setSelectedItemsList(d.items.map((it, idx) => ({
+        id: `import-${Date.now()}-${idx}`,
+        qty: it.qty,
+        desc: it.description,
+        price: it.price,
+        unit: 'unit',
+      })));
+    }
+    setEditingInvoiceId(null);
+    setIsCreatorOpen(true);
+    setCreatorMode('edit');
+    handleAddNotification({
+      id: `notif-import-${Date.now()}`,
+      title: 'Invoice imported from PDF',
+      message: `${d.items.length} line item(s) and ${[d.invoiceId, d.clientName, d.total].filter(Boolean).length} header field(s) pre-filled. Review and save.`,
+      type: 'success',
+      timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      read: false,
+    });
+  };
 
   const resetCreatorStates = () => {
     setEditingInvoiceId(null);
@@ -1021,13 +1060,23 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                   <h2 className="text-2xl md:text-3xl font-black tracking-[-0.035em] text-stone-900">Documents Hub</h2>
                   <p className="text-[13px] text-stone-500 mt-1">Filter, search and export invoices, estimates and ledgers.</p>
                 </div>
-                <button
-                  onClick={handleOpenCreator}
-                  className="px-4 py-2.5 bg-[#E54A13] hover:bg-orange-700 font-bold uppercase tracking-wider text-white rounded-xl flex items-center gap-1.5 cursor-pointer text-xs shadow-sm transition-all"
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  New Invoice
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setIsPdfImportOpen(true)}
+                    title="Drop a PDF invoice — we'll try to extract its fields and pre-fill a new draft."
+                    className="px-4 py-2.5 bg-white border border-stone-200 hover:border-[var(--primary)] hover:text-[var(--primary)] text-stone-700 font-bold uppercase tracking-wider rounded-xl flex items-center gap-1.5 cursor-pointer text-xs shadow-sm transition-all"
+                  >
+                    <FileText className="w-3.5 h-3.5" />
+                    Import PDF
+                  </button>
+                  <button
+                    onClick={handleOpenCreator}
+                    className="px-4 py-2.5 bg-[#E54A13] hover:bg-orange-700 font-bold uppercase tracking-wider text-white rounded-xl flex items-center gap-1.5 cursor-pointer text-xs shadow-sm transition-all"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    New Invoice
+                  </button>
+                </div>
               </div>
 
               {/* Invoices or Estimates Tabs */}
@@ -1959,6 +2008,12 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
         </div>
         );
       })()}
+
+      <PdfImportDialog
+        isOpen={isPdfImportOpen}
+        onClose={() => setIsPdfImportOpen(false)}
+        onApply={handleApplyExtracted}
+      />
 
       {/* GLOBAL SETTINGS SIDE-PANEL OVERLAY */}
       <SettingsDrawer 
