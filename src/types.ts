@@ -106,6 +106,12 @@ export interface Invoice {
     event: string;
     timestamp: string;
   }>;
+  /** Original file the invoice was imported from, normalized to PDF
+   *  and stored as a data URL. Lets the user re-download or visually
+   *  diff against the source. Absent on invoices created from scratch. */
+  originalPdfDataUrl?: string;
+  /** Human-readable name of the original imported file (e.g. "scan.jpg"). */
+  originalFileName?: string;
 }
 
 export interface Product {

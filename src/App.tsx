@@ -293,9 +293,15 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
   // PDF import dialog — toggled from the Documents header.
   const [isPdfImportOpen, setIsPdfImportOpen] = useState(false);
 
+  // Holds the unified PDF data URL + filename from an import session
+  // until the new invoice is actually saved, at which point they're
+  // persisted onto the Invoice record (Invoice.originalPdfDataUrl etc).
+  const [pendingOriginal, setPendingOriginal] = useState<{ pdfDataUrl?: string; fileName?: string } | null>(null);
+
   /** Apply extraction payload to the creator's form state. Anything
    *  the parser didn't detect is left as the user's current value. */
-  const handleApplyExtracted = (d: ExtractedInvoice) => {
+  const handleApplyExtracted = (payload: { data: ExtractedInvoice; originalPdfDataUrl?: string; originalFileName?: string }) => {
+    const d = payload.data;
     if (d.invoiceId)    setInvoiceIdInput(d.invoiceId);
     if (d.orderNo)      setNewOrderNo(d.orderNo);
     if (d.issueDate)    setNewIssueDate(d.issueDate);
@@ -314,13 +320,17 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
         unit: 'unit',
       })));
     }
+    setPendingOriginal({
+      pdfDataUrl: payload.originalPdfDataUrl,
+      fileName: payload.originalFileName,
+    });
     setEditingInvoiceId(null);
     setIsCreatorOpen(true);
     setCreatorMode('edit');
     handleAddNotification({
       id: `notif-import-${Date.now()}`,
-      title: 'Invoice imported from PDF',
-      message: `${d.items.length} line item(s) and ${[d.invoiceId, d.clientName, d.total].filter(Boolean).length} header field(s) pre-filled. Review and save.`,
+      title: 'Invoice imported',
+      message: `${d.items.length} line item(s) pre-filled${payload.originalFileName ? ` from ${payload.originalFileName}` : ''}. Review and save.`,
       type: 'success',
       timestamp: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
       read: false,
@@ -548,10 +558,14 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
         history: [
           { event: 'Created', timestamp: new Date().toISOString() },
           { event: 'Sent', timestamp: new Date().toISOString() },
-        ]
+        ],
+        // Attach the unified-PDF source if this invoice was just imported.
+        originalPdfDataUrl: pendingOriginal?.pdfDataUrl,
+        originalFileName:   pendingOriginal?.fileName,
       };
 
       setInvoices(prev => [newInvoice, ...prev]);
+      setPendingOriginal(null);
 
       // Live Simulator event trigger
       handleAddNotification({
@@ -1219,8 +1233,22 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                   ← Back to Workspace
                 </button>
                 <div className="text-right">
-                  <span className="text-[10px] text-stone-450 text-stone-500 font-mono tracking-wider uppercase font-bold block">Active Invoice reference</span>
-                  <span className="text-xs font-extrabold text-[#E54A13] font-mono">Invoice #{selectedInvoice.id}</span>
+                  <span className="text-[10px] text-stone-500 font-mono tracking-wider uppercase font-bold block">Active Invoice reference</span>
+                  <div className="flex items-center justify-end gap-2 mt-0.5">
+                    <span className="text-xs font-extrabold text-[#E54A13] font-mono">Invoice #{selectedInvoice.id}</span>
+                    {selectedInvoice.originalPdfDataUrl && (
+                      <a
+                        href={selectedInvoice.originalPdfDataUrl}
+                        download={(selectedInvoice.originalFileName || `invoice-${selectedInvoice.id}-source`).replace(/\.(png|jpg|jpeg|webp)$/i, '') + '.pdf'}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title={`Open the original imported file as PDF${selectedInvoice.originalFileName ? ` (${selectedInvoice.originalFileName})` : ''}`}
+                        className="text-[9px] uppercase tracking-wider font-bold text-stone-500 hover:text-[var(--primary)] border border-stone-200 px-1.5 py-0.5 rounded no-underline"
+                      >
+                        View source
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
 

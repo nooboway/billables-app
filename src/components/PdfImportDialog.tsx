@@ -14,10 +14,16 @@ import { useCallback, useRef, useState } from 'react';
 import { FileText, Loader2, Check, AlertTriangle, X, Upload, ScanText } from 'lucide-react';
 import { extractInvoice, ExtractResult, ExtractedInvoice, ExtractKind } from '../lib/pdfExtract';
 
+interface ApplyPayload {
+  data: ExtractedInvoice;
+  originalPdfDataUrl?: string;
+  originalFileName?: string;
+}
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onApply: (data: ExtractedInvoice) => void;
+  onApply: (payload: ApplyPayload) => void;
 }
 
 export default function PdfImportDialog({ isOpen, onClose, onApply }: Props) {
@@ -144,7 +150,14 @@ export default function PdfImportDialog({ isOpen, onClose, onApply }: Props) {
               data={result.data}
               confidence={result.confidence}
               via={result.via}
-              onUseIt={() => { onApply(result.data); handleClose(); }}
+              onUseIt={() => {
+                onApply({
+                  data: result.data,
+                  originalPdfDataUrl: result.originalPdfDataUrl,
+                  originalFileName: result.originalFileName,
+                });
+                handleClose();
+              }}
               onCancel={reset}
             />
           )}

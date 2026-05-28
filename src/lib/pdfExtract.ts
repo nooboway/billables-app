@@ -19,11 +19,12 @@
  */
 
 import type { InvoiceItem } from '../types';
+import { unifyToPdfDataUrl } from './fileUnify';
 
 export type ExtractKind = 'text-pdf' | 'image-pdf' | 'image';
 
 export type ExtractResult =
-  | { kind: 'ok'; via: ExtractKind; data: ExtractedInvoice; rawText: string; confidence: 'high' | 'low' }
+  | { kind: 'ok'; via: ExtractKind; data: ExtractedInvoice; rawText: string; confidence: 'high' | 'low'; originalPdfDataUrl?: string; originalFileName?: string }
   | { kind: 'error'; reason: string };
 
 export interface ExtractedInvoice {
@@ -272,10 +273,23 @@ export async function extractInvoice(
   }
 
   try {
+    // Kick off file unification in parallel — produces the normalized
+    // PDF data URL we attach to the resulting invoice. We don't fail
+    // the whole extraction if unification breaks (rare); the data
+    // payload still goes through.
+    const originalPdfPromise = unifyToPdfDataUrl(file).catch((err) => {
+      console.warn('[fileUnify] failed:', err);
+      return undefined as string | undefined;
+    });
+
     if (isImage) {
       const text = await ocrImageFile(file, onProgress);
       const { _confidence, ...data } = parseInvoiceFields(text);
-      return { kind: 'ok', via: 'image', data, rawText: text, confidence: _confidence };
+      const originalPdfDataUrl = await originalPdfPromise;
+      return {
+        kind: 'ok', via: 'image', data, rawText: text, confidence: _confidence,
+        originalPdfDataUrl, originalFileName: file.name,
+      };
     }
 
     // PDF path: try text first, fall back to OCR if image-only.
@@ -283,12 +297,20 @@ export async function extractInvoice(
     const { text, pdf } = await extractPdfText(file);
     if (text !== null) {
       const { _confidence, ...data } = parseInvoiceFields(text);
-      return { kind: 'ok', via: 'text-pdf', data, rawText: text, confidence: _confidence };
+      const originalPdfDataUrl = await originalPdfPromise;
+      return {
+        kind: 'ok', via: 'text-pdf', data, rawText: text, confidence: _confidence,
+        originalPdfDataUrl, originalFileName: file.name,
+      };
     }
     onProgress('PDF has no text layer — running OCR…', 0.15);
     const ocrText = await ocrPdfPages(pdf, onProgress);
     const { _confidence, ...data } = parseInvoiceFields(ocrText);
-    return { kind: 'ok', via: 'image-pdf', data, rawText: ocrText, confidence: _confidence };
+    const originalPdfDataUrl = await originalPdfPromise;
+    return {
+      kind: 'ok', via: 'image-pdf', data, rawText: ocrText, confidence: _confidence,
+      originalPdfDataUrl, originalFileName: file.name,
+    };
   } catch (e: any) {
     return { kind: 'error', reason: e?.message || 'Failed to read that file.' };
   }
