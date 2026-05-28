@@ -1,43 +1,16 @@
 {
-  "name": "billables-app",
-  "private": true,
-  "version": "0.1.0",
-  "type": "module",
+  "name": "workspace",
+  "version": "0.0.0",
+  "license": "MIT",
   "scripts": {
-    "dev": "tsx server.ts",
-    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
-    "start": "node dist/server.cjs",
-    "preview": "node dist/server.cjs",
-    "clean": "rm -rf dist server.js",
-    "typecheck": "tsc --noEmit",
-    "lint": "tsc --noEmit"
+    "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
+    "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "typecheck:libs": "tsc --build",
+    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
   },
-  "dependencies": {
-    "@tailwindcss/vite": "^4.1.14",
-    "@vitejs/plugin-react": "^5.0.4",
-    "express": "^4.21.2",
-    "html2canvas": "^1.4.1",
-    "jspdf": "^4.2.1",
-    "lucide-react": "^0.546.0",
-    "motion": "^12.23.24",
-    "pdfjs-dist": "^4.10.38",
-    "react": "^19.0.1",
-    "react-dom": "^19.0.1",
-    "react-qr-code": "^2.0.21",
-    "tesseract.js": "^5.1.1",
-    "vite": "^6.2.3",
-    "wouter": "^3.5.0"
-  },
+  "private": true,
   "devDependencies": {
-    "@types/express": "^4.17.21",
-    "@types/node": "^22.14.0",
-    "@types/react": "^19.0.10",
-    "@types/react-dom": "^19.0.4",
-    "autoprefixer": "^10.4.21",
-    "esbuild": "^0.25.0",
-    "tailwindcss": "^4.1.14",
-    "tsx": "^4.21.0",
-    "typescript": "~5.8.2",
-    "vite": "^6.2.3"
+    "prettier": "^3.8.3",
+    "typescript": "~5.9.3"
   }
 }
