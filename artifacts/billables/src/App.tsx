@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'motion/react';
+import React, { useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-import { Settings, LayoutDashboard, FileText, PieChart, Plus, Search, ChevronRight, Inbox, Mail, Download, Edit2, Copy, Trash2, Box } from 'lucide-react';
+import { Settings, LayoutDashboard, FileText, PieChart, Plus, ChevronRight, ChevronLeft, Mail, Download, Edit2, Copy, Box, TrendingUp } from 'lucide-react';
 
-import { BusinessDetails, BankAccount, VatSettings, TemplateSettings, Invoice, Product, Service, Expense, Notification, InvoiceTemplate } from './types';
+import { BusinessDetails, BankAccount, VatSettings, TemplateSettings, Invoice, Product, Service, Expense, Notification } from './types';
 import { useWorkspaces, useScopedLocalStorage, useWorkspaceIdentity } from './lib/workspaces';
 import { useLocalStorage } from './lib/persistence';
 import { INITIAL_TEMPLATE_SETTINGS, INITIAL_BUSINESS_DETAILS, INITIAL_BANK_ACCOUNT, INITIAL_VAT_SETTINGS, INITIAL_INVOICES, INITIAL_PRODUCTS, INITIAL_SERVICES, INITIAL_EXPENSES, SEED_WORKSPACE_ID } from './initialData';
@@ -47,6 +46,7 @@ export default function App({ initialScreen = 'overview', initialInvoiceId = nul
   const [notifications, setNotifications] = useScopedLocalStorage<Notification[]>('notifications', activeId, []);
 
   const [dataSeedDone, setDataSeedDone] = useLocalStorage<boolean>('data_seeded_v1', false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useLocalStorage<boolean>('sidebar_collapsed', false);
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isPdfImportOpen, setIsPdfImportOpen] = useState(false);
@@ -104,54 +104,102 @@ export default function App({ initialScreen = 'overview', initialInvoiceId = nul
   const goalProgress = Math.min((totalRev / monthlyGoal) * 100, 100);
   const streak = invoices.filter(i => new Date(i.issueDate).getMonth() === new Date().getMonth()).length;
 
-  const NavItem = ({ id, icon: Icon, label }: { id: Screen, icon: any, label: string }) => (
-    <button
-      onClick={() => { setActiveScreen(id); setSelectedInvoiceId(null); }}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeScreen === id && !selectedInvoiceId ? 'bg-primary text-white font-bold shadow-md shadow-primary/20' : 'text-stone-500 hover:bg-stone-100 hover:text-stone-900 font-medium'}`}
-    >
-      <Icon className="w-5 h-5" /> <span className="text-sm">{label}</span>
-    </button>
-  );
+  const SCREEN_LABELS: Record<string, string> = {
+    overview: 'Overview', documents: 'Invoices', expenses: 'Expenses',
+    catalogs: 'Catalog', reports: 'Analytics',
+  };
+
+  const NavItem = ({ id, icon: Icon, label }: { id: Screen, icon: any, label: string }) => {
+    const isActive = activeScreen === id && !selectedInvoiceId;
+    return (
+      <button
+        title={sidebarCollapsed ? label : undefined}
+        onClick={() => { setActiveScreen(id); setSelectedInvoiceId(null); }}
+        className={`w-full flex items-center rounded-xl transition-all duration-150
+          ${sidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-3'}
+          ${isActive ? 'bg-primary text-white font-bold shadow-md shadow-primary/20' : 'text-stone-500 hover:bg-stone-100 hover:text-stone-900 font-medium'}`}
+      >
+        <Icon className="w-5 h-5 shrink-0" />
+        {!sidebarCollapsed && <span className="text-sm truncate">{label}</span>}
+      </button>
+    );
+  };
 
   const selectedInvoice = invoices.find(i => i.id === selectedInvoiceId);
 
   return (
     <div className="flex h-screen bg-stone-50 overflow-hidden font-sans">
       {/* Sidebar */}
-      <div className="w-72 bg-white border-r border-stone-200 flex flex-col z-20 shadow-sm relative">
-        <div className="p-4 border-b border-stone-100">
-          <WorkspaceSwitcher workspaces={workspaces} activeId={activeId} setActiveId={setActiveId} addWorkspace={addWorkspace} renameWorkspace={renameWorkspace} removeWorkspace={removeWorkspace} />
-        </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-1">
-          <NavItem id="overview" icon={LayoutDashboard} label="Overview" />
-          <NavItem id="documents" icon={FileText} label="Invoices" />
-          <NavItem id="expenses" icon={PieChart} label="Expenses" />
-          <NavItem id="catalogs" icon={Box} label="Catalog" />
-          <NavItem id="reports" icon={PieChart} label="Analytics" />
-        </div>
-        <div className="p-4 border-t border-stone-100 space-y-2">
-          <div className="p-3 bg-stone-50 rounded-xl border border-stone-100 mb-2">
-            <div className="flex justify-between text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">
-              <span>Goal Progress</span><span>{goalProgress.toFixed(0)}%</span>
+      <div
+        style={{ width: sidebarCollapsed ? 64 : 240 }}
+        className="bg-white border-r border-stone-200 flex flex-col z-20 shadow-sm relative shrink-0 transition-[width] duration-200 ease-in-out"
+      >
+        {/* Collapse toggle */}
+        <button
+          onClick={() => setSidebarCollapsed(c => !c)}
+          title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          className="absolute -right-3 top-5 z-30 w-6 h-6 bg-stone-200 hover:bg-stone-300 border border-stone-300 rounded-full flex items-center justify-center transition-colors shadow-sm"
+        >
+          <ChevronLeft className={`w-3.5 h-3.5 text-stone-600 transition-transform duration-200 ${sidebarCollapsed ? 'rotate-180' : ''}`} />
+        </button>
+
+        {/* Workspace area */}
+        <div className={`border-b border-stone-100 overflow-hidden ${sidebarCollapsed ? 'p-2' : 'p-3'}`}>
+          {sidebarCollapsed ? (
+            <div
+              title={businessDetails.name}
+              className="w-9 h-9 rounded-lg bg-stone-900 text-stone-50 flex items-center justify-center font-bold text-xs mx-auto cursor-default select-none"
+            >
+              {businessDetails.name.slice(0, 2).toUpperCase()}
             </div>
-            <div className="h-1.5 bg-stone-200 rounded-full overflow-hidden">
-              <div className="h-full bg-primary transition-all" style={{width: `${goalProgress}%`}}></div>
+          ) : (
+            <WorkspaceSwitcher workspaces={workspaces} activeId={activeId} setActiveId={setActiveId} addWorkspace={addWorkspace} renameWorkspace={renameWorkspace} removeWorkspace={removeWorkspace} />
+          )}
+        </div>
+
+        {/* Nav */}
+        <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
+          <NavItem id="overview"   icon={LayoutDashboard} label="Overview"  />
+          <NavItem id="documents"  icon={FileText}        label="Invoices"  />
+          <NavItem id="expenses"   icon={TrendingUp}      label="Expenses"  />
+          <NavItem id="catalogs"   icon={Box}             label="Catalog"   />
+          <NavItem id="reports"    icon={PieChart}        label="Analytics" />
+        </div>
+
+        {/* Bottom */}
+        <div className={`border-t border-stone-100 ${sidebarCollapsed ? 'p-2 space-y-1' : 'p-3 space-y-2'}`}>
+          {!sidebarCollapsed && (
+            <div className="p-3 bg-stone-50 rounded-xl border border-stone-100">
+              <div className="flex justify-between text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1.5">
+                <span className="truncate mr-2">Goal</span><span className="shrink-0">{goalProgress.toFixed(0)}%</span>
+              </div>
+              <div className="h-1.5 bg-stone-200 rounded-full overflow-hidden">
+                <div className="h-full bg-primary transition-all" style={{ width: `${goalProgress}%` }} />
+              </div>
             </div>
-          </div>
-          <button onClick={() => setIsSettingsOpen(true)} className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-stone-500 hover:bg-stone-100 hover:text-stone-900 transition-colors font-medium text-sm">
-            <Settings className="w-5 h-5" /> Settings
+          )}
+          <button
+            title={sidebarCollapsed ? 'Settings' : undefined}
+            onClick={() => setIsSettingsOpen(true)}
+            className={`w-full flex items-center rounded-xl text-stone-500 hover:bg-stone-100 hover:text-stone-900 transition-colors font-medium text-sm
+              ${sidebarCollapsed ? 'justify-center p-3' : 'gap-3 px-4 py-2.5'}`}
+          >
+            <Settings className="w-5 h-5 shrink-0" />
+            {!sidebarCollapsed && <span className="truncate">Settings</span>}
           </button>
         </div>
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col relative overflow-hidden">
+      <div className="flex-1 flex flex-col relative overflow-hidden min-w-0">
         {/* Top Header */}
-        <header className="h-16 bg-white border-b border-stone-200 flex items-center justify-between px-8 shrink-0 z-10 shadow-sm">
-          <h1 className="text-lg font-black text-stone-900 tracking-tight capitalize">{selectedInvoiceId ? `Invoice #${selectedInvoiceId}` : activeScreen}</h1>
-          <div className="flex items-center gap-4">
-            <button onClick={() => setIsCreatorOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-stone-900 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-stone-800 transition-colors shadow-sm">
-              <Plus className="w-4 h-4"/> New Invoice
+        <header className="h-16 bg-white border-b border-stone-200 flex items-center justify-between px-6 shrink-0 z-10 shadow-sm">
+          <h1 className="text-lg font-black text-stone-900 tracking-tight truncate mr-4">
+            {selectedInvoiceId ? `Invoice #${selectedInvoiceId}` : (SCREEN_LABELS[activeScreen] ?? activeScreen)}
+          </h1>
+          <div className="flex items-center gap-3 shrink-0">
+            <button onClick={() => setIsCreatorOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-stone-900 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-stone-800 transition-colors shadow-sm whitespace-nowrap">
+              <Plus className="w-4 h-4 shrink-0" /> New Invoice
             </button>
           </div>
         </header>
