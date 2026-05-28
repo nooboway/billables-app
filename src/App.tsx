@@ -1596,7 +1596,7 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     Live preview · {selectedTemplate} template
                   </span>
                   <div className="flex gap-1 bg-white p-1 rounded-lg border border-stone-200 shadow-sm">
-                    {(['Stripe','Classic','Serif','Modern','Simple'] as const).map(t => (
+                    {(['Stripe','Classic','Serif','Modern','Simple','Circle','Wardiere','Bold'] as const).map(t => (
                       <button
                         key={t}
                         type="button"
@@ -1907,13 +1907,16 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                     <span className="text-[10px] text-[#E54A13] font-sans font-extrabold uppercase">{selectedTemplate} Active</span>
                   </div>
                   
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {[
-                      { type: 'Stripe', label: 'Stripe style', desc: 'Sleek premium brand layout' },
-                      { type: 'Classic', label: 'Classic style', desc: 'Standard ledger borders layout' },
-                      { type: 'Serif', label: 'Serif style', desc: 'Editorial serif typography' },
-                      { type: 'Modern', label: 'Modern style', desc: 'Digital glowing tech design' },
-                      { type: 'Simple', label: 'Simple style', desc: 'Ultra-clean workspace focus' },
+                      { type: 'Stripe',   label: 'Stripe',   desc: 'Sleek premium brand layout' },
+                      { type: 'Classic',  label: 'Classic',  desc: 'Standard ledger borders' },
+                      { type: 'Serif',    label: 'Serif',    desc: 'Editorial serif typography' },
+                      { type: 'Modern',   label: 'Modern',   desc: 'Digital glowing tech design' },
+                      { type: 'Simple',   label: 'Simple',   desc: 'Ultra-clean workspace focus' },
+                      { type: 'Circle',   label: 'Circle',   desc: 'White minimalist, signature script' },
+                      { type: 'Wardiere', label: 'Wardiere', desc: 'Peach band, two-column elegance' },
+                      { type: 'Bold',     label: 'Bold',     desc: 'Cream typecentric editorial' },
                     ].map((tpl) => (
                       <button
                         key={tpl.type}

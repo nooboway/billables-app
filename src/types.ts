@@ -9,7 +9,13 @@
  * default (TemplateSettings.templateType). Previously these were two
  * different unions which let mismatched assignments slip past tsc.
  */
-export type InvoiceTemplate = 'Stripe' | 'Classic' | 'Serif' | 'Modern' | 'Simple';
+export type InvoiceTemplate =
+  // Original five
+  | 'Stripe' | 'Classic' | 'Serif' | 'Modern' | 'Simple'
+  // New minimalist set added from the design pack
+  | 'Circle'     // White minimalist · circular logo · centered · "thank you" script
+  | 'Wardiere'   // Beige-gray · peach header band · serif INVOICE · two-col Bill To/From
+  | 'Bold';      // Cream · oversized "Invoice" wordmark · typecentric editorial
 
 export interface BusinessDetails {
   name: string;

@@ -616,6 +616,286 @@ export default function InvoicePreview({
     );
   }
 
+  // ───────────────────────────────────────────────────────────────────
+  // CIRCLE TEMPLATE — white minimalist · circular logo · centered ·
+  // "thank you" signature script. Heavy whitespace, sans-serif.
+  // ───────────────────────────────────────────────────────────────────
+  if (activeTemplate === 'Circle') {
+    const initial = (businessDetails.name || 'B').trim().charAt(0).toUpperCase();
+    return (
+      <div className="bg-white text-stone-900 max-w-3xl mx-auto p-10 md:p-14 shadow-md rounded-xl font-sans relative">
+        {/* Centered circular logo / wordmark */}
+        <div className="flex flex-col items-center mb-12">
+          {businessDetails.logoUrl ? (
+            <img src={businessDetails.logoUrl} alt="" className="w-20 h-20 object-contain mb-3 rounded-full border border-stone-200" referrerPolicy="no-referrer" />
+          ) : (
+            <div className="w-20 h-20 rounded-full border border-stone-300 flex items-center justify-center mb-3">
+              <span className="text-2xl font-light tracking-[0.2em] text-stone-700">{initial}</span>
+            </div>
+          )}
+          <p className="text-xs tracking-[0.45em] text-stone-700 font-medium">{(businessDetails.name || 'YOUR BUSINESS').toUpperCase()}</p>
+        </div>
+
+        {/* Issued to / Invoice no */}
+        <div className="grid grid-cols-2 gap-8 mb-10 text-[12px]">
+          <div>
+            <p className="font-bold text-stone-900 tracking-[0.2em] text-[10px] mb-2">ISSUED TO:</p>
+            <p className="text-stone-700">{invoice.clientName}</p>
+            {invoice.clientEmail && <p className="text-stone-700">{invoice.clientEmail}</p>}
+            {invoice.clientStreet && <p className="text-stone-700">{invoice.clientStreet}{invoice.clientCity ? `, ${invoice.clientCity}` : ''}</p>}
+          </div>
+          <div className="text-right">
+            <p className="font-bold text-stone-900 tracking-[0.2em] text-[10px] mb-2">INVOICE NO:</p>
+            <p className="font-bold text-stone-900">#{invoice.id}</p>
+            <p className="text-stone-600 mt-1 tabular-nums">{invoice.issueDate}</p>
+          </div>
+        </div>
+
+        <div className="border-t border-stone-300" />
+
+        {/* Items table */}
+        <table className="w-full text-[12px] mt-6 mb-4">
+          <thead>
+            <tr className="text-left">
+              <th className="font-bold tracking-[0.15em] text-[10px] py-3 text-stone-900">DESCRIPTION</th>
+              <th className="font-bold tracking-[0.15em] text-[10px] py-3 text-stone-900">UNIT PRICE</th>
+              <th className="font-bold tracking-[0.15em] text-[10px] py-3 text-stone-900">QTY</th>
+              <th className="font-bold tracking-[0.15em] text-[10px] py-3 text-stone-900 text-right">TOTAL</th>
+            </tr>
+          </thead>
+          <tbody>
+            {invoice.items.map(it => (
+              <tr key={it.id} className="text-stone-700">
+                <td className="py-3 pr-4">{it.description}</td>
+                <td className="py-3 tabular-nums">{currencySymbol}{it.price.toLocaleString()}</td>
+                <td className="py-3 tabular-nums">{it.qty}</td>
+                <td className="py-3 tabular-nums text-right">{formatValue(it.amount)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <div className="border-t border-stone-300" />
+
+        <div className="flex justify-between items-start mt-4 text-[12px]">
+          <p className="font-bold tracking-[0.15em] text-stone-900">TOTAL</p>
+          <p className="font-bold text-stone-900 tabular-nums">{formatValue(subtotal)}</p>
+        </div>
+
+        <div className="border-t border-stone-300 mt-3 pt-4 grid grid-cols-2 gap-4 text-[12px]">
+          <div />
+          <div className="space-y-1 text-right">
+            <div className="flex justify-between"><span className="text-stone-600">Total</span><span className="text-stone-900 tabular-nums">{formatValue(subtotal)}</span></div>
+            <div className="flex justify-between"><span className="text-stone-600">Tax</span><span className="text-stone-900 tabular-nums">{invoice.vatRate}%</span></div>
+            <div className="flex justify-between font-bold pt-1"><span className="text-stone-900">Amount due</span><span className="text-stone-900 tabular-nums">{formatValue(grandTotal)}</span></div>
+          </div>
+        </div>
+
+        {/* Bottom: bank details + signature flourish */}
+        <div className="mt-16 grid grid-cols-2 gap-4 text-[11px]">
+          <div>
+            <p className="font-bold text-stone-900 tracking-[0.2em] text-[10px] mb-2">BANK DETAILS</p>
+            <p className="text-stone-700">{bankAccount.bankName || '—'}</p>
+            <p className="text-stone-700">Account Name: {bankAccount.accountHolder || '—'}</p>
+            <p className="text-stone-700 tabular-nums">Account No.: {bankAccount.accountNumber || '—'}</p>
+            <p className="text-stone-700">Pay by: {invoice.dueDate}</p>
+            {bankAccount.paystackLink && <div className="mt-3"><PaystackCTA /></div>}
+          </div>
+          <div className="flex items-end justify-end">
+            <span
+              className="text-3xl text-stone-700"
+              style={{ fontFamily: '"Brush Script MT","Lucida Handwriting","Apple Chancery",cursive', transform: 'rotate(-6deg)' }}
+            >
+              thank you
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ───────────────────────────────────────────────────────────────────
+  // WARDIERE TEMPLATE — beige-gray · peach band header · serif INVOICE
+  // wordmark · two-column Bill To / From · shaded total row.
+  // ───────────────────────────────────────────────────────────────────
+  if (activeTemplate === 'Wardiere') {
+    const peach = '#F5DDD0';
+    const peachSoft = '#FAEEE5';
+    return (
+      <div className="text-stone-800 max-w-3xl mx-auto shadow-md rounded-xl overflow-hidden font-sans" style={{ background: '#FBF8F4' }}>
+        {/* Peach header band */}
+        <div className="flex items-center justify-between px-10 py-8" style={{ background: peach }}>
+          <h1 className="text-5xl tracking-tight text-stone-800" style={{ fontFamily: 'Playfair Display, Georgia, serif', fontWeight: 500 }}>
+            INVOICE
+          </h1>
+          <div className="flex flex-col items-end">
+            {businessDetails.logoUrl
+              ? <img src={businessDetails.logoUrl} alt="" className="w-12 h-12 object-contain mb-1" referrerPolicy="no-referrer" />
+              : <div className="w-12 h-12 mb-1 flex items-end justify-center"><div className="w-10 h-7 border-b-[3px] border-stone-700" style={{ clipPath: 'polygon(0 100%, 50% 0, 100% 100%)', background: '#9CA3AF' }} /></div>
+            }
+            <p className="text-[11px] font-extrabold tracking-[0.15em] text-stone-700">{(businessDetails.name || 'YOUR BUSINESS').toUpperCase()}</p>
+          </div>
+        </div>
+
+        <div className="px-10 py-8">
+          {/* Bill To / From / Date / Invoice no */}
+          <div className="grid grid-cols-2 gap-8 text-[11.5px] mb-8">
+            <div className="space-y-4">
+              <div>
+                <p className="text-stone-600 mb-1">BILL TO:</p>
+                <p className="font-bold text-stone-900">{invoice.clientName}</p>
+                {invoice.clientEmail && <p className="text-stone-700">{invoice.clientEmail}</p>}
+                {invoice.clientStreet && <p className="text-stone-700">{invoice.clientStreet}{invoice.clientCity ? `, ${invoice.clientCity}` : ''}</p>}
+              </div>
+              <div>
+                <p className="text-stone-600 mb-1">FROM:</p>
+                <p className="font-bold text-stone-900">{businessDetails.name}</p>
+                {businessDetails.email && <p className="text-stone-700">{businessDetails.email}</p>}
+                {businessDetails.street && <p className="text-stone-700">{businessDetails.street}{businessDetails.city ? `, ${businessDetails.city}` : ''}</p>}
+              </div>
+            </div>
+            <div className="text-right space-y-2">
+              <p className="text-stone-700 tabular-nums">Date: {invoice.issueDate}</p>
+              <p className="text-stone-700 tabular-nums">Invoice NO. {invoice.id}</p>
+            </div>
+          </div>
+
+          {/* Items table */}
+          <div className="rounded-md overflow-hidden mb-3">
+            <div className="grid grid-cols-[2fr_0.7fr_0.8fr_0.9fr] gap-2 px-4 py-3 text-[11px] font-bold text-stone-700" style={{ background: peachSoft }}>
+              <span>DESCRIPTION</span><span>HOURS</span><span>PRICE</span><span className="text-right">TOTAL</span>
+            </div>
+            {invoice.items.map(it => (
+              <div key={it.id} className="grid grid-cols-[2fr_0.7fr_0.8fr_0.9fr] gap-2 px-4 py-3 text-[11.5px] border-b last:border-b-0" style={{ borderColor: '#EFE7DD' }}>
+                <span className="text-stone-700">{it.description}</span>
+                <span className="text-stone-700 tabular-nums">{it.qty}</span>
+                <span className="text-stone-700 tabular-nums">{formatValue(it.price)}</span>
+                <span className="text-stone-900 font-medium tabular-nums text-right">{formatValue(it.amount)}</span>
+              </div>
+            ))}
+            <div className="grid grid-cols-[2fr_0.7fr_0.8fr_0.9fr] gap-2 px-4 py-3.5 text-[12px] font-bold text-stone-900" style={{ background: peachSoft }}>
+              <span className="col-span-3">Total amount</span>
+              <span className="text-right tabular-nums">{formatValue(grandTotal)}</span>
+            </div>
+          </div>
+
+          {/* Payment method / Notes */}
+          <div className="grid grid-cols-2 gap-8 mt-8 text-[11px]">
+            <div>
+              <p className="font-bold text-stone-900 mb-1">PAYMENT METHOD</p>
+              <p className="text-stone-700">Bank name: {bankAccount.bankName || '—'}</p>
+              <p className="text-stone-700 tabular-nums">Account No: {bankAccount.accountNumber || '—'}</p>
+              {bankAccount.paystackLink && <div className="mt-3"><PaystackCTA /></div>}
+            </div>
+            <div>
+              <p className="font-bold text-stone-900 mb-1">NOTES</p>
+              <p className="text-stone-600 leading-relaxed">{invoice.notes || '—'}</p>
+            </div>
+          </div>
+
+          {/* Sign-off row */}
+          <div className="grid grid-cols-2 gap-8 mt-12 text-[11px] text-stone-600">
+            <div className="border-t border-stone-400 pt-1">Date</div>
+            <div className="border-t border-stone-400 pt-1 text-right">Signature</div>
+          </div>
+
+          <div className="text-center mt-6">
+            <p className="text-2xl text-stone-800" style={{ fontFamily: 'Playfair Display, Georgia, serif' }}>Thank you!</p>
+          </div>
+        </div>
+
+        {/* Footer peach strip */}
+        <div className="text-center py-3 text-[11px] text-stone-700" style={{ background: peach }}>
+          {businessDetails.website || businessDetails.email || ' '}
+        </div>
+      </div>
+    );
+  }
+
+  // ───────────────────────────────────────────────────────────────────
+  // BOLD TEMPLATE — cream background · oversized "Invoice" wordmark ·
+  // editorial typecentric layout. Inspired by the Studio Shodwe sample.
+  // ───────────────────────────────────────────────────────────────────
+  if (activeTemplate === 'Bold') {
+    const cream = '#F8EFDD';
+    return (
+      <div className="text-stone-900 max-w-3xl mx-auto p-10 md:p-14 shadow-md rounded-xl font-sans" style={{ background: cream }}>
+        {/* Massive wordmark */}
+        <div className="flex justify-between items-start mb-12">
+          <h1 className="text-7xl md:text-8xl font-black tracking-tighter leading-none text-stone-900">Invoice</h1>
+          <div className="text-right text-[11px] mt-3">
+            <p className="text-stone-700 tabular-nums">{invoice.issueDate}</p>
+            <p className="font-bold text-stone-900 mt-1 tabular-nums">Invoice No. {invoice.id}</p>
+          </div>
+        </div>
+
+        <div className="h-px bg-stone-400/60 mb-6" />
+
+        {/* Billed to */}
+        <div className="mb-10 text-[12px]">
+          <p className="font-bold text-stone-900 mb-1">Billed to:</p>
+          <p className="text-stone-800">{invoice.clientName}</p>
+          {invoice.clientEmail && <p className="text-stone-800">{invoice.clientEmail}</p>}
+          {(invoice.clientStreet || invoice.clientCity) && (
+            <p className="text-stone-800">{[invoice.clientStreet, invoice.clientCity, invoice.clientCountry].filter(Boolean).join(', ')}</p>
+          )}
+        </div>
+
+        <div className="h-px bg-stone-400/60 mb-6" />
+
+        {/* Items table */}
+        <table className="w-full text-[12px] mb-6">
+          <thead>
+            <tr className="text-stone-900">
+              <th className="text-left font-bold py-3">Description</th>
+              <th className="text-right font-bold py-3">Rate</th>
+              <th className="text-right font-bold py-3">Qty</th>
+              <th className="text-right font-bold py-3">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {invoice.items.map(it => (
+              <tr key={it.id} className="border-t border-stone-400/30">
+                <td className="py-3 text-stone-800">{it.description}</td>
+                <td className="py-3 text-stone-800 text-right tabular-nums">{formatValue(it.price)}</td>
+                <td className="py-3 text-stone-800 text-right tabular-nums">{it.qty}</td>
+                <td className="py-3 text-stone-900 text-right font-medium tabular-nums">{formatValue(it.amount)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        {/* Totals stack */}
+        <div className="flex justify-end mb-12">
+          <div className="w-64 text-[12px] space-y-1">
+            <div className="flex justify-between"><span className="text-stone-700">Subtotal</span><span className="text-stone-900 font-bold tabular-nums">{formatValue(subtotal)}</span></div>
+            <div className="flex justify-between border-t border-stone-400/40 pt-1"><span className="text-stone-700">Tax ({invoice.vatRate}%)</span><span className="text-stone-900 font-bold tabular-nums">{formatValue(vatAmount)}</span></div>
+            <div className="flex justify-between border-t border-stone-400/40 pt-1.5 text-[14px]"><span className="text-stone-900 font-black">Total</span><span className="text-stone-900 font-black tabular-nums">{formatValue(grandTotal)}</span></div>
+          </div>
+        </div>
+
+        <div className="h-px bg-stone-400/60 mb-6" />
+
+        {/* Footer two-col */}
+        <div className="grid grid-cols-2 gap-8 text-[11px]">
+          <div>
+            <p className="font-bold text-stone-900 mb-1">Payment Information</p>
+            <p className="text-stone-800">{businessDetails.name || '—'}</p>
+            <p className="text-stone-800">Bank: {bankAccount.bankName || '—'}</p>
+            <p className="text-stone-800 tabular-nums">Account No: {bankAccount.accountNumber || '—'}</p>
+            {bankAccount.paystackLink && <div className="mt-3"><PaystackCTA /></div>}
+          </div>
+          <div>
+            <p className="font-bold text-stone-900 mb-1">{businessDetails.contactPerson || businessDetails.name || 'From'}</p>
+            {businessDetails.street && <p className="text-stone-800">{businessDetails.street}{businessDetails.city ? `, ${businessDetails.city}` : ''}</p>}
+            {businessDetails.phone && <p className="text-stone-800">{businessDetails.phone}</p>}
+            {businessDetails.email && <p className="text-stone-800">{businessDetails.email}</p>}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   // DEFAULT STRIPE TEMPLATE
   return (
     <div className="bg-white text-stone-900 p-6 md:p-8 rounded-xl shadow-2xl border border-stone-200 max-w-4xl mx-auto overflow-x-auto relative">

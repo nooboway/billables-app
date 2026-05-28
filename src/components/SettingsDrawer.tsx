@@ -613,10 +613,18 @@ export default function SettingsDrawer({
                   onChange={(e) => setLocalTemplate({ ...localTemplate, templateType: e.target.value as any })}
                   className="w-full bg-stone-950 border border-stone-800 rounded px-3 py-2 text-stone-200 outline-none text-[11px] uppercase font-bold"
                 >
-                  <option value="Stripe">Stripe (Premium borderless grid)</option>
-                  <option value="Modern">Modern Minimalist Accent</option>
-                  <option value="Classic">Classic Corporate</option>
-                  <option value="Minimalist">Minimalist Slate</option>
+                  <optgroup label="Originals">
+                    <option value="Stripe">Stripe — sleek premium</option>
+                    <option value="Classic">Classic — corporate borders</option>
+                    <option value="Serif">Serif — editorial</option>
+                    <option value="Modern">Modern — glowing tech</option>
+                    <option value="Simple">Simple — ultra-clean</option>
+                  </optgroup>
+                  <optgroup label="Minimalist set">
+                    <option value="Circle">Circle — centered, signature script</option>
+                    <option value="Wardiere">Wardiere — peach band, two-column</option>
+                    <option value="Bold">Bold — cream typecentric editorial</option>
+                  </optgroup>
                 </select>
               </div>
 
