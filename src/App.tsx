@@ -1232,23 +1232,38 @@ export default function App({ initialScreen = 'landing', initialInvoiceId = null
                 >
                   ← Back to Workspace
                 </button>
-                <div className="text-right">
-                  <span className="text-[10px] text-stone-500 font-mono tracking-wider uppercase font-bold block">Active Invoice reference</span>
-                  <div className="flex items-center justify-end gap-2 mt-0.5">
-                    <span className="text-xs font-extrabold text-[#E54A13] font-mono">Invoice #{selectedInvoice.id}</span>
-                    {selectedInvoice.originalPdfDataUrl && (
-                      <a
-                        href={selectedInvoice.originalPdfDataUrl}
-                        download={(selectedInvoice.originalFileName || `invoice-${selectedInvoice.id}-source`).replace(/\.(png|jpg|jpeg|webp)$/i, '') + '.pdf'}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        title={`Open the original imported file as PDF${selectedInvoice.originalFileName ? ` (${selectedInvoice.originalFileName})` : ''}`}
-                        className="text-[9px] uppercase tracking-wider font-bold text-stone-500 hover:text-[var(--primary)] border border-stone-200 px-1.5 py-0.5 rounded no-underline"
-                      >
-                        View source
-                      </a>
-                    )}
+                <div className="flex items-center gap-2.5">
+                  <div className="text-right">
+                    <span className="text-[10px] text-stone-500 font-mono tracking-wider uppercase font-bold block">Active Invoice reference</span>
+                    <div className="flex items-center justify-end gap-2 mt-0.5">
+                      <span className="text-xs font-extrabold text-[#E54A13] font-mono">Invoice #{selectedInvoice.id}</span>
+                      {selectedInvoice.originalPdfDataUrl && (
+                        <a
+                          href={selectedInvoice.originalPdfDataUrl}
+                          download={(selectedInvoice.originalFileName || `invoice-${selectedInvoice.id}-source`).replace(/\.(png|jpg|jpeg|webp)$/i, '') + '.pdf'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={`Open the original imported file as PDF${selectedInvoice.originalFileName ? ` (${selectedInvoice.originalFileName})` : ''}`}
+                          className="text-[9px] uppercase tracking-wider font-bold text-stone-500 hover:text-[var(--primary)] border border-stone-200 px-1.5 py-0.5 rounded no-underline"
+                        >
+                          View source
+                        </a>
+                      )}
+                    </div>
                   </div>
+                  {/* Prominent Export-PDF CTA — same handler the Preview tab
+                      uses, hoisted up here so it's always one click away. */}
+                  <button
+                    onClick={() => { setDetailTab('preview'); handleDownloadPDF(); }}
+                    disabled={isGeneratingPDF}
+                    className={`px-3.5 py-2 rounded-lg uppercase font-bold text-[10.5px] tracking-wider shadow-sm transition-all border-0 text-white ${
+                      isGeneratingPDF ? 'cursor-wait animate-pulse opacity-80' : 'cursor-pointer hover:opacity-90'
+                    }`}
+                    style={{ background: 'var(--primary)' }}
+                    title="Render the active template and save as PDF"
+                  >
+                    {isGeneratingPDF ? 'Generating…' : '⬇ Export PDF'}
+                  </button>
                 </div>
               </div>
 
