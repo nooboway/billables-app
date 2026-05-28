@@ -11,8 +11,8 @@
  */
 
 import { useCallback, useRef, useState } from 'react';
-import { FileText, Loader2, Check, AlertTriangle, X, Upload } from 'lucide-react';
-import { extractInvoiceFromPdf, ExtractResult, ExtractedInvoice } from '../lib/pdfExtract';
+import { FileText, Loader2, Check, AlertTriangle, X, Upload, ScanText } from 'lucide-react';
+import { extractInvoice, ExtractResult, ExtractedInvoice, ExtractKind } from '../lib/pdfExtract';
 
 interface Props {
   isOpen: boolean;
@@ -24,15 +24,25 @@ export default function PdfImportDialog({ isOpen, onClose, onApply }: Props) {
   const [status, setStatus] = useState<'idle' | 'parsing' | 'done'>('idle');
   const [result, setResult] = useState<ExtractResult | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [progressStep, setProgressStep] = useState('');
+  const [progressRatio, setProgressRatio] = useState(0);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const reset = () => { setStatus('idle'); setResult(null); setDragOver(false); };
+  const reset = () => {
+    setStatus('idle'); setResult(null); setDragOver(false);
+    setProgressStep(''); setProgressRatio(0);
+  };
   const handleClose = () => { reset(); onClose(); };
 
   const handleFile = useCallback(async (file: File) => {
     setStatus('parsing');
     setResult(null);
-    const r = await extractInvoiceFromPdf(file);
+    setProgressStep('Loading…');
+    setProgressRatio(0);
+    const r = await extractInvoice(file, (step, ratio) => {
+      setProgressStep(step);
+      if (typeof ratio === 'number') setProgressRatio(ratio);
+    });
     setResult(r);
     setStatus('done');
   }, []);
@@ -53,7 +63,7 @@ export default function PdfImportDialog({ isOpen, onClose, onApply }: Props) {
         <div className="px-5 py-4 border-b border-stone-200 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4" style={{ color: 'var(--primary)' }} />
-            <h3 className="text-sm font-extrabold uppercase tracking-wide text-stone-900">Import invoice from PDF</h3>
+            <h3 className="text-sm font-extrabold uppercase tracking-wide text-stone-900">Import invoice</h3>
           </div>
           <button onClick={handleClose} className="p-1 rounded-lg hover:bg-stone-100 text-stone-500" aria-label="Close">
             <X className="w-4 h-4" />
@@ -78,44 +88,40 @@ export default function PdfImportDialog({ isOpen, onClose, onApply }: Props) {
                 }`}
               >
                 <Upload className="w-7 h-7 mx-auto mb-3" style={{ color: 'var(--primary)' }} />
-                <p className="text-sm font-bold text-stone-800">Drop a PDF here, or click to browse</p>
+                <p className="text-sm font-bold text-stone-800">Drop a PDF or image, or click to browse</p>
                 <p className="text-[11px] text-stone-500 mt-1">
-                  We read text-based PDFs entirely in your browser. Nothing is uploaded anywhere.
+                  Text PDFs (fastest), scanned PDFs and photos / screenshots all work. Everything runs in your browser — nothing is uploaded.
                 </p>
               </div>
               <input
                 ref={inputRef}
                 type="file"
-                accept="application/pdf,.pdf"
+                accept="application/pdf,.pdf,image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp"
                 hidden
                 onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
               />
-              <p className="text-[10.5px] text-stone-400 mt-3 leading-relaxed">
-                Tip: works best on PDFs generated from software (Stripe, QuickBooks, Word export, Canva export, etc).
-                Scanned or photographed invoices need OCR — coming in a follow-up.
-              </p>
+              <div className="flex items-center gap-3 mt-3 text-[10.5px] text-stone-400 leading-relaxed">
+                <div className="flex items-center gap-1.5"><FileText className="w-3 h-3" /> Text PDF · instant</div>
+                <div className="flex items-center gap-1.5"><ScanText className="w-3 h-3" /> Image / scan · ~3s per page (OCR loads on first use)</div>
+              </div>
             </>
           )}
 
           {status === 'parsing' && (
             <div className="text-center py-10">
               <Loader2 className="w-7 h-7 mx-auto animate-spin" style={{ color: 'var(--primary)' }} />
-              <p className="text-sm font-bold text-stone-800 mt-3">Reading PDF…</p>
-              <p className="text-[11px] text-stone-500 mt-1">Extracting text and matching fields.</p>
-            </div>
-          )}
-
-          {status === 'done' && result?.kind === 'image' && (
-            <div className="text-center py-8">
-              <AlertTriangle className="w-7 h-7 mx-auto text-amber-500" />
-              <p className="text-sm font-bold text-stone-800 mt-3">This PDF has no readable text</p>
-              <p className="text-[11px] text-stone-500 mt-2 leading-relaxed max-w-sm mx-auto">{result.reason}</p>
-              <button
-                onClick={reset}
-                className="mt-4 px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700"
-              >
-                Try a different file
-              </button>
+              <p className="text-sm font-bold text-stone-800 mt-3">{progressStep || 'Reading…'}</p>
+              {progressRatio > 0 && (
+                <div className="w-48 h-1 bg-stone-100 rounded-full mx-auto mt-3 overflow-hidden">
+                  <div
+                    className="h-full transition-all duration-300"
+                    style={{ width: `${Math.min(100, Math.round(progressRatio * 100))}%`, background: 'var(--primary)' }}
+                  />
+                </div>
+              )}
+              <p className="text-[10.5px] text-stone-400 mt-3 max-w-xs mx-auto">
+                First-time OCR pulls a ~2&thinsp;MB language model into the page; subsequent files reuse it.
+              </p>
             </div>
           )}
 
@@ -137,6 +143,7 @@ export default function PdfImportDialog({ isOpen, onClose, onApply }: Props) {
             <ExtractedSummary
               data={result.data}
               confidence={result.confidence}
+              via={result.via}
               onUseIt={() => { onApply(result.data); handleClose(); }}
               onCancel={reset}
             />
@@ -148,10 +155,15 @@ export default function PdfImportDialog({ isOpen, onClose, onApply }: Props) {
 }
 
 function ExtractedSummary({
-  data, confidence, onUseIt, onCancel,
+  data, confidence, via, onUseIt, onCancel,
 }: {
-  data: ExtractedInvoice; confidence: 'high' | 'low'; onUseIt: () => void; onCancel: () => void;
+  data: ExtractedInvoice; confidence: 'high' | 'low'; via: ExtractKind;
+  onUseIt: () => void; onCancel: () => void;
 }) {
+  const viaLabel =
+    via === 'text-pdf' ? 'Text PDF · exact'
+    : via === 'image-pdf' ? 'Image-only PDF · OCR'
+    : 'Image · OCR';
   const Row = ({ label, value }: { label: string; value?: string | number | undefined }) => (
     <div className="flex justify-between py-1.5 text-[12px] border-b border-stone-100 last:border-b-0">
       <span className="text-stone-500">{label}</span>
@@ -168,11 +180,12 @@ function ExtractedSummary({
         {confidence === 'high'
           ? <Check className="w-3.5 h-3.5 mt-0.5 shrink-0" />
           : <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0" />}
-        <span>
+        <span className="flex-1">
           {confidence === 'high'
             ? 'Looks like a clean extraction. Review below and edit anything that looks off.'
             : 'Partial extraction — some fields couldn\'t be detected automatically. You\'ll fill the rest in the creator.'}
         </span>
+        <span className="text-[9.5px] uppercase tracking-wider font-bold opacity-70 shrink-0">{viaLabel}</span>
       </div>
 
       <div className="space-y-0.5">

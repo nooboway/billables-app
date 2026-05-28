@@ -2,29 +2,28 @@
  * @license
  * SPDX-License-Identifier: Apache-2.0
  *
- * PDF invoice extractor — pure client-side.
+ * Invoice extractor — pure client-side.
  *
- * Loads pdf.js via dynamic import so it stays out of the main bundle
- * until the user actually opens the import flow. Pulls every text run
- * from the document, then runs heuristic regexes over the assembled
- * text to identify the fields that drive our Invoice schema.
+ * Three execution paths:
+ *   1. Text PDF       → pdf.js extracts text directly (fast, exact)
+ *   2. Image-only PDF → pdf.js rasterizes pages to canvas, tesseract.js
+ *                       OCRs each canvas (slow, ~3s/page, ~95% accuracy)
+ *   3. Image file     → tesseract.js OCRs the image directly
  *
- * Honest about limitations:
- *  - Only handles text-based PDFs. Scanned / image PDFs return
- *    { kind: 'image' } and the UI tells the user to fill manually
- *    (OCR / vision-LLM support is a later layer).
- *  - Heuristics target the ~70% of invoices that follow conventional
- *    layouts. Anything wildly creative will under-extract; the user
- *    can always edit the pre-filled draft.
- *  - No data ever leaves the browser. No API calls. No tracking.
+ * Heuristic field parser then runs over the assembled text in all three
+ * cases to identify the fields that drive our Invoice schema.
+ *
+ * Both pdf.js and tesseract.js are dynamically imported so they stay
+ * out of the main bundle until the user actually opens the import
+ * flow. No data ever leaves the browser. No API calls. No tracking.
  */
 
 import type { InvoiceItem } from '../types';
 
-/** What an extraction attempt returns. */
+export type ExtractKind = 'text-pdf' | 'image-pdf' | 'image';
+
 export type ExtractResult =
-  | { kind: 'ok'; data: ExtractedInvoice; rawText: string; confidence: 'high' | 'low' }
-  | { kind: 'image'; reason: string }
+  | { kind: 'ok'; via: ExtractKind; data: ExtractedInvoice; rawText: string; confidence: 'high' | 'low' }
   | { kind: 'error'; reason: string };
 
 export interface ExtractedInvoice {
@@ -45,41 +44,100 @@ export interface ExtractedInvoice {
   notes?: string;
 }
 
-/**
- * Pull every text run out of a PDF and concatenate with newlines.
- * Returns null if the PDF has no extractable text (image-only).
- */
-async function extractText(file: File): Promise<string | null> {
-  // Lazy-import so this ~500KB dep doesn't bloat the main bundle.
-  const pdfjs: any = await import('pdfjs-dist/build/pdf.mjs');
-  // Worker: in dev/prod we feed it the worker bundled with pdfjs.
-  // `?url` is a Vite-native asset import.
-  const workerUrl = (await import('pdfjs-dist/build/pdf.worker.mjs?url')).default;
-  pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+/** Progress reporter so the dialog can show a spinner + step label. */
+export type ProgressFn = (step: string, ratio?: number) => void;
 
+// ── pdf.js loader (cached) ──────────────────────────────────────────
+let _pdfjsPromise: Promise<any> | null = null;
+function loadPdfjs() {
+  if (!_pdfjsPromise) {
+    _pdfjsPromise = (async () => {
+      const pdfjs: any = await import('pdfjs-dist/build/pdf.mjs');
+      const workerUrl = (await import('pdfjs-dist/build/pdf.worker.mjs?url')).default;
+      pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
+      return pdfjs;
+    })();
+  }
+  return _pdfjsPromise;
+}
+
+// ── tesseract.js loader (cached) ────────────────────────────────────
+let _tesseractPromise: Promise<any> | null = null;
+function loadTesseract() {
+  if (!_tesseractPromise) {
+    _tesseractPromise = import('tesseract.js');
+  }
+  return _tesseractPromise;
+}
+
+// ── text PDF path ───────────────────────────────────────────────────
+async function extractPdfText(file: File): Promise<{ text: string; pdf: any } | { text: null; pdf: any }> {
+  const pdfjs = await loadPdfjs();
   const buf = await file.arrayBuffer();
   const pdf = await pdfjs.getDocument({ data: buf }).promise;
-
   const pages: string[] = [];
   for (let p = 1; p <= pdf.numPages; p++) {
     const page = await pdf.getPage(p);
     const content = await page.getTextContent();
-    const pageText = content.items
-      .map((it: any) => (typeof it.str === 'string' ? it.str : ''))
-      .join(' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-    pages.push(pageText);
+    pages.push(
+      content.items
+        .map((it: any) => (typeof it.str === 'string' ? it.str : ''))
+        .join(' ')
+        .replace(/\s+/g, ' ')
+        .trim(),
+    );
   }
-
   const joined = pages.join('\n');
-  // If the document is image-only the text content will be (near-)
-  // empty — treat anything under ~40 chars as "no real text".
-  if (joined.replace(/\s/g, '').length < 40) return null;
-  return joined;
+  if (joined.replace(/\s/g, '').length < 40) return { text: null, pdf };
+  return { text: joined, pdf };
 }
 
-/** Try a list of regexes in order, return the first capture group. */
+// ── OCR path for an image-only PDF ──────────────────────────────────
+async function ocrPdfPages(pdf: any, onProgress: ProgressFn): Promise<string> {
+  const tesseract = await loadTesseract();
+  // Single shared worker for all pages — pay the model-load cost once.
+  const worker = await tesseract.createWorker('eng', undefined, {
+    // Suppress the noisy internal log; we surface our own progress.
+  });
+  try {
+    const out: string[] = [];
+    for (let p = 1; p <= pdf.numPages; p++) {
+      onProgress(`Reading page ${p} of ${pdf.numPages}…`, (p - 1) / pdf.numPages);
+      const page = await pdf.getPage(p);
+      // 2x scale — sharper text for OCR; trade-off is memory.
+      const viewport = page.getViewport({ scale: 2.0 });
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.ceil(viewport.width);
+      canvas.height = Math.ceil(viewport.height);
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Could not get 2D canvas context.');
+      await page.render({ canvasContext: ctx, viewport }).promise;
+      const { data } = await worker.recognize(canvas);
+      out.push(data.text || '');
+      canvas.width = 0; // release backing memory
+      canvas.height = 0;
+    }
+    return out.join('\n');
+  } finally {
+    try { await worker.terminate(); } catch { /* ignore */ }
+  }
+}
+
+// ── OCR path for a standalone image file ────────────────────────────
+async function ocrImageFile(file: File, onProgress: ProgressFn): Promise<string> {
+  const tesseract = await loadTesseract();
+  onProgress('Loading OCR model…', 0.05);
+  const worker = await tesseract.createWorker('eng');
+  try {
+    onProgress('Reading text from image…', 0.4);
+    const { data } = await worker.recognize(file);
+    return data.text || '';
+  } finally {
+    try { await worker.terminate(); } catch { /* ignore */ }
+  }
+}
+
+// ── Heuristic field parser ──────────────────────────────────────────
 function firstMatch(text: string, patterns: RegExp[]): string | undefined {
   for (const re of patterns) {
     const m = text.match(re);
@@ -88,23 +146,16 @@ function firstMatch(text: string, patterns: RegExp[]): string | undefined {
   return undefined;
 }
 
-/** Convert "12/06/2024" / "12.06.2024" / "16 June 2025" / "2024-06-12" → YYYY-MM-DD. */
 function normaliseDate(raw: string | undefined): string | undefined {
   if (!raw) return undefined;
   const s = raw.trim();
-
-  // ISO already
   const iso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
   if (iso) return `${iso[1]}-${iso[2].padStart(2,'0')}-${iso[3].padStart(2,'0')}`;
-
-  // dd/mm/yyyy or dd.mm.yyyy or dd-mm-yyyy
   const dmy = s.match(/^(\d{1,2})[\/\.\-](\d{1,2})[\/\.\-](\d{2,4})$/);
   if (dmy) {
     const yyyy = dmy[3].length === 2 ? `20${dmy[3]}` : dmy[3];
     return `${yyyy}-${dmy[2].padStart(2,'0')}-${dmy[1].padStart(2,'0')}`;
   }
-
-  // "16 June 2025"
   const MONTHS: Record<string, string> = {
     jan:'01', january:'01', feb:'02', february:'02', mar:'03', march:'03',
     apr:'04', april:'04', may:'05', jun:'06', june:'06', jul:'07', july:'07',
@@ -116,11 +167,9 @@ function normaliseDate(raw: string | undefined): string | undefined {
     const mm = MONTHS[named[2].toLowerCase()];
     if (mm) return `${named[3]}-${mm}-${named[1].padStart(2,'0')}`;
   }
-
-  return undefined; // give up — user can fix in the creator
+  return undefined;
 }
 
-/** Pull a money number out of "$2,750.00" / "₦46,950" / "USD 250.00". */
 function parseMoney(raw: string | undefined): number | undefined {
   if (!raw) return undefined;
   const cleaned = raw.replace(/[^\d.,\-]/g, '').replace(/,(?=\d{3}(\D|$))/g, '');
@@ -128,13 +177,7 @@ function parseMoney(raw: string | undefined): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
-/**
- * Heuristic field extractor. Runs over the joined PDF text and returns
- * whatever it can confidently identify. Confidence is "high" if we
- * found at least an invoice id + a total; "low" otherwise.
- */
 export function parseInvoiceFields(text: string): ExtractedInvoice & { _confidence: 'high' | 'low' } {
-  // Currency symbol — first one we see wins.
   const currencySymbol = firstMatch(text, [/([\$£€₦])/]) || undefined;
 
   const invoiceId = firstMatch(text, [
@@ -151,7 +194,7 @@ export function parseInvoiceFields(text: string): ExtractedInvoice & { _confiden
     /(?:date|issued|invoice date)\s*[:#]?\s*(\d{1,2}[\/\.\-]\d{1,2}[\/\.\-]\d{2,4})/i,
     /(?:date|issued|invoice date)\s*[:#]?\s*(\d{4}-\d{1,2}-\d{1,2})/i,
     /(?:date|issued|invoice date)\s*[:#]?\s*(\d{1,2}\s+[A-Za-z]+\s+\d{4})/i,
-    /\b(\d{1,2}\s+[A-Za-z]+\s+\d{4})\b/,                     // standalone "16 June 2025"
+    /\b(\d{1,2}\s+[A-Za-z]+\s+\d{4})\b/,
   ]));
 
   const dueDate = normaliseDate(firstMatch(text, [
@@ -160,7 +203,6 @@ export function parseInvoiceFields(text: string): ExtractedInvoice & { _confiden
     /(?:due|pay by|payment due)\s*[:#]?\s*(\d{1,2}\s+[A-Za-z]+\s+\d{4})/i,
   ]));
 
-  // Client block sits after a "Bill to" / "Issued to" / "Billed to" header.
   const billToBlock = text.match(/(?:bill(?:ed)?\s*to|issued\s*to|invoice\s*to)\s*[:.]?\s*([^\n]+(?:\n[^\n]+){0,4})/i);
   let clientName: string | undefined;
   let clientEmail: string | undefined;
@@ -176,10 +218,8 @@ export function parseInvoiceFields(text: string): ExtractedInvoice & { _confiden
       if (addr && !clientStreet && !ln.includes('@')) clientStreet = ln;
     }
   }
-  // Fallback email — anywhere in the doc.
   if (!clientEmail) clientEmail = firstMatch(text, [/([a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,})/i]);
 
-  // Totals.
   const total = parseMoney(firstMatch(text, [
     /(?:amount\s+due|grand\s*total|total\s+due|total)\s*[:#]?\s*([\$£€₦]?\s*[\d,]+(?:\.\d{1,2})?)/i,
   ]));
@@ -191,8 +231,6 @@ export function parseInvoiceFields(text: string): ExtractedInvoice & { _confiden
     return m ? parseFloat(m[1]) : undefined;
   })();
 
-  // Line items — naïve: scan lines, take rows with a description followed
-  // by 2-4 numbers. Highly approximate; user verifies in the creator.
   const items: ExtractedInvoice['items'] = [];
   const lineCandidates = text.split(/\s{2,}|\n/);
   const itemRegex = /^([A-Za-z][A-Za-z0-9 ,.\-\/&()]{2,60})\s+\$?([\d,]+(?:\.\d{1,2})?)(?:\/hr| hours?| hrs?)?\s+(\d{1,3})\s+\$?([\d,]+(?:\.\d{1,2})?)$/;
@@ -211,40 +249,50 @@ export function parseInvoiceFields(text: string): ExtractedInvoice & { _confiden
   const confidence: 'high' | 'low' = (invoiceId && total !== undefined) ? 'high' : 'low';
 
   return {
-    invoiceId,
-    orderNo,
-    issueDate,
-    dueDate,
-    clientName,
-    clientEmail,
-    clientStreet,
-    clientCity,
-    items,
-    subtotal,
-    vatRate,
-    total,
-    currencySymbol,
+    invoiceId, orderNo, issueDate, dueDate,
+    clientName, clientEmail, clientStreet, clientCity,
+    items, subtotal, vatRate, total, currencySymbol,
     _confidence: confidence,
   };
 }
 
-/** Public entry point. Hand it a File, get back an ExtractResult. */
-export async function extractInvoiceFromPdf(file: File): Promise<ExtractResult> {
-  if (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf') {
-    return { kind: 'error', reason: `Not a PDF — got "${file.type || file.name.split('.').pop()}". Image / OCR support is coming later.` };
+// ── Public entry point ──────────────────────────────────────────────
+const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
+
+export async function extractInvoice(
+  file: File,
+  onProgress: ProgressFn = () => {},
+): Promise<ExtractResult> {
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  const isImage = IMAGE_TYPES.includes(file.type) || ['png','jpg','jpeg','webp'].includes(ext);
+  const isPdf   = file.type === 'application/pdf' || ext === 'pdf';
+
+  if (!isPdf && !isImage) {
+    return { kind: 'error', reason: `Unsupported file type "${file.type || ext}". Drop a PDF, PNG, JPG or WebP.` };
   }
-  let text: string | null;
+
   try {
-    text = await extractText(file);
+    if (isImage) {
+      const text = await ocrImageFile(file, onProgress);
+      const { _confidence, ...data } = parseInvoiceFields(text);
+      return { kind: 'ok', via: 'image', data, rawText: text, confidence: _confidence };
+    }
+
+    // PDF path: try text first, fall back to OCR if image-only.
+    onProgress('Reading PDF…', 0.05);
+    const { text, pdf } = await extractPdfText(file);
+    if (text !== null) {
+      const { _confidence, ...data } = parseInvoiceFields(text);
+      return { kind: 'ok', via: 'text-pdf', data, rawText: text, confidence: _confidence };
+    }
+    onProgress('PDF has no text layer — running OCR…', 0.15);
+    const ocrText = await ocrPdfPages(pdf, onProgress);
+    const { _confidence, ...data } = parseInvoiceFields(ocrText);
+    return { kind: 'ok', via: 'image-pdf', data, rawText: ocrText, confidence: _confidence };
   } catch (e: any) {
-    return { kind: 'error', reason: e?.message || 'Failed to open the PDF.' };
+    return { kind: 'error', reason: e?.message || 'Failed to read that file.' };
   }
-  if (text === null) {
-    return {
-      kind: 'image',
-      reason: 'This PDF is image-only (likely scanned or photographed). The current extractor reads text PDFs; OCR support will land in a follow-up.',
-    };
-  }
-  const { _confidence, ...data } = parseInvoiceFields(text);
-  return { kind: 'ok', data, rawText: text, confidence: _confidence };
 }
+
+// Back-compat alias for the older import that only handled PDFs.
+export const extractInvoiceFromPdf = extractInvoice;
