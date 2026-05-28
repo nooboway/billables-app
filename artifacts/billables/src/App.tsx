@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-import { Settings, LayoutDashboard, FileText, PieChart, Plus, ChevronRight, ChevronLeft, Mail, Download, Edit2, Copy, Box, TrendingUp, Sun, Moon, Menu, X as XIcon } from 'lucide-react';
+import { Settings, LayoutDashboard, FileText, PieChart, Plus, ChevronRight, ChevronLeft, Mail, Download, Edit2, Copy, Box, TrendingUp, Sun, Moon, Menu, X as XIcon, ScanLine } from 'lucide-react';
 
 import { BusinessDetails, BankAccount, VatSettings, TemplateSettings, Invoice, Product, Service, Expense, Notification } from './types';
 import { useWorkspaces, useScopedLocalStorage, useWorkspaceIdentity } from './lib/workspaces';
@@ -20,6 +20,7 @@ import ExpensesTracker from './components/ExpensesTracker';
 import SettingsDrawer from './components/SettingsDrawer';
 import MarketingHero from './components/MarketingHero';
 import InvoiceCreator from './components/InvoiceCreator';
+import PdfTemplateScanner from './components/PdfTemplateScanner';
 
 type Screen = 'landing' | 'overview' | 'documents' | 'catalogs' | 'reports' | 'expenses';
 
@@ -50,6 +51,7 @@ export default function App({ initialScreen = 'overview', initialInvoiceId = nul
   const [sidebarCollapsed, setSidebarCollapsed] = useLocalStorage<boolean>('sidebar_collapsed', false);
   const [theme, setTheme] = useLocalStorage<'dark' | 'light'>('app_theme', 'dark');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isPdfImportOpen, setIsPdfImportOpen] = useState(false);
@@ -237,6 +239,14 @@ export default function App({ initialScreen = 'overview', initialInvoiceId = nul
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
             <button
+              onClick={() => setIsScannerOpen(true)}
+              title="Scan PDF template — extract brand colors & logo from any invoice PDF"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-2 bg-stone-100 text-stone-600 rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-stone-200 transition-colors whitespace-nowrap"
+            >
+              <ScanLine className="w-4 h-4 shrink-0" />
+              <span className="hidden md:inline">Scan PDF</span>
+            </button>
+            <button
               onClick={() => setIsCreatorOpen(true)}
               className="flex items-center gap-1.5 px-3 md:px-4 py-2 bg-stone-900 text-white rounded-lg text-xs font-bold uppercase tracking-wider hover:bg-stone-800 transition-colors shadow-sm whitespace-nowrap"
             >
@@ -410,6 +420,17 @@ export default function App({ initialScreen = 'overview', initialInvoiceId = nul
           </div>
         </div>
       )}
+
+      <PdfTemplateScanner
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        currentTemplate={templateSettings}
+        onApply={(patch, logoUrl) => {
+          setTemplateSettings({ ...templateSettings, ...patch });
+          if (logoUrl) setBusinessDetails({ ...businessDetails, logoUrl });
+          pushNotification('Template Applied', 'Brand colors & logo updated from PDF.', 'success');
+        }}
+      />
 
       <InvoiceCreator
         isOpen={isCreatorOpen}
