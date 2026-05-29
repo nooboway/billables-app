@@ -111,7 +111,7 @@ export default function App({ initialScreen = 'overview', initialInvoiceId = nul
     const invId = selectedInvoiceId!;
     const check = async () => {
       try {
-        const res = await fetch(`/proxy-api/invoice-preview/${_pollToken}/status`);
+        const res = await fetch(`/proxy-api/api/invoice-preview/${_pollToken}/status`);
         if (!res.ok) return;
         const { seen, seenAt } = await res.json();
         if (seen) {
@@ -165,7 +165,7 @@ export default function App({ initialScreen = 'overview', initialInvoiceId = nul
 
   const sharePreview = async (inv: Invoice) => {
     try {
-      const res = await fetch('/proxy-api/invoice-preview', {
+      const res = await fetch('/proxy-api/api/invoice-preview', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ invoiceData: inv, businessDetails, bankAccount, templateSettings }),

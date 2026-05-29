@@ -16,14 +16,14 @@ export default function InvoicePublicView({ token }: { token: string }) {
 
   useEffect(() => {
     if (!token) { setError('Invalid preview link.'); return; }
-    fetch(`/proxy-api/invoice-preview/${token}`)
+    fetch(`/proxy-api/api/invoice-preview/${token}`)
       .then(r => {
         if (!r.ok) throw new Error('Preview not found or has expired.');
         return r.json();
       })
       .then((d: PreviewData) => {
         setData(d);
-        fetch(`/proxy-api/invoice-preview/${token}/seen`, { method: 'POST' })
+        fetch(`/proxy-api/api/invoice-preview/${token}/seen`, { method: 'POST' })
           .then(() => setSeen(true))
           .catch(() => {});
       })
