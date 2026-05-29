@@ -95,13 +95,14 @@ export default function SettingsDrawer({
                 <div><label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Bank Name</label><input type="text" value={bank.bankName} onChange={e=>setBank({...bank, bankName: e.target.value})} className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:border-primary outline-none" /></div>
                 <div><label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Account Number</label><input type="text" value={bank.accountNumber} onChange={e=>setBank({...bank, accountNumber: e.target.value})} className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:border-primary outline-none font-mono" /></div>
               </div>
-              <div className="pt-4 border-t border-stone-100">
-                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Paystack Link (Primary)</label>
-                <input type="text" placeholder="https://paystack.com/pay/..." value={bank.paystackLink || ''} onChange={e=>setBank({...bank, paystackLink: e.target.value})} className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:border-primary outline-none font-mono" />
+              <div className="pt-4 border-t border-stone-100 space-y-1">
+                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">PayPal Payment Link</label>
+                <input type="url" placeholder="https://paypal.me/yourusername or paypal.com/pay/..." value={bank.paymentLink || ''} onChange={e=>setBank({...bank, paymentLink: e.target.value})} className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:border-primary outline-none font-mono" />
+                <p className="text-[10px] text-stone-400">Rendered as a "Pay with PayPal" button on your invoice. Also works for Stripe or any payment URL.</p>
               </div>
               <div>
-                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Generic Payment Link (Stripe/PayPal)</label>
-                <input type="text" placeholder="https://buy.stripe.com/..." value={bank.paymentLink || ''} onChange={e=>setBank({...bank, paymentLink: e.target.value})} className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:border-primary outline-none font-mono" />
+                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Paystack Link</label>
+                <input type="text" placeholder="https://paystack.com/pay/..." value={bank.paystackLink || ''} onChange={e=>setBank({...bank, paystackLink: e.target.value})} className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:border-primary outline-none font-mono" />
               </div>
             </div>
           )}

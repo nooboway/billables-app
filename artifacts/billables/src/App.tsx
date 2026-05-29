@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-import { Settings, LayoutDashboard, FileText, PieChart, Plus, ChevronRight, ChevronLeft, Mail, Download, Edit2, Copy, Box, TrendingUp, Sun, Moon, Menu, X as XIcon, ScanLine } from 'lucide-react';
+import { Settings, LayoutDashboard, FileText, PieChart, Plus, ChevronRight, ChevronLeft, Mail, Download, Edit2, Copy, Box, TrendingUp, Sun, Moon, Menu, X as XIcon, ScanLine, Trash2, ArrowUpRight, ArrowDownRight, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 
 import { BusinessDetails, BankAccount, VatSettings, TemplateSettings, Invoice, Product, Service, Expense, Notification } from './types';
 import { useWorkspaces, useScopedLocalStorage, useWorkspaceIdentity } from './lib/workspaces';
@@ -111,11 +111,28 @@ export default function App({ initialScreen = 'overview', initialInvoiceId = nul
     setNotifications(prev => [{ id: `n-${Date.now()}`, title, message, type, timestamp: new Date().toLocaleTimeString(), read: false }, ...prev].slice(0, 50));
   };
 
-  // Gamification Metrics
-  const totalRev = invoices.filter(i=>i.status==='Paid').reduce((sum, i) => sum + i.items.reduce((s,it)=>s+it.amount,0), 0);
+  // KPI calculations
+  const invTotal    = (inv: Invoice) => inv.items.reduce((s,it)=>s+it.amount,0) + inv.shippingFee + (inv.items.reduce((s,it)=>s+it.amount,0) * (inv.vatRate||0) / 100);
+  const totalBilled  = invoices.reduce((s,i)=>s+invTotal(i),0);
+  const totalPaid    = invoices.filter(i=>i.status==='Paid').reduce((s,i)=>s+invTotal(i),0);
+  const totalOutstanding = invoices.filter(i=>i.status==='Unpaid'||i.status==='Overdue').reduce((s,i)=>s+invTotal(i),0);
+  const totalExpenses = expenses.reduce((s,e)=>s+e.amount,0);
   const monthlyGoal = 50000;
-  const goalProgress = Math.min((totalRev / monthlyGoal) * 100, 100);
-  const streak = invoices.filter(i => new Date(i.issueDate).getMonth() === new Date().getMonth()).length;
+  const goalProgress = Math.min((totalPaid / monthlyGoal) * 100, 100);
+  const thisMonth = new Date().getMonth();
+  const monthInvoices = invoices.filter(i => new Date(i.issueDate).getMonth() === thisMonth);
+
+  const downloadPdf = async (inv: Invoice) => {
+    const el = document.getElementById(`pdf-preview-${inv.id}`);
+    if (!el) return;
+    const canvas = await html2canvas(el, { scale: 2, useCORS: true });
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), (canvas.height * pdf.internal.pageSize.getWidth()) / canvas.width);
+    pdf.save(`invoice-${inv.id}.pdf`);
+    pushNotification('PDF Exported', `Saved invoice-${inv.id}.pdf`);
+  };
+
+  const [deleteConfirm, setDeleteConfirm] = useState<string|null>(null);
 
   const SCREEN_LABELS: Record<string, string> = {
     overview: 'Overview', documents: 'Invoices', expenses: 'Expenses',
@@ -258,43 +275,135 @@ export default function App({ initialScreen = 'overview', initialInvoiceId = nul
         </header>
 
         {/* Scrollable Area */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 relative">
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 relative">
           {!selectedInvoiceId && activeScreen === 'overview' && (
-            <div className="max-w-5xl mx-auto space-y-6">
-              <div className="grid grid-cols-4 gap-4">
+            <div className="max-w-6xl mx-auto space-y-5">
+
+              {/* KPI row */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
-                  { label: 'Monthly Revenue', val: totalRev, col: 'text-stone-900' },
-                  { label: 'Outstanding', val: invoices.filter(i=>i.status==='Unpaid').reduce((s,i)=>s+i.items[0]?.amount||0,0), col: 'text-stone-500' },
-                  { label: 'Expenses', val: expenses.reduce((s,e)=>s+e.amount,0), col: 'text-stone-500' },
-                  { label: 'Active Clients', val: new Set(invoices.map(i=>i.clientName)).size, col: 'text-primary', num: true }
-                ].map((s,i) => (
-                  <div key={i} className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm">
-                    <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">{s.label}</div>
-                    <div className={`text-2xl font-black ${s.col} ${s.num?'':'font-mono'}`}>{s.num ? s.val : `$${s.val.toLocaleString()}`}</div>
+                  {
+                    label: 'Total Billed',
+                    value: totalBilled,
+                    sub: `${invoices.length} invoice${invoices.length!==1?'s':''}`,
+                    icon: ArrowUpRight,
+                    iconColor: 'text-stone-400',
+                    valColor: 'text-stone-900',
+                  },
+                  {
+                    label: 'Collected',
+                    value: totalPaid,
+                    sub: `${invoices.filter(i=>i.status==='Paid').length} paid`,
+                    icon: CheckCircle2,
+                    iconColor: 'text-green-500',
+                    valColor: 'text-green-600',
+                  },
+                  {
+                    label: 'Outstanding',
+                    value: totalOutstanding,
+                    sub: `${invoices.filter(i=>i.status==='Unpaid'||i.status==='Overdue').length} unpaid`,
+                    icon: Clock,
+                    iconColor: 'text-amber-500',
+                    valColor: 'text-amber-600',
+                  },
+                  {
+                    label: 'Expenses',
+                    value: totalExpenses,
+                    sub: `${expenses.length} line${expenses.length!==1?'s':''}`,
+                    icon: ArrowDownRight,
+                    iconColor: 'text-red-400',
+                    valColor: 'text-red-500',
+                  },
+                ].map((k, i) => (
+                  <div key={i} className="bg-white border border-stone-200 rounded-xl p-4 shadow-sm">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">{k.label}</span>
+                      <k.icon className={`w-4 h-4 ${k.iconColor}`} />
+                    </div>
+                    <div className={`text-xl md:text-2xl font-black font-mono ${k.valColor}`}>
+                      {templateSettings.currencySymbol}{k.value.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:0})}
+                    </div>
+                    <div className="text-[10px] text-stone-400 font-medium mt-1">{k.sub}</div>
                   </div>
                 ))}
               </div>
-              <div className="grid grid-cols-3 gap-6">
-                <div className="col-span-2 bg-white rounded-2xl border border-stone-200 shadow-sm p-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-bold text-stone-900">Recent Invoices</h3>
-                    <button onClick={()=>setActiveScreen('documents')} className="text-xs font-bold text-primary uppercase tracking-wider">View All</button>
-                  </div>
-                  <div className="divide-y divide-stone-100">
-                    {invoices.slice(0,5).map(inv => (
-                      <div key={inv.id} onClick={() => setSelectedInvoiceId(inv.id)} className="py-3 flex justify-between items-center cursor-pointer hover:bg-stone-50 px-2 rounded-lg -mx-2 transition-colors">
-                        <div><div className="font-bold text-stone-900 text-sm">{inv.clientName}</div><div className="text-xs text-stone-500">{inv.id} • {inv.issueDate}</div></div>
-                        <div className="text-right"><div className="font-mono font-bold text-stone-900 text-sm">${inv.items.reduce((s,i)=>s+i.amount,0).toLocaleString()}</div><div className={`text-[10px] font-bold uppercase tracking-widest mt-1 ${inv.status==='Paid'?'text-green-500':inv.status==='Overdue'?'text-red-500':'text-stone-400'}`}>{inv.status}</div></div>
-                      </div>
-                    ))}
+
+              {/* Goal bar */}
+              <div className="bg-white border border-stone-200 rounded-xl px-5 py-4 shadow-sm flex items-center gap-6">
+                <div className="shrink-0">
+                  <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Revenue Goal Progress</div>
+                  <div className="text-sm font-black text-stone-900 font-mono">{templateSettings.currencySymbol}{totalPaid.toLocaleString()} <span className="font-medium text-stone-400">/ {templateSettings.currencySymbol}{monthlyGoal.toLocaleString()}</span></div>
+                </div>
+                <div className="flex-1">
+                  <div className="h-2 bg-stone-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-primary rounded-full transition-all duration-500" style={{width:`${goalProgress}%`}} />
                   </div>
                 </div>
-                <div>
-                  <div className="bg-primary/10 rounded-2xl p-6 border border-primary/20 text-center mb-6">
-                    <div className="w-16 h-16 mx-auto bg-white rounded-full flex items-center justify-center text-2xl mb-3 shadow-sm border border-primary/10">🔥</div>
-                    <h3 className="font-black text-primary text-lg">{streak} Invoices</h3>
-                    <p className="text-xs text-primary/70 font-bold uppercase tracking-widest mt-1">This Month's Streak</p>
+                <div className="shrink-0 text-sm font-black text-stone-700">{goalProgress.toFixed(1)}%</div>
+              </div>
+
+              {/* Main content row */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+                {/* Recent Invoices */}
+                <div className="md:col-span-2 bg-white border border-stone-200 rounded-xl shadow-sm overflow-hidden">
+                  <div className="flex items-center justify-between px-5 py-4 border-b border-stone-100">
+                    <h3 className="text-sm font-black text-stone-900">Recent Invoices</h3>
+                    <button onClick={()=>setActiveScreen('documents')} className="text-[10px] font-bold text-primary uppercase tracking-widest hover:underline flex items-center gap-1">
+                      View All <ChevronRight className="w-3 h-3"/>
+                    </button>
                   </div>
+                  <div className="divide-y divide-stone-50">
+                    {invoices.length === 0 && (
+                      <div className="px-5 py-10 text-center text-stone-400 text-sm">No invoices yet. Create your first invoice.</div>
+                    )}
+                    {invoices.slice(0,6).map(inv => {
+                      const amt = invTotal(inv);
+                      const statusCls = inv.status==='Paid'?'bg-green-50 text-green-700':inv.status==='Overdue'?'bg-red-50 text-red-700':'bg-amber-50 text-amber-700';
+                      return (
+                        <div key={inv.id} className="flex items-center px-5 py-3 hover:bg-stone-50 cursor-pointer transition-colors group" onClick={()=>setSelectedInvoiceId(inv.id)}>
+                          <div className="flex-1 min-w-0">
+                            <div className="font-bold text-stone-900 text-sm truncate">{inv.clientName}</div>
+                            <div className="text-[10px] text-stone-400 font-mono mt-0.5">{inv.id} · {inv.issueDate}</div>
+                          </div>
+                          <div className={`mx-3 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest shrink-0 ${statusCls}`}>{inv.status}</div>
+                          <div className="font-mono font-black text-stone-900 text-sm shrink-0 w-24 text-right">{templateSettings.currencySymbol}{amt.toLocaleString()}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Right column */}
+                <div className="space-y-4">
+                  {/* This month stats */}
+                  <div className="bg-white border border-stone-200 rounded-xl shadow-sm p-5">
+                    <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-4">This Month</div>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-stone-600">Invoices issued</span>
+                        <span className="font-black text-stone-900 font-mono">{monthInvoices.length}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-stone-600">Unique clients</span>
+                        <span className="font-black text-stone-900 font-mono">{new Set(invoices.map(i=>i.clientName)).size}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-stone-600">Overdue</span>
+                        <span className={`font-black font-mono ${invoices.filter(i=>i.status==='Overdue').length>0?'text-red-600':'text-stone-400'}`}>
+                          {invoices.filter(i=>i.status==='Overdue').length}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center pt-2 border-t border-stone-100">
+                        <span className="text-sm font-bold text-stone-700">Collection rate</span>
+                        <span className="font-black text-stone-900 font-mono">
+                          {totalBilled > 0 ? `${((totalPaid/totalBilled)*100).toFixed(0)}%` : '—'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Activity feed */}
                   <LiveNotifications notifications={notifications} onClearNotifications={()=>setNotifications([])} />
                 </div>
               </div>
@@ -303,26 +412,79 @@ export default function App({ initialScreen = 'overview', initialInvoiceId = nul
 
           {!selectedInvoiceId && activeScreen === 'documents' && (
             <div className="max-w-5xl mx-auto space-y-4">
-              <div className="flex gap-4 mb-6">
-                <button onClick={()=>setIsPdfImportOpen(true)} className="px-4 py-2 bg-stone-100 text-stone-700 font-bold text-xs uppercase tracking-wider rounded-lg hover:bg-stone-200 transition-colors">Import PDF</button>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs text-stone-400 font-medium">{invoices.length} invoice{invoices.length!==1?'s':''} total</p>
+                <button onClick={()=>setIsPdfImportOpen(true)} className="px-3 py-1.5 bg-stone-100 text-stone-700 font-bold text-xs uppercase tracking-wider rounded-lg hover:bg-stone-200 transition-colors">Import PDF</button>
               </div>
               <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-stone-50 border-b border-stone-100 text-[10px] font-bold text-stone-400 uppercase tracking-widest">
-                    <tr><th className="px-6 py-4">Invoice</th><th className="px-6 py-4">Client</th><th className="px-6 py-4">Date</th><th className="px-6 py-4">Status</th><th className="px-6 py-4 text-right">Amount</th></tr>
-                  </thead>
-                  <tbody className="divide-y divide-stone-100">
-                    {invoices.map(inv => (
-                      <tr key={inv.id} onClick={()=>setSelectedInvoiceId(inv.id)} className="hover:bg-stone-50 cursor-pointer transition-colors">
-                        <td className="px-6 py-4 font-mono font-medium text-stone-900">{inv.id}</td>
-                        <td className="px-6 py-4 font-bold text-stone-900">{inv.clientName}</td>
-                        <td className="px-6 py-4 text-stone-500">{inv.issueDate}</td>
-                        <td className="px-6 py-4"><span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${inv.status==='Paid'?'bg-green-100 text-green-700':inv.status==='Overdue'?'bg-red-100 text-red-700':'bg-stone-100 text-stone-600'}`}>{inv.status}</span></td>
-                        <td className="px-6 py-4 text-right font-mono font-bold text-stone-900">${inv.items.reduce((s,i)=>s+i.amount,0).toLocaleString()}</td>
+                {invoices.length === 0 ? (
+                  <div className="py-16 text-center text-stone-400">
+                    <FileText className="w-8 h-8 mx-auto mb-3 opacity-30"/>
+                    <p className="text-sm font-bold">No invoices yet</p>
+                    <p className="text-xs mt-1">Hit <span className="font-bold text-stone-600">New Invoice</span> to get started</p>
+                  </div>
+                ) : (
+                  <table className="w-full text-left text-sm">
+                    <thead className="bg-stone-50 border-b border-stone-100 text-[10px] font-bold text-stone-400 uppercase tracking-widest">
+                      <tr>
+                        <th className="px-5 py-3">Invoice</th>
+                        <th className="px-5 py-3">Client</th>
+                        <th className="hidden md:table-cell px-5 py-3">Issued</th>
+                        <th className="hidden md:table-cell px-5 py-3">Due</th>
+                        <th className="px-5 py-3">Status</th>
+                        <th className="px-5 py-3 text-right">Amount</th>
+                        <th className="px-3 py-3 w-20" />
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-stone-100">
+                      {invoices.map(inv => {
+                        const amt = invTotal(inv);
+                        return (
+                          <tr key={inv.id} className="hover:bg-stone-50 transition-colors group">
+                            <td className="px-5 py-3 font-mono font-bold text-stone-700 cursor-pointer" onClick={()=>setSelectedInvoiceId(inv.id)}>{inv.id}</td>
+                            <td className="px-5 py-3 font-bold text-stone-900 cursor-pointer" onClick={()=>setSelectedInvoiceId(inv.id)}>{inv.clientName}</td>
+                            <td className="hidden md:table-cell px-5 py-3 text-stone-500 text-xs" onClick={()=>setSelectedInvoiceId(inv.id)}>{inv.issueDate}</td>
+                            <td className="hidden md:table-cell px-5 py-3 text-stone-500 text-xs" onClick={()=>setSelectedInvoiceId(inv.id)}>{inv.dueDate}</td>
+                            <td className="px-5 py-3 cursor-pointer" onClick={()=>setSelectedInvoiceId(inv.id)}>
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-widest
+                                ${inv.status==='Paid'?'bg-green-100 text-green-700':inv.status==='Overdue'?'bg-red-100 text-red-700':'bg-amber-50 text-amber-700'}`}>
+                                {inv.status}
+                              </span>
+                            </td>
+                            <td className="px-5 py-3 text-right font-mono font-bold text-stone-900 cursor-pointer" onClick={()=>setSelectedInvoiceId(inv.id)}>
+                              {templateSettings.currencySymbol}{amt.toLocaleString()}
+                            </td>
+                            <td className="px-3 py-3">
+                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                  title="Download PDF"
+                                  onClick={async(e)=>{
+                                    e.stopPropagation();
+                                    setSelectedInvoiceId(inv.id);
+                                    await new Promise(r=>setTimeout(r,300));
+                                    const el = document.getElementById('invoice-capture-area');
+                                    if(!el) return;
+                                    const canvas = await html2canvas(el, {scale:2, useCORS:true});
+                                    const pdf = new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+                                    pdf.addImage(canvas.toDataURL('image/png'),'PNG',0,0,pdf.internal.pageSize.getWidth(),(canvas.height*pdf.internal.pageSize.getWidth())/canvas.width);
+                                    pdf.save(`invoice-${inv.id}.pdf`);
+                                    pushNotification('PDF Exported',`Saved invoice-${inv.id}.pdf`);
+                                  }}
+                                  className="p-1.5 rounded-md text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors"
+                                ><Download className="w-3.5 h-3.5"/></button>
+                                <button
+                                  title="Delete invoice"
+                                  onClick={(e)=>{ e.stopPropagation(); setDeleteConfirm(inv.id); }}
+                                  className="p-1.5 rounded-md text-stone-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                                ><Trash2 className="w-3.5 h-3.5"/></button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                )}
               </div>
             </div>
           )}
@@ -333,56 +495,105 @@ export default function App({ initialScreen = 'overview', initialInvoiceId = nul
 
           {/* Invoice Inspector */}
           {selectedInvoiceId && selectedInvoice && (
-            <div className="max-w-6xl mx-auto flex gap-8">
+            <div className="max-w-6xl mx-auto flex gap-6">
+              {/* Invoice canvas */}
               <div className="flex-1 bg-white rounded-2xl border border-stone-200 shadow-xl overflow-hidden relative min-h-[800px]">
                 <div className="absolute top-4 right-4 flex gap-2 z-10">
-                  <button onClick={async () => {
-                    const el = document.getElementById('invoice-capture-area');
-                    if(!el) return;
-                    const canvas = await html2canvas(el, { scale: 2, useCORS: true });
-                    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-                    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), (canvas.height * pdf.internal.pageSize.getWidth()) / canvas.width);
-                    pdf.save(`invoice-${selectedInvoice.id}.pdf`);
-                    pushNotification('PDF Exported', `Saved invoice-${selectedInvoice.id}.pdf`);
-                  }} className="p-2 bg-stone-900 text-white rounded-lg hover:bg-stone-800 transition-colors shadow-lg"><Download className="w-4 h-4"/></button>
+                  <button
+                    title="Download PDF"
+                    onClick={async () => {
+                      const el = document.getElementById('invoice-capture-area');
+                      if(!el) return;
+                      const canvas = await html2canvas(el, { scale: 2, useCORS: true });
+                      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), (canvas.height * pdf.internal.pageSize.getWidth()) / canvas.width);
+                      pdf.save(`invoice-${selectedInvoice.id}.pdf`);
+                      pushNotification('PDF Exported', `Saved invoice-${selectedInvoice.id}.pdf`);
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-2 bg-stone-900 text-white rounded-lg hover:bg-stone-800 transition-colors shadow-lg text-xs font-bold"
+                  >
+                    <Download className="w-3.5 h-3.5"/> Download PDF
+                  </button>
                 </div>
                 <div id="invoice-capture-area" className="w-full h-full bg-stone-100 overflow-y-auto">
                   <InvoicePreview invoice={selectedInvoice} businessDetails={businessDetails} bankAccount={bankAccount} templateSettings={templateSettings} />
                 </div>
               </div>
 
-              <div className="w-80 shrink-0 space-y-4">
-                <button onClick={() => setSelectedInvoiceId(null)} className="flex items-center gap-2 text-xs font-bold text-stone-500 uppercase tracking-widest hover:text-stone-900 mb-4"><ChevronRight className="w-4 h-4 rotate-180"/> Back to list</button>
-                
-                <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-sm space-y-4">
-                  <div><div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Status</div><div className={`text-lg font-black uppercase tracking-tight ${selectedInvoice.status==='Paid'?'text-green-500':selectedInvoice.status==='Overdue'?'text-red-500':'text-stone-900'}`}>{selectedInvoice.status}</div></div>
+              {/* Sidebar */}
+              <div className="w-72 shrink-0 space-y-3">
+                <button onClick={() => setSelectedInvoiceId(null)} className="flex items-center gap-2 text-xs font-bold text-stone-500 uppercase tracking-widest hover:text-stone-900 transition-colors">
+                  <ChevronRight className="w-4 h-4 rotate-180"/> Back
+                </button>
+
+                {/* Status card */}
+                <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-sm space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Invoice {selectedInvoice.id}</div>
+                      <div className={`text-base font-black uppercase tracking-tight
+                        ${selectedInvoice.status==='Paid'?'text-green-600':selectedInvoice.status==='Overdue'?'text-red-600':'text-amber-600'}`}>
+                        {selectedInvoice.status}
+                      </div>
+                    </div>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center
+                      ${selectedInvoice.status==='Paid'?'bg-green-50':selectedInvoice.status==='Overdue'?'bg-red-50':'bg-amber-50'}`}>
+                      {selectedInvoice.status==='Paid'
+                        ? <CheckCircle2 className="w-4 h-4 text-green-600"/>
+                        : selectedInvoice.status==='Overdue'
+                          ? <AlertCircle className="w-4 h-4 text-red-600"/>
+                          : <Clock className="w-4 h-4 text-amber-600"/>}
+                    </div>
+                  </div>
+                  <div className="text-2xl font-black font-mono text-stone-900">
+                    {templateSettings.currencySymbol}{invTotal(selectedInvoice).toLocaleString()}
+                  </div>
+                  <div className="text-xs text-stone-400 font-medium">Due {selectedInvoice.dueDate} · {selectedInvoice.clientName}</div>
+                </div>
+
+                {/* Actions */}
+                <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-sm space-y-2">
                   {selectedInvoice.status !== 'Paid' && (
                     <button onClick={() => {
-                      setInvoices(invoices.map(i => i.id === selectedInvoice.id ? {...i, status: 'Paid'} : i));
+                      setInvoices(invoices.map(i => i.id === selectedInvoice.id ? {...i, status: 'Paid', history: [...i.history, {event:'Marked Paid', timestamp:new Date().toISOString()}]} : i));
                       pushNotification('Payment Confirmed', `Invoice #${selectedInvoice.id} marked as paid.`, 'success');
-                    }} className="w-full py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold text-xs uppercase tracking-wider transition-colors">Mark as Paid</button>
+                    }} className="w-full py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5"/> Mark as Paid
+                    </button>
                   )}
-                  <button onClick={() => setReminderModalOpen(true)} className="w-full py-2.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg font-bold text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-2"><Mail className="w-4 h-4"/> Send Reminder</button>
-                  
-                  <div className="pt-4 border-t border-stone-100 grid grid-cols-2 gap-2">
-                    <button className="py-2 bg-stone-100 hover:bg-stone-200 rounded-lg text-stone-700 font-bold text-xs uppercase transition-colors flex items-center justify-center gap-1"><Edit2 className="w-3.5 h-3.5"/> Edit</button>
+                  <button onClick={() => setReminderModalOpen(true)} className="w-full py-2.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg font-bold text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-2">
+                    <Mail className="w-3.5 h-3.5"/> Send Reminder
+                  </button>
+                  <div className="grid grid-cols-2 gap-2 pt-1">
                     <button onClick={() => {
-                      const clone = {...selectedInvoice, id: `INV-${Date.now().toString().slice(-4)}`, status: 'Unpaid' as const, createdTime: new Date().toISOString()};
+                      const clone = {...selectedInvoice, id: `INV-${Date.now().toString().slice(-4)}`, status: 'Unpaid' as const, createdTime: new Date().toISOString(), history: [{event:'Cloned',timestamp:new Date().toISOString()}]};
                       setInvoices([clone, ...invoices]);
                       setSelectedInvoiceId(clone.id);
-                      pushNotification('Invoice Cloned', `Created draft #${clone.id}`);
-                    }} className="py-2 bg-stone-100 hover:bg-stone-200 rounded-lg text-stone-700 font-bold text-xs uppercase transition-colors flex items-center justify-center gap-1"><Copy className="w-3.5 h-3.5"/> Clone</button>
+                      pushNotification('Invoice Cloned', `Created #${clone.id}`);
+                    }} className="py-2 bg-stone-100 hover:bg-stone-200 rounded-lg text-stone-700 font-bold text-xs uppercase transition-colors flex items-center justify-center gap-1">
+                      <Copy className="w-3 h-3"/> Clone
+                    </button>
+                    <button
+                      onClick={() => setDeleteConfirm(selectedInvoice.id)}
+                      className="py-2 bg-red-50 hover:bg-red-100 rounded-lg text-red-600 font-bold text-xs uppercase transition-colors flex items-center justify-center gap-1"
+                    >
+                      <Trash2 className="w-3 h-3"/> Delete
+                    </button>
                   </div>
                 </div>
 
-                <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-sm">
-                  <h3 className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-4">Audit Trail</h3>
-                  <div className="space-y-4">
+                {/* Audit trail */}
+                <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-sm">
+                  <h3 className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-3">Audit Trail</h3>
+                  <div className="space-y-3">
                     {selectedInvoice.history.map((h, i) => (
                       <div key={i} className="flex gap-3 text-sm relative">
-                        <div className="w-2 h-2 rounded-full bg-primary mt-1.5 shrink-0 relative z-10 shadow-[0_0_0_4px_white]"></div>
-                        {i !== selectedInvoice.history.length-1 && <div className="absolute top-2.5 left-1 bottom-[-20px] w-px bg-stone-100"></div>}
-                        <div><div className="font-bold text-stone-900">{h.event}</div><div className="text-[10px] text-stone-500 font-mono mt-0.5">{new Date(h.timestamp).toLocaleString()}</div></div>
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0 relative z-10" />
+                        {i !== selectedInvoice.history.length-1 && <div className="absolute top-3 left-[3px] bottom-[-12px] w-px bg-stone-100"/>}
+                        <div className="min-w-0">
+                          <div className="font-bold text-stone-900 text-xs">{h.event}</div>
+                          <div className="text-[10px] text-stone-400 font-mono mt-0.5">{new Date(h.timestamp).toLocaleString()}</div>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -394,7 +605,29 @@ export default function App({ initialScreen = 'overview', initialInvoiceId = nul
       </div>
 
       <SettingsDrawer isOpen={isSettingsOpen} onClose={()=>setIsSettingsOpen(false)} businessDetails={businessDetails} onUpdateBusinessDetails={setBusinessDetails} bankAccount={bankAccount} onUpdateBankAccount={setBankAccount} vatSettings={vatSettings} onUpdateVatSettings={setVatSettings} templateSettings={templateSettings} onUpdateTemplateSettings={setTemplateSettings} />
-      <PdfImportDialog isOpen={isPdfImportOpen} onClose={()=>setIsPdfImportOpen(false)} onApply={(p) => {pushNotification('Imported', 'Loaded data from PDF.');}} />
+      <PdfImportDialog isOpen={isPdfImportOpen} onClose={()=>setIsPdfImportOpen(false)} onApply={(_p) => {pushNotification('Imported', 'Loaded data from PDF.');}} />
+
+      {/* Delete confirmation */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/80 backdrop-blur-sm p-4">
+          <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl p-6">
+            <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center mb-4">
+              <Trash2 className="w-5 h-5 text-red-600" />
+            </div>
+            <h2 className="text-lg font-black text-stone-900 mb-1">Delete Invoice?</h2>
+            <p className="text-sm text-stone-500 mb-6">Invoice <span className="font-mono font-bold text-stone-700">#{deleteConfirm}</span> will be permanently removed. This cannot be undone.</p>
+            <div className="flex gap-3">
+              <button onClick={()=>setDeleteConfirm(null)} className="flex-1 py-2.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-sm font-bold transition-colors">Cancel</button>
+              <button onClick={()=>{
+                setInvoices(invoices.filter(i=>i.id!==deleteConfirm));
+                if(selectedInvoiceId===deleteConfirm) setSelectedInvoiceId(null);
+                pushNotification('Invoice Deleted', `#${deleteConfirm} removed.`, 'warning');
+                setDeleteConfirm(null);
+              }} className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold transition-colors">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Reminder Modal */}
       {reminderModalOpen && selectedInvoice && (
@@ -406,7 +639,7 @@ export default function App({ initialScreen = 'overview', initialInvoiceId = nul
               <div><label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Subject</label><input type="text" defaultValue={`Following up: Invoice #${selectedInvoice.id}`} className="w-full p-2.5 bg-white border border-stone-200 rounded-lg text-sm focus:border-primary outline-none font-bold" /></div>
               <div>
                 <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Message</label>
-                <textarea className="w-full h-32 p-3 bg-white border border-stone-200 rounded-lg text-sm focus:border-primary outline-none leading-relaxed" defaultValue={`Hi ${selectedInvoice.clientName},\n\nJust a quick note that Invoice #${selectedInvoice.id} for $${selectedInvoice.items.reduce((s,i)=>s+i.amount,0)} is due on ${selectedInvoice.dueDate}.\n\nYou can pay online using the link in the invoice.\n\nBest,\n${businessDetails.name}`} />
+                <textarea className="w-full h-32 p-3 bg-white border border-stone-200 rounded-lg text-sm focus:border-primary outline-none leading-relaxed" defaultValue={`Hi ${selectedInvoice.clientName},\n\nJust a quick note that Invoice #${selectedInvoice.id} for ${templateSettings.currencySymbol}${invTotal(selectedInvoice)} is due on ${selectedInvoice.dueDate}.\n\nYou can pay online using the link in the invoice.\n\nBest,\n${businessDetails.name}`} />
               </div>
             </div>
             <div className="flex gap-3">
@@ -446,6 +679,8 @@ export default function App({ initialScreen = 'overview', initialInvoiceId = nul
         products={products}
         services={services}
         businessName={businessDetails.name}
+        businessDetails={businessDetails}
+        bankAccount={bankAccount}
       />
     </div>
   );
