@@ -23,6 +23,7 @@
 import { Router, Route, Switch, Redirect, useLocation, useParams } from 'wouter';
 import App from './App';
 import NotFound from './components/NotFound';
+import InvoicePublicView from './components/InvoicePublicView';
 
 // Stable per-screen component references so wouter doesn't remount on
 // every parent render (it tracks Route.component by identity, so an
@@ -37,6 +38,11 @@ const ExpensesScreen  = () => <App initialScreen="expenses" />;
 function InvoiceRoute() {
   const params = useParams<{ id: string }>();
   return <App initialScreen="documents" initialInvoiceId={params.id ?? null} />;
+}
+
+function PreviewRoute() {
+  const params = useParams<{ token: string }>();
+  return <InvoicePublicView token={params.token ?? ''} />;
 }
 
 const DashboardRedirect = () => <Redirect to="/overview" />;
@@ -61,6 +67,7 @@ export default function Root() {
         <Route path="/reports"   component={ReportsScreen} />
         <Route path="/expenses"  component={ExpensesScreen} />
         <Route path="/invoice/:id" component={InvoiceRoute} />
+        <Route path="/preview/:token" component={PreviewRoute} />
         {/* Friendly aliases */}
         <Route path="/dashboard" component={DashboardRedirect} />
         <Route path="/invoices"  component={InvoicesRedirect} />

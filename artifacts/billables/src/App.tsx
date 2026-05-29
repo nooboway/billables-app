@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import html2canvas from 'html2canvas';
 import { jsPDF } from 'jspdf';
-import { Settings, LayoutDashboard, FileText, PieChart, Plus, ChevronRight, ChevronLeft, Mail, Download, Edit2, Copy, Box, TrendingUp, Sun, Moon, Menu, X as XIcon, ScanLine, Trash2, ArrowUpRight, ArrowDownRight, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Settings, LayoutDashboard, FileText, PieChart, Plus, ChevronRight, ChevronLeft, Mail, Download, Edit2, Copy, Box, TrendingUp, Sun, Moon, Menu, X as XIcon, ScanLine, Trash2, ArrowUpRight, ArrowDownRight, Clock, CheckCircle2, AlertCircle, Share2, Eye } from 'lucide-react';
 
 import { BusinessDetails, BankAccount, VatSettings, TemplateSettings, Invoice, Product, Service, Expense, Notification } from './types';
 import { useWorkspaces, useScopedLocalStorage, useWorkspaceIdentity } from './lib/workspaces';
@@ -102,6 +102,37 @@ export default function App({ initialScreen = 'overview', initialInvoiceId = nul
     if (window.location.pathname !== target) navigate(target);
   }, [activeScreen, selectedInvoiceId, navigate]);
 
+  // Poll API server to detect when a customer opens a preview link
+  const _pollInv = invoices.find(i => i.id === selectedInvoiceId);
+  const _pollToken = _pollInv?.previewToken;
+  const _pollSeen  = _pollInv?.previewSeen;
+  useEffect(() => {
+    if (!_pollToken || _pollSeen) return;
+    const invId = selectedInvoiceId!;
+    const check = async () => {
+      try {
+        const res = await fetch(`/proxy-api/invoice-preview/${_pollToken}/status`);
+        if (!res.ok) return;
+        const { seen, seenAt } = await res.json();
+        if (seen) {
+          setInvoices(prev => prev.map(i => i.id === invId
+            ? { ...i, previewSeen: true, history: [...i.history, { event: 'Preview Seen by Customer', timestamp: seenAt || new Date().toISOString() }] }
+            : i
+          ));
+          setNotifications(prev => [{
+            id: `n-${Date.now()}`, title: 'Invoice Viewed',
+            message: 'Your customer opened the preview link.',
+            type: 'success' as const, timestamp: new Date().toLocaleTimeString(), read: false,
+          }, ...prev].slice(0, 50));
+        }
+      } catch { /* network error, silently ignore */ }
+    };
+    check();
+    const tid = setInterval(check, 15000);
+    return () => clearInterval(tid);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [_pollToken, _pollSeen, selectedInvoiceId]);
+
   // Render landing/marketing page when at root
   if (activeScreen === 'landing') {
     return <MarketingHero onEnterApp={() => { navigate('/overview'); }} />;
@@ -130,6 +161,28 @@ export default function App({ initialScreen = 'overview', initialInvoiceId = nul
     pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), (canvas.height * pdf.internal.pageSize.getWidth()) / canvas.width);
     pdf.save(`invoice-${inv.id}.pdf`);
     pushNotification('PDF Exported', `Saved invoice-${inv.id}.pdf`);
+  };
+
+  const sharePreview = async (inv: Invoice) => {
+    try {
+      const res = await fetch('/proxy-api/invoice-preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invoiceData: inv, businessDetails, bankAccount, templateSettings }),
+      });
+      if (!res.ok) throw new Error('Server error');
+      const { token } = await res.json();
+      setInvoices(prev => prev.map(i => i.id === inv.id
+        ? { ...i, previewToken: token, previewSeen: false, history: [...i.history, { event: 'Preview Link Generated', timestamp: new Date().toISOString() }] }
+        : i
+      ));
+      const base = import.meta.env.BASE_URL?.replace(/\/$/, '') || '';
+      const url = `${window.location.origin}${base}/preview/${token}`;
+      await navigator.clipboard.writeText(url);
+      pushNotification('Preview Link Copied', 'Link is in your clipboard — send it to your customer via WhatsApp or email.', 'success');
+    } catch {
+      pushNotification('Error', 'Could not generate preview link. Make sure the API server is running.', 'alert');
+    }
   };
 
   const [deleteConfirm, setDeleteConfirm] = useState<string|null>(null);
@@ -564,6 +617,19 @@ export default function App({ initialScreen = 'overview', initialInvoiceId = nul
                   <button onClick={() => setReminderModalOpen(true)} className="w-full py-2.5 bg-stone-900 hover:bg-stone-800 text-white rounded-lg font-bold text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-2">
                     <Mail className="w-3.5 h-3.5"/> Send Reminder
                   </button>
+                  <button
+                    onClick={() => sharePreview(selectedInvoice)}
+                    className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Share2 className="w-3.5 h-3.5"/>
+                    {selectedInvoice.previewToken ? 'New Preview Link' : 'Share Preview Link'}
+                  </button>
+                  {selectedInvoice.previewToken && (
+                    <div className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold ${selectedInvoice.previewSeen ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'}`}>
+                      <Eye className="w-3.5 h-3.5 shrink-0"/>
+                      {selectedInvoice.previewSeen ? 'Seen by customer ✓' : 'Awaiting customer view…'}
+                    </div>
+                  )}
                   <div className="grid grid-cols-2 gap-2 pt-1">
                     <button onClick={() => {
                       const clone = {...selectedInvoice, id: `INV-${Date.now().toString().slice(-4)}`, status: 'Unpaid' as const, createdTime: new Date().toISOString(), history: [{event:'Cloned',timestamp:new Date().toISOString()}]};

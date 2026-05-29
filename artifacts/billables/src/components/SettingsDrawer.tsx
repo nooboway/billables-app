@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { X, Save, Building, CreditCard, Palette, Upload, Shield } from 'lucide-react';
+import { X, Save, Building, Plus, Trash2 } from 'lucide-react';
 import { BusinessDetails, BankAccount, VatSettings, TemplateSettings } from '../types';
+
+const DEFAULT_PAYMENT_METHODS = ['Bank Transfer', 'PayPal', 'Paystack', 'Stripe', 'Cash', 'Cheque', 'e-Transfer', 'Other'];
 
 interface SettingsDrawerProps {
   isOpen: boolean; onClose: () => void;
@@ -17,10 +19,13 @@ export default function SettingsDrawer({
   templateSettings, onUpdateTemplateSettings
 }: SettingsDrawerProps) {
   const [tab, setTab] = useState<'brand'|'bank'|'template'>('brand');
-  
+
   const [biz, setBiz] = useState(businessDetails);
   const [bank, setBank] = useState(bankAccount);
   const [tpl, setTpl] = useState(templateSettings);
+  const [methods, setMethods] = useState<string[]>(
+    templateSettings.customPaymentMethods ?? DEFAULT_PAYMENT_METHODS
+  );
 
   if (!isOpen) return null;
 
@@ -28,18 +33,18 @@ export default function SettingsDrawer({
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) => {
-      setBiz({ ...biz, [field]: ev.target!.result as string });
-    };
+    reader.onload = (ev) => { setBiz({ ...biz, [field]: ev.target!.result as string }); };
     reader.readAsDataURL(file);
   };
 
   const handleSave = () => {
     onUpdateBusinessDetails(biz);
     onUpdateBankAccount(bank);
-    onUpdateTemplateSettings(tpl);
+    onUpdateTemplateSettings({ ...tpl, customPaymentMethods: methods });
     onClose();
   };
+
+  const figureFont = tpl.figureFont ?? 'tabular';
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-stone-950/80 backdrop-blur-sm">
@@ -70,7 +75,6 @@ export default function SettingsDrawer({
                 <div><label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">City</label><input type="text" value={biz.city} onChange={e=>setBiz({...biz, city: e.target.value})} className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:border-primary outline-none" /></div>
                 <div><label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Street</label><input type="text" value={biz.street} onChange={e=>setBiz({...biz, street: e.target.value})} className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:border-primary outline-none" /></div>
               </div>
-
               <div className="pt-4 border-t border-stone-100">
                 <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Logo</label>
                 <div className="flex items-center gap-4">
@@ -97,7 +101,7 @@ export default function SettingsDrawer({
               </div>
               <div className="pt-4 border-t border-stone-100 space-y-1">
                 <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">PayPal Payment Link</label>
-                <input type="url" placeholder="https://paypal.me/yourusername or paypal.com/pay/..." value={bank.paymentLink || ''} onChange={e=>setBank({...bank, paymentLink: e.target.value})} className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:border-primary outline-none font-mono" />
+                <input type="url" placeholder="https://paypal.me/yourusername" value={bank.paymentLink || ''} onChange={e=>setBank({...bank, paymentLink: e.target.value})} className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:border-primary outline-none font-mono" />
                 <p className="text-[10px] text-stone-400">Rendered as a "Pay with PayPal" button on your invoice. Also works for Stripe or any payment URL.</p>
               </div>
               <div>
@@ -119,6 +123,7 @@ export default function SettingsDrawer({
                   ))}
                 </div>
               </div>
+
               <div>
                 <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-2">Brand Color</label>
                 <div className="flex gap-3">
@@ -127,9 +132,63 @@ export default function SettingsDrawer({
                   ))}
                 </div>
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div><label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Currency Symbol</label><input type="text" value={tpl.currencySymbol} onChange={e=>setTpl({...tpl, currencySymbol: e.target.value})} className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:border-primary outline-none" /></div>
                 <div><label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Net Terms (Days)</label><input type="number" value={tpl.dueDateDays} onChange={e=>setTpl({...tpl, dueDateDays: parseInt(e.target.value)})} className="w-full p-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:border-primary outline-none" /></div>
+              </div>
+
+              {/* Figure font */}
+              <div className="pt-2 border-t border-stone-100">
+                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-3">Figure Style</label>
+                <p className="text-[11px] text-stone-400 mb-3">Controls how amounts and numbers look on your invoices.</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { key: 'tabular', label: 'Modern', preview: '1,234.00', cls: 'tabular-nums tracking-tight font-sans' },
+                    { key: 'mono',    label: 'Classic', preview: '1,234.00', cls: 'font-mono' },
+                    { key: 'serif',   label: 'Elegant', preview: '1,234.00', cls: 'font-["Lora",Georgia,serif] tabular-nums' },
+                  ].map(opt => (
+                    <button
+                      key={opt.key}
+                      onClick={() => setTpl({...tpl, figureFont: opt.key as any})}
+                      className={`p-3 rounded-lg border text-left transition-all ${figureFont === opt.key ? 'border-primary bg-primary/5' : 'border-stone-200 bg-stone-50 hover:border-stone-300'}`}
+                    >
+                      <div className={`text-lg mb-1 text-stone-900 ${opt.cls} ${figureFont === opt.key ? 'text-primary' : ''}`}>{opt.preview}</div>
+                      <div className={`text-[10px] font-bold uppercase tracking-widest ${figureFont === opt.key ? 'text-primary' : 'text-stone-400'}`}>{opt.label}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Editable payment methods */}
+              <div className="pt-2 border-t border-stone-100">
+                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Payment Methods</label>
+                <p className="text-[11px] text-stone-400 mb-3">Customize the options shown in the invoice creator. Click any label to rename it.</p>
+                <div className="space-y-2">
+                  {methods.map((m, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={m}
+                        onChange={e => setMethods(methods.map((v, i) => i === idx ? e.target.value : v))}
+                        className="flex-1 px-3 py-2 bg-stone-50 border border-stone-200 rounded-lg text-sm focus:border-primary outline-none"
+                      />
+                      <button
+                        onClick={() => setMethods(methods.filter((_, i) => i !== idx))}
+                        className="p-2 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Remove"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setMethods([...methods, ''])}
+                  className="mt-3 flex items-center gap-1.5 text-xs font-bold text-stone-500 hover:text-stone-900 transition-colors"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Method
+                </button>
               </div>
             </div>
           )}

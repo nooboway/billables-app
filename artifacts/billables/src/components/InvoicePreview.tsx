@@ -21,6 +21,19 @@ export default function InvoicePreview({
   const tpl = invoice.templateType || 'Stripe';
   const color = templateSettings.color || '#E54A13';
 
+  // Figure font: tabular (clean, default) | mono (classic) | serif (elegant)
+  const ff = templateSettings.figureFont ?? 'tabular';
+  const numCls = ff === 'mono' ? 'font-mono'
+    : ff === 'serif' ? 'tabular-nums'
+    : 'tabular-nums tracking-tight';
+  const numStyle: React.CSSProperties = ff === 'serif'
+    ? { fontFamily: '"Lora", Georgia, serif' }
+    : {};
+
+  const Num = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
+    <span className={`${numCls} ${className}`} style={numStyle}>{children}</span>
+  );
+
   const PaymentCTAs = () => (
     <div className="flex flex-col gap-2 mt-6">
       {bankAccount.paystackLink && (
@@ -53,7 +66,7 @@ export default function InvoicePreview({
           </div>
           <div className="text-right">
             <p className="text-sm font-bold text-stone-400 uppercase tracking-widest mb-1">Invoice</p>
-            <p className="text-xl font-mono text-stone-900">{invoice.id}</p>
+            <p className={`text-xl ${numCls} text-stone-900`} style={numStyle}>{invoice.id}</p>
           </div>
         </div>
 
@@ -68,11 +81,11 @@ export default function InvoicePreview({
             <div className="flex justify-end gap-8">
               <div>
                 <p className="font-bold text-stone-400 uppercase tracking-widest text-xs mb-1">Issued</p>
-                <p className="font-mono text-stone-900">{invoice.issueDate}</p>
+                <p className={numCls} style={numStyle}>{invoice.issueDate}</p>
               </div>
               <div>
                 <p className="font-bold text-stone-400 uppercase tracking-widest text-xs mb-1">Due</p>
-                <p className="font-mono text-stone-900">{invoice.dueDate}</p>
+                <p className={numCls} style={numStyle}>{invoice.dueDate}</p>
               </div>
             </div>
           </div>
@@ -90,9 +103,9 @@ export default function InvoicePreview({
               <tr key={item.id}>
                 <td className="py-4">
                   <p className="font-medium text-stone-900">{item.description.split('\n')[0]}</p>
-                  {item.qty > 1 && <p className="text-xs text-stone-500">{item.qty} × {format(item.price)}</p>}
+                  {item.qty > 1 && <p className="text-xs text-stone-500">{item.qty} × <Num>{format(item.price)}</Num></p>}
                 </td>
-                <td className="py-4 text-right font-mono text-stone-900">{format(item.amount)}</td>
+                <td className="py-4 text-right text-stone-900"><Num>{format(item.amount)}</Num></td>
               </tr>
             ))}
           </tbody>
@@ -100,10 +113,10 @@ export default function InvoicePreview({
 
         <div className="flex justify-end">
           <div className="w-64 space-y-3 text-sm">
-            <div className="flex justify-between text-stone-500"><span>Subtotal</span><span className="font-mono">{format(subtotal)}</span></div>
-            {vatAmount > 0 && <div className="flex justify-between text-stone-500"><span>Tax ({invoice.vatRate}%)</span><span className="font-mono">{format(vatAmount)}</span></div>}
+            <div className="flex justify-between text-stone-500"><span>Subtotal</span><Num>{format(subtotal)}</Num></div>
+            {vatAmount > 0 && <div className="flex justify-between text-stone-500"><span>Tax ({invoice.vatRate}%)</span><Num>{format(vatAmount)}</Num></div>}
             <div className="flex justify-between text-stone-900 font-bold text-lg pt-3 border-t border-stone-200">
-              <span>Total</span><span className="font-mono">{format(grandTotal)}</span>
+              <span>Total</span><Num>{format(grandTotal)}</Num>
             </div>
           </div>
         </div>
@@ -127,7 +140,7 @@ export default function InvoicePreview({
           <h1 className="text-2xl font-bold text-white tracking-widest uppercase">{businessDetails.name}</h1>
           <p className="text-[#D4A853] tracking-widest text-xs mt-2 uppercase font-bold">Invoice {invoice.id}</p>
         </div>
-        
+
         <div className="grid grid-cols-2 gap-8 mb-12">
           <div className="bg-[#1E293B] p-6 rounded-lg">
             <p className="text-[10px] uppercase tracking-widest text-stone-500 font-bold mb-2">Billed To</p>
@@ -150,10 +163,8 @@ export default function InvoicePreview({
           <tbody className="divide-y divide-[#1E293B]">
             {invoice.items.map((item, i) => (
               <tr key={item.id} className={i % 2 === 0 ? 'bg-[#0F1729]' : 'bg-[#151e32]'}>
-                <td className="py-4 px-2">
-                  <p className="text-white font-medium">{item.description.split('\n')[0]}</p>
-                </td>
-                <td className="py-4 px-2 text-right text-white font-mono">{format(item.amount)}</td>
+                <td className="py-4 px-2"><p className="text-white font-medium">{item.description.split('\n')[0]}</p></td>
+                <td className="py-4 px-2 text-right text-white"><Num>{format(item.amount)}</Num></td>
               </tr>
             ))}
           </tbody>
@@ -161,18 +172,16 @@ export default function InvoicePreview({
 
         <div className="flex justify-end mb-12">
           <div className="bg-[#D4A853] text-[#0F1729] p-6 rounded-lg w-72">
-            <div className="flex justify-between mb-2 text-sm font-bold opacity-80"><span>Subtotal</span><span>{format(subtotal)}</span></div>
-            {vatAmount > 0 && <div className="flex justify-between mb-2 text-sm font-bold opacity-80"><span>Tax</span><span>{format(vatAmount)}</span></div>}
+            <div className="flex justify-between mb-2 text-sm font-bold opacity-80"><span>Subtotal</span><Num>{format(subtotal)}</Num></div>
+            {vatAmount > 0 && <div className="flex justify-between mb-2 text-sm font-bold opacity-80"><span>Tax</span><Num>{format(vatAmount)}</Num></div>}
             <div className="flex justify-between text-xl font-black mt-4 pt-4 border-t border-[#0F1729]/20">
-              <span>Total</span><span>{format(grandTotal)}</span>
+              <span>Total</span><Num>{format(grandTotal)}</Num>
             </div>
           </div>
         </div>
 
         <div className="flex justify-between items-center text-xs">
-          <div className="w-1/2">
-            <PaymentCTAs />
-          </div>
+          <div className="w-1/2"><PaymentCTAs /></div>
           <QRCodeBlock />
         </div>
       </div>
@@ -185,7 +194,7 @@ export default function InvoicePreview({
         <div className="h-3 w-full" style={{ backgroundColor: color }}></div>
         <div className="p-12">
           <h1 className="text-5xl font-black uppercase tracking-tighter mb-12 text-stone-900">{businessDetails.name}</h1>
-          
+
           <div className="grid grid-cols-3 gap-8 mb-16">
             <div className="col-span-2">
               <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-2">Invoice To</p>
@@ -205,9 +214,9 @@ export default function InvoicePreview({
               <div key={item.id} className="flex justify-between py-4 border-b border-stone-200">
                 <div>
                   <p className="font-bold text-stone-900">{item.description.split('\n')[0]}</p>
-                  <p className="text-sm text-stone-500 mt-1">{item.qty} {item.unit} at {format(item.price)}</p>
+                  <p className="text-sm text-stone-500 mt-1">{item.qty} {item.unit} at <Num>{format(item.price)}</Num></p>
                 </div>
-                <div className="font-bold text-lg font-mono">{format(item.amount)}</div>
+                <div className="font-bold text-lg"><Num>{format(item.amount)}</Num></div>
               </div>
             ))}
           </div>
@@ -220,9 +229,9 @@ export default function InvoicePreview({
               <PaymentCTAs />
             </div>
             <div className="w-1/2 text-right">
-              <p className="text-sm text-stone-500 mb-1">Subtotal: {format(subtotal)}</p>
-              <p className="text-sm text-stone-500 mb-4">Tax: {format(vatAmount)}</p>
-              <p className="text-4xl font-black text-stone-900 tracking-tighter">{format(grandTotal)}</p>
+              <p className="text-sm text-stone-500 mb-1">Subtotal: <Num>{format(subtotal)}</Num></p>
+              <p className="text-sm text-stone-500 mb-4">Tax: <Num>{format(vatAmount)}</Num></p>
+              <p className="text-4xl font-black text-stone-900 tracking-tighter"><Num>{format(grandTotal)}</Num></p>
               <p className="text-xs font-bold text-stone-400 uppercase tracking-widest mt-2">Amount Due</p>
             </div>
           </div>
@@ -231,7 +240,7 @@ export default function InvoicePreview({
     );
   }
 
-  // Stripe & Classic fallbacks (simplifying for length, keeping Stripe premium)
+  // Stripe & Classic (default)
   return (
     <div className="bg-white text-stone-900 p-12 max-w-3xl mx-auto font-sans shadow-2xl border border-stone-200 rounded-xl min-h-[800px]">
       <div className="flex justify-between items-center mb-12">
@@ -250,7 +259,7 @@ export default function InvoicePreview({
 
       <div className="mb-12">
         <p className="text-sm text-stone-500 mb-1">Amount Due</p>
-        <p className="text-5xl font-bold tracking-tight text-stone-900 mb-2">{format(grandTotal)}</p>
+        <p className="text-5xl font-bold tracking-tight text-stone-900 mb-2"><Num>{format(grandTotal)}</Num></p>
         <p className="text-sm font-medium px-3 py-1 bg-stone-100 text-stone-600 rounded-md inline-block">Due {invoice.dueDate}</p>
       </div>
 
@@ -273,17 +282,17 @@ export default function InvoicePreview({
               <p className="font-bold text-stone-900">{item.description.split('\n')[0]}</p>
               <p className="text-stone-500 text-xs mt-1">Qty: {item.qty}</p>
             </div>
-            <div className="font-mono text-stone-900">{format(item.amount)}</div>
+            <div className="text-stone-900"><Num>{format(item.amount)}</Num></div>
           </div>
         ))}
       </div>
 
       <div className="flex justify-end mb-12 text-sm">
         <div className="w-64 space-y-2">
-          <div className="flex justify-between text-stone-500"><span>Subtotal</span><span>{format(subtotal)}</span></div>
-          <div className="flex justify-between text-stone-500"><span>Tax</span><span>{format(vatAmount)}</span></div>
+          <div className="flex justify-between text-stone-500"><span>Subtotal</span><Num>{format(subtotal)}</Num></div>
+          <div className="flex justify-between text-stone-500"><span>Tax</span><Num>{format(vatAmount)}</Num></div>
           <div className="flex justify-between font-bold text-stone-900 pt-2 border-t border-stone-200">
-            <span>Total</span><span>{format(grandTotal)}</span>
+            <span>Total</span><Num>{format(grandTotal)}</Num>
           </div>
         </div>
       </div>

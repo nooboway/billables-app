@@ -69,6 +69,10 @@ export interface TemplateSettings {
   barcodeScannerEnabled: boolean;
   numberingFormat: string;     // e.g. "INV-0000" or "INV-"
   showQR?: boolean;
+  /** User-defined list of payment method labels shown in InvoiceCreator dropdown. */
+  customPaymentMethods?: string[];
+  /** Font style for figures/amounts on the invoice. Defaults to 'tabular'. */
+  figureFont?: 'mono' | 'tabular' | 'serif';
 }
 
 export interface InvoiceItem {
@@ -112,6 +116,10 @@ export interface Invoice {
   originalPdfDataUrl?: string;
   /** Human-readable name of the original imported file (e.g. "scan.jpg"). */
   originalFileName?: string;
+  /** Token from the API server for the customer-facing preview link. */
+  previewToken?: string;
+  /** Whether the customer has opened the preview link. */
+  previewSeen?: boolean;
 }
 
 export interface Product {

@@ -42,7 +42,7 @@ const TEMPLATES: { id: InvoiceTemplate; label: string; desc: string; color: stri
 ];
 
 const UNITS = ['hrs', 'days', 'units', 'pcs', 'kg', 'flat'];
-const PAYMENT_METHODS = ['Bank Transfer', 'PayPal', 'Paystack', 'Stripe', 'Cash', 'Cheque', 'Other'];
+const DEFAULT_PAYMENT_METHODS = ['Bank Transfer', 'PayPal', 'Paystack', 'Stripe', 'Cash', 'Cheque', 'e-Transfer', 'Other'];
 const CURRENCIES = [
   { code: 'USD', symbol: '$' }, { code: 'NGN', symbol: '₦' }, { code: 'GBP', symbol: '£' },
   { code: 'EUR', symbol: '€' }, { code: 'CAD', symbol: 'CA$' }, { code: 'ZAR', symbol: 'R' },
@@ -323,7 +323,7 @@ export default function InvoiceCreator({
                       <label className="block text-[10px] font-bold text-stone-500 uppercase tracking-widest mb-1">Payment Method</label>
                       <select value={paymentMethod} onChange={e => setPaymentMethod(e.target.value)}
                         className="w-full px-3 py-2.5 bg-stone-50 border border-stone-200 rounded-lg text-sm text-stone-900 focus:border-primary focus:bg-white outline-none transition-colors">
-                        {PAYMENT_METHODS.map(m => <option key={m}>{m}</option>)}
+                        {(templateSettings.customPaymentMethods ?? DEFAULT_PAYMENT_METHODS).filter(Boolean).map(m => <option key={m}>{m}</option>)}
                       </select>
                     </div>
                     <div>
